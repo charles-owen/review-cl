@@ -1,0 +1,24 @@
+{
+  "name" : "cl/review",
+  "description": "CourseLib peer review component.",
+  "type" : "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Charles B. Owen",
+      "email": "cbowen@msu.edu"
+    }
+  ],
+  "autoload":{
+    "psr-4": {
+      "CL\\Review\\": "src/Review"
+    }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/charles-owen/review-cl.git"
+    }
+  ]
+}
+

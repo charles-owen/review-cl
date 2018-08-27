@@ -1,0 +1,17 @@
+{
+  "name": "review-cl",
+  "version": "0.0.1",
+  "description": "CourseLib peer review components",
+  "main": "index.js",
+  "keywords": [
+    "Education"
+  ],
+  "author": "Charles B. Owen",
+  "license": "MIT",
+  "dependencies": {
+    "console-cl": ">=0.0.1",
+    "course-cl": ">=0.0.1",
+    "site-cl": ">=0.0.1",
+    "users-cl": ">=0.0.1"
+  }
+}
