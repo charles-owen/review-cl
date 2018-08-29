@@ -1,0 +1,17 @@
+@import '~site-cl/sass/modules/colors';
+
+div.cl-review {
+  margin: 1em 0;
+
+  h3 {
+    font-size: 0.85em;
+    font-style: italic;
+    font-weight: normal;
+    color: $primary;
+    border-bottom: 1px solid $primary;
+  }
+
+  pre {
+    margin: 0;
+  }
+}
