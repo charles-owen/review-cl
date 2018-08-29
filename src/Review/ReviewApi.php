@@ -47,6 +47,14 @@ class ReviewApi extends \CL\Users\Api\Resource {
 			case 'reviewers':
 				return $this->reviewers($site, $server, $params, $time);
 
+			// /api/review/reviews/:assigntag/:memberid
+			case 'reviews':
+				return $this->reviews($site, $server, $params, $time);
+
+			// /api/review/staffreview/:assigntag/:memberid
+			case 'staffreview':
+				return $this->staffreview($site, $server, $params, $time);
+
 			// /api/review/review/:id
 			// Submit a review
 			case 'review':
@@ -58,6 +66,105 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		}
 
 		throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
+	}
+
+
+	private function staffreview(Site $site, Server $server, array $params, $time) {
+		$user = $this->isUser($site, Member::STAFF);
+
+		if(count($params) < 3) {
+			throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
+		}
+
+		$assignTag = $params[1];
+		$memberId = $params[2];
+
+		// Get the reviewee
+		$members = new Members($site->db);
+		$reviewee = $members->getAsUser($memberId);
+		if($reviewee === null) {
+			throw new APIException("Reviewee member does not exist");
+		}
+
+		// Get the assignment
+		$section = $site->course->get_section_for($user);
+		$assignment = $section->get_assignment($assignTag);
+		if($assignment === null || $assignment->reviewing === null) {
+			throw new APIException("Review assignment does not exist");
+		}
+
+		$post = $server->post;
+		$this->ensure($post, 'text');
+		$text = strip_tags($post['text']);
+		$reviewing = $assignment->reviewing->submit($user, $reviewee, $text, [], $time);
+
+		$data = $this->getByFor($site, $assignTag, $memberId);
+
+		$json = new JsonAPI();
+		$json->addData('reviews-by-for', $memberId, $data);
+		return $json;
+	}
+
+	/**
+	 * Get all assignment reviews by and for a member.
+	 *
+	 * /api/review/reviews/:assigntag/:memberid
+	 * This is used on the assignment grading page
+	 *
+	 * @param Site $site The Site object
+	 * @param Server $server The server
+	 * @param array $params Parameters for the route
+	 * @param int $time Current time
+	 * @return JsonAPI
+	 * @throws APIException
+	 */
+	private function reviews(Site $site, Server $server, array $params, $time) {
+		$user = $this->isUser($site, Member::STAFF);
+
+		if(count($params) < 3) {
+			throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
+		}
+
+		$assignTag = $params[1];
+		$memberId = $params[2];
+
+		$data = $this->getByFor($site, $assignTag, $memberId);
+
+		$json = new JsonAPI();
+		$json->addData('reviews-by-for', $memberId, $data);
+		return $json;
+	}
+
+	private function getByFor(Site $site, $assignTag, $memberId) {
+		$reviews = new Reviews($site->db);
+		$by = $reviews->get_reviews_by($memberId, $assignTag);
+		$for = $reviews->get_reviews($memberId, $assignTag);
+
+		$forData = [];
+		foreach($for as $review) {
+			$forData[] = [
+				'id'=>$review->id,
+				'time'=>$review->time,
+				'meta'=>$review->meta->data,
+				'reviewer'=>$review->reviewer->data()
+			];
+		}
+
+
+		$byData = [];
+		foreach($by as $review) {
+			$byData[] = [
+				'id'=>$review->id,
+				'time'=>$review->time,
+				'meta'=>$review->meta->data,
+				'reviewee'=>$review->reviewee->data()
+			];
+		}
+
+		return [
+			'for'=>$forData,
+			'by'=>$byData
+		];
 	}
 
 	private function review(Site $site, User $user, Server $server, array $params, $time) {
@@ -99,6 +206,18 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		return $json;
 	}
 
+	/**
+	 * Get/Post reviewing assignments for an assignment.
+	 *
+	 * /api/review/reviewers/:assigntag
+	 *
+	 * @param Site $site
+	 * @param Server $server
+	 * @param array $params
+	 * @param $time
+	 * @return JsonAPI
+	 * @throws APIException
+	 */
 	private function reviewers(Site $site, Server $server, array $params, $time) {
 		$user = $this->isUser($site, Member::STAFF);
 		$reviewAssignments = new ReviewAssignments($site->db);
@@ -142,11 +261,25 @@ class ReviewApi extends \CL\Users\Api\Resource {
 
 		}
 
+		$reviews = new Reviews($site->db);
+		$counts = $reviews->get_review_counts($semester, $sectionId, $assignTag);
+		$mapping = [];
+		foreach($counts as $count) {
+			if(!isset($mapping[+$count['reviewerid']])) {
+				$mapping[+$count['reviewerid']] = [];
+			}
+
+			$mapping[+$count['reviewerid']][+$count['revieweeid']] = $count['count'];
+		}
 
 		$assignments = $reviewAssignments->getReviewers($semester, $sectionId, $assignTag);
 		$data = [];
 		foreach($assignments as $assignment) {
-			$data[] = [+$assignment['reviewer'], +$assignment['reviewee'], 0];
+			$count = isset($mapping[+$assignment['reviewer']]) &&
+				isset($mapping[+$assignment['reviewer']][+$assignment['reviewee']]) ?
+				$mapping[+$assignment['reviewer']][+$assignment['reviewee']] : 0;
+
+			$data[] = [+$assignment['reviewer'], +$assignment['reviewee'], $count];
 		}
 
 		$json = new JsonAPI();

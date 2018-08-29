@@ -10,12 +10,9 @@ import './_review.scss';
 import {ReviewConsole} from './js/Console/ReviewConsole';
 import ReviewVue from './js/ReviewVue.vue';
 import {PageVue} from 'site-cl/js/Vue/PageVue';
+import {InlineVue} from 'site-cl/js/Vue/InlineVue';
 
 import ReviewsVue from './js/ReviewsVue.vue';
-
-Site.Review = {
-	'ReviewsVue': ReviewsVue
-}
 
 if(Site.Console !== undefined) {
 	ReviewConsole.setup(Site.Console);
@@ -23,4 +20,5 @@ if(Site.Console !== undefined) {
 
 Site.Site.ready(() => {
     PageVue.create('div.cl-review', 'Review Vue', ReviewVue);
+	InlineVue.create('div.cl-reviews', ReviewsVue);
 });

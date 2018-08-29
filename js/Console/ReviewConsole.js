@@ -4,11 +4,16 @@
  */
 
 import ReviewReviewersVue from './ReviewReviewers.vue';
+import ReviewsByForMemberVue from './ReviewsByForMember.vue';
 
 export let ReviewConsole = function() {
 }
 
 ReviewConsole.setup = function(Console) {
+    Console.Review = {
+        'reviewsbyfor': ReviewsByForMemberVue
+    };
+
     Console.tables.add({
         title: 'Review',
         order: 16,

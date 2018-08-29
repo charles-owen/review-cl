@@ -7,6 +7,7 @@
 namespace CL\Review;
 
 use CL\Console\ConsoleView;
+use CL\Course\AssignmentView;
 use CL\Site\Site;
 use CL\Site\System\Server;
 use CL\Course\AssignmentCategory;
@@ -88,6 +89,11 @@ class ReviewPlugin extends \CL\Site\Plugin implements \CL\Site\IExtension {
 				return $view->vue();
 			});
 
+			$router->addRoute(['peerreview'], function(Site $site, Server $server, array $params, array $properties, $time) {
+				$view = new ReviewSystemInfoView($site);
+				return $view->whole();
+			});
+
 			$router->addRoute(['api', 'review', '*'], function(Site $site, Server $server, array $params, array $properties, $time) {
 				$resource = new ReviewApi();
 				return $resource->apiDispatch($site, $server, $params, $properties, $time);
@@ -95,9 +101,9 @@ class ReviewPlugin extends \CL\Site\Plugin implements \CL\Site\IExtension {
 		} else if($object instanceof Assignment) {
 			$object->addProperty('review', false, true);
 			$object->extend('set_reviews_due', $this);
-		} else if($object instanceof ConsoleView) {
+		} else if($object instanceof AssignmentView) {
 			$object->addJS('review');
-		} else if($object instanceof \CL\Grades\GradeView) {
+		} else if($object instanceof ConsoleView) {
 			$object->addJS('review');
 		}
 	}

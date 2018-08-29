@@ -143,12 +143,13 @@ SQL;
 	 */
 	public function getReviewers($semester, $sectionId, $assignTag) {
 		$members = new Members($this->config);
-		$sql = $members->memberUserJoinSQL("reviewerid, revieweeid");
+		$sql = $members->memberUserJoinSQL(
+			"reviewassign.reviewerid as reviewerid, reviewassign.revieweeid as revieweeid");
 
 		$sql .= <<<SQL
 join $this->tablename reviewassign
-on revieweeid=member.id
-where assigntag=? and member.semester=? and member.section=?
+on reviewassign.revieweeid=member.id
+where reviewassign.assigntag=? and member.semester=? and member.section=?
 SQL;
 
 		$pdo = $this->pdo;

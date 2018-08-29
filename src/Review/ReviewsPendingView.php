@@ -20,6 +20,7 @@ class ReviewsPendingView extends \CL\Course\View {
 	public function __construct(Site $site, $time=null) {
 		parent::__construct($site);
 
+		$this->set_autoback();
 		$this->time = $time !== null ? $time : time();
 		$this->setTitle('Pending Reviews');
 	}
@@ -108,6 +109,10 @@ HTML;
 <p class="center">You have no reviews to do at this time.</p>
 HTML;
 		}
+
+		$html .= <<<HTML
+<p>More <a class="cl-autoback" href="../peerreview">details on the peer review system</a> are available. </p>
+HTML;
 
 		return $html;
 	}

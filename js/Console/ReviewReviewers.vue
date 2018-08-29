@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <div class="full">
+    <div class="full cl-reviewing">
       <mask-vue :mask="mask">Communicating with server...</mask-vue>
 
       <membersfetcher :fetching="reviewing === null">
@@ -23,8 +23,8 @@
             </tr>
             <tr v-for="user in fetcher.users">
               <td><a :title="user.name">{{user.userId}}</a></td>
-              <td v-for="i in maxReviewer"><span v-html="display(fetcher.users, reviewer[user.member.id], i-1)"></span></td>
-              <td v-for="i in maxReviewee"><span v-html="display(fetcher.users, reviewee[user.member.id], i-1)"></span></td>
+              <td v-for="i in maxReviewer" :class="cls(reviewer[user.member.id], i-1)"><span v-html="display(fetcher.users, reviewer[user.member.id], i-1)"></span></td>
+              <td v-for="i in maxReviewee" :class="cls(reviewee[user.member.id], i-1)"><span v-html="display(fetcher.users, reviewee[user.member.id], i-1)"></span></td>
             </tr>
           </table>
         </template>
@@ -49,8 +49,8 @@
         reviewerCnt: 2,
         reviewing: 'x',
         instructor: Member.INSTRUCTOR,
-        reviewer: {},
-        reviewee: {},
+        reviewer: null,
+        reviewee: null,
         maxReviewer: 0,
         maxReviewee: 0,
 		    mask: false
@@ -67,49 +67,23 @@
 			this.assignment = this.section.getAssignment(this.assigntag);
 
 			this.setTitle(': ' + this.assignment.shortname + ' Reviewing');
+      this.mask = true;
 
-		Site.api.get('/api/review/reviewers/' + this.assigntag, {})
-			.then((response) => {
-				if (!response.hasError()) {
-					this.take(response);
-				} else {
-					Site.toast(this, response);
-				}
+      Site.api.get('/api/review/reviewers/' + this.assigntag, {})
+        .then((response) => {
+        	this.mask = false;
+          if (!response.hasError()) {
+            this.take(response);
+          } else {
+            Site.toast(this, response);
+          }
 
-			})
-			.catch((error) => {
-				Site.toast(this, error);
-			});
+        })
+        .catch((error) => {
+        	this.mask = false;
+          Site.toast(this, error);
+        });
 
-			// let query = {
-			// 	semester: member.semester,
-			// 	section: member.section
-			// };
-			// Site.api.get('/api/course/members/meta/get/extensions/' + this.assigntag, query)
-			// 	.then((response) => {
-			// 		if(!response.hasError()) {
-			// 			let data = response.getData('member-meta');
-			// 			if(data !== null) {
-			// 				this.extensions = [];
-			// 				for(let id in data.attributes) {
-			// 					let time = data.attributes[id];
-			// 					if(time === null || time === undefined) {
-			// 						this.extensions[+id] = '';
-			// 					} else {
-			// 						this.extensions[+id] = time * 1000;
-			// 					}
-      //
-			// 				}
-			// 			}
-			// 		} else {
-			// 			Site.toast(this, response);
-			// 		}
-      //
-			// 	})
-			// 	.catch((error) => {
-			// 		console.log(error);
-			// 		Site.toast(this, error);
-			// 	});
 		},
 		methods: {
 			assignReviews() {
@@ -180,13 +154,15 @@
         }
 
         return ' ';
+      },
+      cls(assign, i) {
+        if(assign === undefined || i >= assign.length) {
+          return '';
+        }
+
+        return assign[i][1] < 1 ? 'cl-empty' : '';
+
       }
 		}
 	}
 </script>
-
-<style lang="scss">
-  /* Not scoped */
-
-
-</style>

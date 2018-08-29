@@ -61,7 +61,6 @@
 				  if (!response.hasError()) {
 					  this.editor.textarea.value = '';
 					  this.reviewing = response.getData('reviewing').attributes;
-console.log(response);
 
 					  Site.toast(this, "Review successfully saved to the server");
 				  } else {

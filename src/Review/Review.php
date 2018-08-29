@@ -6,13 +6,35 @@
 
 namespace CL\Review;
 
+use CL\Course\Member;
 use CL\Site\MetaData;
+use CL\Users\User;
 
 
 class Review {
 
-	public function __construct() {
-		$this->metaData = new MetaData();
+	public function __construct($row = null, $prefix='review_') {
+		if($row !== null) {
+			$this->id = +$row[$prefix . 'id'];
+			$this->revieweeId = +$row[$prefix . 'revieweeid'];
+			$this->reviewerId = +$row[$prefix . 'reviewerid'];
+			$this->time = strtotime($row[$prefix . 'time']);
+			$this->metaData = new MetaData(null, $row[$prefix . 'metadata']);
+
+			if(!empty($row['member_id'])) {
+				$this->reviewer = new User($row, 'user_');
+				$this->reviewer->member = new Member($row, 'member_');
+			}
+
+			if(!empty($row['reviewee_id'])) {
+				$this->reviewee = new User($row, 'user_');
+				$this->reviewee->member = new Member($row, 'reviewee_');
+			}
+
+		} else {
+			$this->metaData = new MetaData();
+		}
+
 	}
 
 	public function set($assignTag, $reviewerId, $revieweeId, $review, $time, array $submissions=null) {
@@ -45,6 +67,17 @@ class Review {
 			case 'id':
 				return $this->id;
 
+			case 'time':
+				return $this->time;
+
+			case 'reviewee':
+				return $this->reviewee;
+
+			case 'reviewer':
+				return $this->reviewer;
+
+			case 'meta':
+				return $this->metaData;
 
 			default:
 				$trace = debug_backtrace();
@@ -98,4 +131,7 @@ class Review {
 	private $revieweeId;    // Member ID for the reviewee
 	private $metaData;      // Metadata containing reviews and discussions
 	private $time;          // When the review was first created
+
+	private $reviewer = null; // Optional User object for reviewer
+	private $reviewee = null;
 }

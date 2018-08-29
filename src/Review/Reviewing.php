@@ -49,6 +49,9 @@ class Reviewing {
 
 		        return $this->email;
 
+	        case 'due':
+	        	return $this->due;
+
             default:
                 $trace = debug_backtrace();
                 trigger_error(
@@ -134,10 +137,10 @@ class Reviewing {
 //    public function get_due() {
 //        return $this->due;
 //    }
-//
-//	public function get_available_due() {
-//		return $this->due + ($this->get_revision_hours() * 60 * 60);
-//	}
+
+	public function get_available_due() {
+		return $this->due + ($this->revisionHours * 60 * 60);
+	}
 
 	/**
 	 * Test if a time is after the due date for reviews
@@ -292,6 +295,56 @@ class Reviewing {
         }
 
         return $result;
+    }
+
+    public function presentReviews(User $user) {
+    	$data = [
+    		'assigntag'=>$this->assignment->tag,
+    		'reviews'=>$this->reviewsData($user)
+	    ];
+
+	    $json = htmlspecialchars(json_encode($data), ENT_NOQUOTES);
+
+	    return <<<HTML
+<div class="cl-reviews" style="display:none">$json</div>
+HTML;
+    }
+
+	/**
+	 * Get all reviews data for a user and this assignment.
+	 * @param User $user Reviewee
+	 * @return array Data
+	 */
+    public function reviewsData(User $user) {
+    	$site = $this->assignment->site;
+	    $reviews = new Reviews($site->db);
+	    $all = $reviews->get_reviews($user->member->id, $this->assignment->tag);
+
+	    $data = [];
+	    $anon = [];
+	    foreach($all as $review) {
+		    $reviewData = [
+			    'id'=>$review->id,
+			    'time'=>$review->time,
+			    'review'=>$review->meta->get('review', 'review')
+		    ];
+
+		    $reviewer = $review->reviewer;
+		    if($reviewer->staff) {
+			    $reviewData['by'] = $reviewer->displayName;
+			    $reviewData['role'] = $reviewer->roleName;
+		    } else {
+			    if(!isset($anon[$reviewer->id])) {
+				    $anon[$reviewer->id] = count($anon);
+			    }
+
+			    $reviewData['by'] = 'Student ' . chr(ord('A') + $anon[$reviewer->id]);
+		    }
+
+		    $data[] = $reviewData;
+	    }
+
+	    return $data;
     }
 
 	/**

@@ -183,6 +183,98 @@ SQL;
 		return $ret;
 	}
 
+	/**
+	 * Get all reviews for a given user
+	 * @param int $revieweeId Member ID
+	 * @param string $assignTag Assignment
+	 * @return array Review objects
+	 */
+	public function get_reviews($revieweeId, $assignTag) {
+		$members = new Members($this->config);
+		$sql = $members->memberUserJoinSQL(
+			"reviewerid as review_reviewerid, revieweeid as review_revieweeid, review.id as review_id, review.metadata as review_metadata, review.time as review_time",
+			false, null, 'member_');
+
+		$sql .= <<<SQL
+join $this->tablename review
+on reviewerid=member.id
+where assigntag=? and revieweeid=?
+order by review.time desc
+SQL;
+
+		$pdo = $this->pdo;
+		try {
+			$stmt = $pdo->prepare($sql);
+			// echo "\n" . $this->sub_sql($sql, [$assignTag]);
+			$stmt->execute([$assignTag, $revieweeId]);
+			$ret = [];
+			foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+				$ret[] = new Review($row);
+			}
+
+			return $ret;
+		} catch(\PDOException $e) {
+			return [];
+		}
+	}
+
+	/**
+	 * Get all reviews by a given user
+	 * @param int $reviewerId Member ID
+	 * @param string $assignTag Assignment
+	 * @return array of Review objects
+	 */
+	public function get_reviews_by($reviewerId, $assignTag) {
+		$members = new Members($this->config);
+		$sql = $members->memberUserJoinSQL(
+			"reviewerid as review_reviewerid, revieweeid as review_revieweeid, review.id as review_id, review.metadata as review_metadata, review.time as review_time",
+			false, null, 'reviewee_');
+
+		$sql .= <<<SQL
+join $this->tablename review
+on revieweeid=member.id
+where assigntag=? and reviewerid=?
+order by review.time desc
+SQL;
+
+		$pdo = $this->pdo;
+		try {
+			$stmt = $pdo->prepare($sql);
+			$stmt->execute([$assignTag, $reviewerId]);
+			$ret = [];
+			foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+				$ret[] = new Review($row);
+			}
+
+			return $ret;
+		} catch(\PDOException $e) {
+			return [];
+		}
+	}
+
+	public function get_review_counts($semester, $sectionId, $assignTag) {
+		$members = new Members($this->config);
+
+		$sql = <<<SQL
+select review.reviewerid as reviewerid, review.revieweeid as revieweeid, count(review.id) as count
+from $this->tablename review
+join $members->tablename member
+on review.revieweeid=member.id or review.reviewerid=member.id
+where member.semester=? and member.section=? and review.assigntag=?
+group by review.reviewerid, review.revieweeid
+SQL;
+
+		$pdo = $this->pdo;
+		try {
+			$stmt = $pdo->prepare($sql);
+			// echo "\n" . $this->sub_sql($sql, [$semester, $sectionId, $assignTag]);
+			$stmt->execute([$semester, $sectionId, $assignTag]);
+			return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+		} catch(\PDOException $e) {
+			return [];
+		}
+	}
+
 //	/** Get all reviews for a given reviewee and assignment
 //	 * @param Assignment $assignment The assignment we are looking for reviews for
 //	 * @param User $reviewee The reviewee

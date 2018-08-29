@@ -1,5 +1,22 @@
 @import '~site-cl/sass/modules/colors';
 
+div.cl-reviewing {
+  td.cl-empty {
+    background-color: $very-light-primary;
+  }
+}
+div.cl-reviews {
+
+  h3 {
+    text-align:center;
+    background: $primary;
+    color:white;
+  }
+
+
+
+}
+
 div.cl-review {
   margin: 1em 0;
 
@@ -7,11 +24,35 @@ div.cl-review {
     font-size: 0.85em;
     font-style: italic;
     font-weight: normal;
+    background: transparent;
     color: $primary;
     border-bottom: 1px solid $primary;
+    text-align: left;
+  }
+
+
+  h3.staff {
+    color: red;
   }
 
   pre {
     margin: 0;
   }
 }
+
+
+
+/* p.content > div.reviews, p.content > p.reviewsappear {
+   margin-left:1em;
+   margin-right:17em;
+ }
+
+p.reviewhead {
+  color:#009966;
+  font-size:8pt;
+  font-style:italic;
+}
+
+span.staffreview {
+  color:red;
+} */
