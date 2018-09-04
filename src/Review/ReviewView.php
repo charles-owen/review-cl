@@ -15,12 +15,12 @@ use CL\Course\Members;
 use CL\Course\Submission\Submissions;
 
 /**
- * /cl/view/:id
+ * /cl/review/:id
  * Reviewing page
  */
 class ReviewView extends View {
 	/**
-	 * ExampleVueView constructor.
+	 * ReviewView constructor.
 	 * @param Site $site The Site object
 	 * @param Server $server The Server object
 	 */
@@ -54,7 +54,7 @@ class ReviewView extends View {
 
 		$submissionsData = [];
 		foreach($assignment->submissions->submissions as $submission) {
-			$submitted = $submissions->get_submissions($reviewee, $assignment->tag,
+			$submitted = $submissions->get_submissions($reviewee->member->id, $assignment->tag,
 				$submission->tag, true);
 			if(count($submitted) === 0) {
 				$server->redirect($site->root . '/');
@@ -63,7 +63,7 @@ class ReviewView extends View {
 			$data = $submission->data();
 			$data['id'] = $submitted[0]['id'];
 			$data['date'] = $submitted[0]['date'];
-
+			$data['type'] = $submission->type;
 
 			switch($submission->type) {
 				case 'text':

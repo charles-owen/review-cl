@@ -70,6 +70,30 @@ SQL;
 	}
 
 	/**
+	 * Is this a valid reviewer/reviewee combination for this assignment?
+	 * @param int $reviewerId
+	 * @param int $revieweeId
+	 * @param int $assignTag
+	 * @return bool
+	 */
+	public function isReviewer($reviewerId, $revieweeId, $assignTag) {
+		$sql = <<<SQL
+select *
+from $this->tablename
+where reviewerid=? and revieweeid=? and assigntag=?
+SQL;
+
+		$pdo = $this->pdo;
+		try {
+			$stmt = $pdo->prepare($sql);
+			$stmt->execute([$reviewerId, $revieweeId, $assignTag]);
+			return $stmt->rowCount() > 0;
+		} catch(\PDOException $e) {
+			return false;
+		}
+	}
+
+	/**
  * Get all reviewers for a given reviewee and assignment
  * @param int $revieweeId The reviewee ID
  * @param string $assignTag The assignment tag

@@ -1,8 +1,11 @@
 <template>
   <div class="content">
+    <div class="full">
     <div v-for="submission in json.submissions" class="cl-submission-view">
       <h2>{{submission.name}}</h2>
-      <pre class="cl-preview yellow-pad">{{submission.text}}</pre>
+      <pre v-if="submission.type === 'text'" class="cl-preview yellow-pad">{{submission.text}}</pre>
+      <figure v-if="submission.type === 'image'" class="cl-preview"><img :src="previewImg(submission)"></figure>
+      <p class="cl-preview-time">{{formatTime(submission.date)}}</p>
     </div>
 
     <h2>Review</h2>
@@ -12,9 +15,12 @@
     </form>
 
     <h2>Previous Reviews</h2>
+    <p class="cl-reviews-none" v-if="reviewing.length === 0">*** None Yet ***</p>
     <div v-for="review in reviewing" class="cl-review">
-      <h3>{{formatTime(review.time)}} Review by Me</h3>
+      <h3>{{formatTime(review.time)}} Review by Me
+      <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
       <pre>{{review.meta.review.review}}</pre>
+    </div>
     </div>
   </div>
 </template>
@@ -29,12 +35,12 @@
 		props: ['json'],
 		data: function() {
 			return {
-        reviewing: []
+        reviewing: [],
+        submissions: {}
 			}
 		},
 		mounted() {
 			this.setTitle('Review Vue');
-
 			this.reviewing = this.json.reviewing;
 
 		  const element = this.$refs['editor'];
@@ -42,6 +48,16 @@
         height: '10em',
         classes: ['yellow-pad']
       });
+
+      let submissions = {};
+      for(const submission of this.json.submissions) {
+        submissions[submission.tag]={
+          'id': submission.id,
+          'date': submission.date
+        };
+      }
+
+      this.submissions = submissions;
 		},
 		methods: {
 			submit() {
@@ -51,29 +67,48 @@
           return;
         }
 
-		  let params = {
-			  type: 'text/plain',
-			  text: text
-		  }
+        let params = {
+          type: 'text/plain',
+          text: text,
+          submissions: this.submissions
+        }
 
-		  Site.api.post(`/api/review/review/${this.json.id}`, params)
-			  .then((response) => {
-				  if (!response.hasError()) {
-					  this.editor.textarea.value = '';
-					  this.reviewing = response.getData('reviewing').attributes;
+        Site.api.post(`/api/review/review/${this.json.id}`, params)
+          .then((response) => {
+            if (!response.hasError()) {
+              this.editor.textarea.value = '';
+              this.reviewing = response.getData('reviewing').attributes;
 
-					  Site.toast(this, "Review successfully saved to the server");
-				  } else {
-					  Site.toast(this, response);
-				  }
+              Site.toast(this, "Review successfully saved to the server");
+            } else {
+              Site.toast(this, response);
+            }
 
-			  })
-			  .catch((error) => {
-				  Site.toast(this, error);
-			  });
+          })
+          .catch((error) => {
+            Site.toast(this, error);
+          });
       },
       formatTime(time) {
         return TimeFormatter.relativeUNIX(time, null);
+      },
+      showSubmissions(review) {
+        let past = false;
+        const submissions = review.meta.review.submissions;
+        for(let tag in submissions) {
+        	if(submissions[tag].id !== this.submissions[tag].id) {
+        		past = true;
+          }
+        }
+
+        if(past) {
+        	return 'For a past submission';
+        }
+
+        return '';
+      },
+      previewImg(submission) {
+	      return Site.root + '/cl/review/img/' + submission.id;
       }
 		}
 	}

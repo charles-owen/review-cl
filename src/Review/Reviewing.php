@@ -249,7 +249,9 @@ class Reviewing {
 
         $result = [];
         foreach($reviewAssignments->getMemberReviewees($user->member->id, $this->assignment->tag) as $assign) {
+
         	$reviewee = $assign['reviewee'];
+
             if($onlyRevieweeId !== null && $reviewee['reviewee'] != $onlyRevieweeId) {
                 continue;
             }
@@ -261,7 +263,7 @@ class Reviewing {
             $revieweeSubmitTime = 0;
             $submissionIds = [];
             foreach($submissiontags as $tag) {
-            	$submits = $submissions->get_submissions($reviewee, $this->assignment->tag, $tag);
+            	$submits = $submissions->get_submissions($reviewee->member->id, $this->assignment->tag, $tag);
                 if(count($submits) === 0) {
                     $revieweeSubmitTime = 0;
                     break;
@@ -326,7 +328,8 @@ HTML;
 		    $reviewData = [
 			    'id'=>$review->id,
 			    'time'=>$review->time,
-			    'review'=>$review->meta->get('review', 'review')
+			    'review'=>$review->meta->get('review', 'review'),
+			    'submissions'=>$review->meta->get('review', 'submissions', [])
 		    ];
 
 		    $reviewer = $review->reviewer;
@@ -389,7 +392,7 @@ HTML;
          * in a position to now review other posts
          */
         $submissions = new Submissions($this->assignment->site->db);
-        $subs = $submissions->get_submissions($user, $this->assignment->tag, $submission->tag);
+        $subs = $submissions->get_submissions($user->member->id, $this->assignment->tag, $submission->tag);
         if(count($subs) == 1) {
             /*
              * This is a first submission
@@ -477,8 +480,8 @@ MSG;
     public function submit(User $reviewer, User $reviewee, $text, $submissionIds, $time) {
         $reviews = new Reviews($this->assignment->site->db);
 	    $review = new Review();
-	    $review->set($this->assignment->tag,
-		    $reviewer->member->id, $reviewee->member->id, $text, $time);
+	    $review->set($this->assignment->tag, $reviewer->member->id,
+		    $reviewee->member->id, $text, $time, $submissionIds);
 	    $reviews->add($review);
 
         $this->notify_reviewed($reviewee, $text);

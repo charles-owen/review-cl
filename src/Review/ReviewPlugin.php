@@ -89,6 +89,11 @@ class ReviewPlugin extends \CL\Site\Plugin implements \CL\Site\IExtension {
 				return $view->vue();
 			});
 
+			$router->addRoute(['review', 'img', ':id'], function(Site $site, Server $server, array $params, array $properties, $time) {
+				$view = new ReviewImageView($site, $server, $properties);
+				return $view->whole();
+			});
+
 			$router->addRoute(['peerreview'], function(Site $site, Server $server, array $params, array $properties, $time) {
 				$view = new ReviewSystemInfoView($site);
 				return $view->whole();

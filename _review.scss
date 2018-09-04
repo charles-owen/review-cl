@@ -5,6 +5,13 @@ div.cl-reviewing {
     background-color: $very-light-primary;
   }
 }
+
+p.cl-reviews-none {
+  text-align: center;
+  color: $primary;
+  font-style: italic;
+}
+
 div.cl-reviews {
 
   h3 {
@@ -12,9 +19,6 @@ div.cl-reviews {
     background: $primary;
     color:white;
   }
-
-
-
 }
 
 div.cl-review {
@@ -28,6 +32,12 @@ div.cl-review {
     color: $primary;
     border-bottom: 1px solid $primary;
     text-align: left;
+
+    span.cl-submitted {
+      float: right;
+      color: $seconda;
+      font-size: 0.9em;
+    }
   }
 
 
@@ -39,20 +49,3 @@ div.cl-review {
     margin: 0;
   }
 }
-
-
-
-/* p.content > div.reviews, p.content > p.reviewsappear {
-   margin-left:1em;
-   margin-right:17em;
- }
-
-p.reviewhead {
-  color:#009966;
-  font-size:8pt;
-  font-style:italic;
-}
-
-span.staffreview {
-  color:red;
-} */

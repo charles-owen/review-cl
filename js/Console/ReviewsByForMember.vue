@@ -2,14 +2,15 @@
   <div class="cl-reviews">
     <h2>Staff Review</h2>
     <form method="post" @submit.prevent="submit">
-      <div ref="editor" class="shadow"></div>
+      <div ref="editor"></div>
       <p><input type="submit" value="Submit Review"></p>
     </form>
 
     <h3>Reviews by this user.</h3>
     <p v-if="byReviews.length  === 0" class="center">None</p>
     <div v-for="review in byReviews" class="cl-review">
-      <h3 :class="review.reviewee.atLeast(staffRole) ? 'staff' : ''">{{formatTime(review.time)}} Review by {{review.reviewee.name}}</h3>
+      <h3 :class="review.reviewee.atLeast(staffRole) ? 'staff' : ''">{{formatTime(review.time)}} Review by {{review.reviewee.name}}
+        <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
       <pre>{{review.meta.review.review}}</pre>
     </div>
     <h3>Reviews of this user's assignment.</h3>
@@ -17,7 +18,8 @@
     <div v-for="review in forReviews" class="cl-review">
       <h3 :class="review.reviewer.atLeast(staffRole) ? 'staff' : ''">{{formatTime(review.time)}}
         <span v-if="review.reviewer.atLeast(staffRole)">Staff Review</span>
-        <span v-else>Review</span> by {{review.reviewer.name}}</h3>
+        <span v-else>Review</span> by {{review.reviewer.name}}
+        <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
       <pre>{{review.meta.review.review}}</pre>
     </div>
 
@@ -25,7 +27,12 @@
 </template>
 
 <script>
-	import {TimeFormatter} from 'site-cl/js/TimeFormatter';
+	/**
+   * Present reviews by and for a member and the staff reviewing form.
+   * @constructor ReviewsByForMemberVue
+   */
+
+  import {TimeFormatter} from 'site-cl/js/TimeFormatter';
   import {Editor} from 'site-cl/js/UI/Editor';
   import {Member} from 'course-cl/js/Members/Member';
 
@@ -35,7 +42,8 @@
   		return {
         forReviews: [],
         byReviews: [],
-        staffRole: Member.STAFF
+        staffRole: Member.STAFF,
+        submissions: []
       }
     },
     mounted() {
@@ -61,6 +69,11 @@
 	  methods: {
   		take(response) {
         let data = response.getData('reviews-by-for').attributes;
+        let submitData = response.getData('assignment-submissions');
+        if(submitData !== null) {
+	        this.submissions = submitData.attributes;
+        }
+
         for(let review of data.for) {
 	        review.reviewer = new Users.User(review.reviewer);
         }
@@ -70,8 +83,6 @@
 
         this.forReviews = data.for;
         this.byReviews = data.by;
- console.log(this.forReviews);
-
       },
 	    submit() {
 		    const text = this.editor.textarea.value.trim();
@@ -80,9 +91,20 @@
 			    return;
 		    }
 
+		    let submissions = {};
+		    for(let tag in this.submissions) {
+		    	console.log(this.submissions[tag]);
+		    	submissions[tag] = {
+		        'id': this.submissions[tag][0].id,
+            'date': this.submissions[tag][0].date
+          };
+
+        }
+
 		    let params = {
 			    type: 'text/plain',
-			    text: text
+			    text: text,
+          submissions: submissions
 		    }
 
 		    Site.api.post(`/api/review/staffreview/${this.assigntag}/${this.user.member.id}`, params)
@@ -90,8 +112,6 @@
 				    if (!response.hasError()) {
 					    this.editor.textarea.value = '';
 					    this.take(response);
-console.log(response);
-
 					    Site.toast(this, "Review successfully saved to the server");
 				    } else {
 					    Site.toast(this, response);
@@ -104,7 +124,21 @@ console.log(response);
 	    },
 		  formatTime(time) {
 			  return TimeFormatter.relativeUNIX(time, null);
-		  }
+		  },
+	    showSubmissions(review) {
+  			let submissions = review.meta.review.submissions;
+
+		    let ret = '';
+		    for(let tag in submissions) {
+			    ret += TimeFormatter.absoluteUNIX(submissions[tag].date);
+		    }
+
+		    if(ret === '') {
+			    return '';
+		    }
+
+		    return 'Submission: ' + ret;
+	    }
 	  }
   }
 </script>

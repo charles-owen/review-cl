@@ -5,6 +5,7 @@
  */
 namespace CL\Review;
 
+use CL\Course\Submission\Submissions;
 use CL\Site\Api\JsonAPI;
 use CL\Site\Site;
 use CL\Site\System\Server;
@@ -94,9 +95,9 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		}
 
 		$post = $server->post;
-		$this->ensure($post, 'text');
+		$this->ensure($post, ['text', 'submissions']);
 		$text = strip_tags($post['text']);
-		$reviewing = $assignment->reviewing->submit($user, $reviewee, $text, [], $time);
+		$reviewing = $assignment->reviewing->submit($user, $reviewee, $text, $post['submissions'], $time);
 
 		$data = $this->getByFor($site, $assignTag, $memberId);
 
@@ -110,6 +111,8 @@ class ReviewApi extends \CL\Users\Api\Resource {
 	 *
 	 * /api/review/reviews/:assigntag/:memberid
 	 * This is used on the assignment grading page
+	 *
+	 * Also returns the current submissions for this member
 	 *
 	 * @param Site $site The Site object
 	 * @param Server $server The server
@@ -130,8 +133,12 @@ class ReviewApi extends \CL\Users\Api\Resource {
 
 		$data = $this->getByFor($site, $assignTag, $memberId);
 
+		$submissions = new Submissions($site->db);
+
 		$json = new JsonAPI();
 		$json->addData('reviews-by-for', $memberId, $data);
+		$json->addData('assignment-submissions', 0, $submissions->getAssignmentSubmissions($memberId, $assignTag));
+
 		return $json;
 	}
 
@@ -197,9 +204,9 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		}
 
 		$post = $server->post;
-		$this->ensure($post, 'text');
+		$this->ensure($post, ['text', 'submissions']);
 		$text = strip_tags($post['text']);
-		$reviewing = $assignment->reviewing->submit($user, $reviewee, $text, [], $time);
+		$reviewing = $assignment->reviewing->submit($user, $reviewee, $text, $post['submissions'], $time);
 
 		$json = new JsonAPI();
 		$json->addData('reviewing', 0, $reviewing);
