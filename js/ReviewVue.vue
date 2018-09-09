@@ -40,7 +40,7 @@
 			}
 		},
 		mounted() {
-			this.setTitle('Review Vue');
+			this.setTitle('Peer Reviewing');
 			this.reviewing = this.json.reviewing;
 
 		  const element = this.$refs['editor'];
