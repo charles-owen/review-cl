@@ -46,6 +46,14 @@
         submissions: []
       }
     },
+    watch: {
+  		user() {
+  			this.forReviews = [];
+  			this.byReviews = [];
+  			this.submissions = [];
+  			this.fetch();
+      }
+    },
     mounted() {
 	    const element = this.$refs['editor'];
 	    this.editor = new Editor(element, {
@@ -53,20 +61,23 @@
 		    classes: ['yellow-pad']
 	    });
 
-  		Site.api.get('/api/review/reviews/' + this.assigntag + '/' + this.user.member.id, {})
-  		    .then((response) => {
-  		        if (!response.hasError()) {
-  		        	this.take(response);
-  		        } else {
-  		            Site.toast(this, response);
-  		        }
-
-  		    })
-  		    .catch((error) => {
-  		        Site.toast(this, error);
-  		    });
+	    this.fetch();
     },
 	  methods: {
+  		fetch() {
+        this.$site.api.get('/api/review/reviews/' + this.assigntag + '/' + this.user.member.id, {})
+          .then((response) => {
+            if (!response.hasError()) {
+              this.take(response);
+            } else {
+	            this.$site.toast(this, response);
+            }
+
+          })
+          .catch((error) => {
+	          this.$site.toast(this, error);
+          });
+      },
   		take(response) {
         let data = response.getData('reviews-by-for').attributes;
         let submitData = response.getData('assignment-submissions');
