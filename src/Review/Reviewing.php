@@ -5,7 +5,7 @@
  */
 
 /**
- * Classes associated with the peer review system
+ * Classes in the peer review system
  */
 namespace CL\Review;
 

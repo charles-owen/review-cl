@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Representation of a single review in the system.
+ * Representation of a single peer review
  */
 
 namespace CL\Review;
@@ -10,9 +10,15 @@ use CL\Course\Member;
 use CL\Site\MetaData;
 use CL\Users\User;
 
-
+/**
+ * Representation of a single peer review
+ */
 class Review {
-
+	/**
+	 * Review constructor.
+	 * @param array $row Database row
+	 * @param string $prefix Prefix on names.
+	 */
 	public function __construct($row = null, $prefix='review_') {
 		if($row !== null) {
 			$this->id = +$row[$prefix . 'id'];
@@ -37,6 +43,15 @@ class Review {
 
 	}
 
+	/**
+	 * Set the fields in this object.
+	 * @param string $assignTag
+	 * @param int $reviewerId
+	 * @param int $revieweeId
+	 * @param string $review
+	 * @param int $time
+	 * @param array $submissions Submission ID's this review is associated with.
+	 */
 	public function set($assignTag, $reviewerId, $revieweeId, $review, $time, array $submissions=null) {
 		$this->assignTag = $assignTag;
 		$this->reviewerId = $reviewerId;
@@ -55,6 +70,7 @@ class Review {
 	 * <b>Properties</b>
 	 * Property | Type | Description
 	 * -------- | ---- | -----------
+	 * id | int | Review record id
 	 *
 	 * @param string $property Property name
 	 * @return mixed
@@ -120,6 +136,13 @@ class Review {
 		}
 	}
 
+	/**
+	 * Build an SQL exec array consisting of:
+	 * assignTag, time, metadata, reviewerId, revieweeId
+	 *
+	 * @param Reviews $reviews The review table class.
+	 * @return array
+	 */
 	public function exec(Reviews $reviews) {
 		return [$this->assignTag, $reviews->timeStr($this->time), $this->metaData->json(),
 			$this->reviewerId, $this->revieweeId];

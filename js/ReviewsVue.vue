@@ -20,33 +20,12 @@
     data: function() {
   		return {
   			assignTag: '',
-        reviews: null
+        reviews: []
       }
     },
     mounted() {
   		this.assignTag = this.json.assignTag;
   		this.reviews = this.json.reviews;
-
-  		// this.assignTag = this.json.assignment.tag;
-      //
-  		// let params = {
-      //
-  		// }
-  		// Site.api.get('/api/review/reviews/' + this.assignTag, params)
-  		//     .then((response) => {
-  		//         if (!response.hasError()) {
-  		//         	this.reviews = response.getData('reviews').attributes;
-  		// console.log(this.reviews);
-  		//         } else {
-  		//             Site.toast(this, response);
-  		//         }
-      //
-  		//     })
-  		//     .catch((error) => {
-  		//         Site.toast(this, error);
-  		//     });
-      //
-  		// console.log(this.json.assignment.tag);
     },
     methods: {
       formatTime(time) {
