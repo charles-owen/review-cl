@@ -7,19 +7,17 @@ namespace CL\Review;
 
 use CL\Site\MetaData;
 use CL\Tables\Table;
-use CL\Users\User;
 use CL\Course\Members;
-use CL\Course\Member;
 
 
 /**
- * Manange the review table
+ * Manage the review table
  *
  * This table represents actual reviews in the review system
  */
 class Reviews  extends Table {
 	/**
-	 * Grades constructor.
+	 * Reviews constructor.
 	 * @param \CL\Tables\Config $config Database configuration object
 	 */
 	function __construct(\CL\Tables\Config $config) {
