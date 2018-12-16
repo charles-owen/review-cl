@@ -1,5 +1,4 @@
-/**
- * @file
+/*
  * The main Review system entry point
  */
 
@@ -14,8 +13,8 @@ import {InlineVue} from 'site-cl/js/Vue/InlineVue';
 
 import ReviewsVue from './js/ReviewsVue.vue';
 
-if(Site.Console !== undefined) {
-	ReviewConsole.setup(Site.Console);
+if(Site.Site.console !== undefined) {
+	ReviewConsole.setup(Site.Site.console);
 }
 
 Site.Site.ready(() => {

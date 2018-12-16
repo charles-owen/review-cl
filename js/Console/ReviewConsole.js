@@ -1,11 +1,12 @@
-/**
- * @file
- * Review system console components
- */
+
 
 import ReviewReviewersVue from './ReviewReviewers.vue';
 import ReviewsByForMemberVue from './ReviewsByForMember.vue';
 
+/**
+ * Review system console components
+ * @constructor
+ */
 export let ReviewConsole = function() {
 }
 
