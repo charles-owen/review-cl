@@ -23,7 +23,7 @@ class ReviewImageView extends View {
 	 * @param array $vars Parameters passed to route ('id')
 	 */
 	public function __construct(Site $site, Server $server, $vars) {
-		parent::__construct($site, ['atLeast'=>Member::STUDENT]);
+		parent::__construct($site, ['at-least'=>Member::STUDENT]);
 
 		$this->server = $server;
 		$this->id = $vars['id'];
