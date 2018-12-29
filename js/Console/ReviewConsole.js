@@ -17,7 +17,7 @@ ReviewConsole.setup = function(Console) {
 
     Console.tables.add({
         title: 'Review',
-        order: 16,
+        order: 70,
         api: '/api/review/tables'
     });
 
