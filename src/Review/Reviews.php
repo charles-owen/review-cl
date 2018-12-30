@@ -77,8 +77,8 @@ SQL;
 	/**
 	 * For an assigned review (reviewer/reviewee combination), get the date of the most recent review
 	 * @param string $assignTag Assignment tag
-	 * @param int $reviewer
-	 * @param int $reviewee
+	 * @param int $reviewerId
+	 * @param int $revieweeId
 	 * @return int Time value of null if no review
 	 */
 	public function get_assigned_review_date($assignTag, $reviewerId, $revieweeId) {
@@ -103,7 +103,7 @@ SQL;
 	/**
 	 * For reviewee and assignment, get the date of the most recent review
 	 * @param string $assignTag Assignment tag
-	 * @param int $reviewee
+	 * @param int $revieweeId
 	 * @return int|null Time value of null if no review
 	 */
 	public function get_recent_review_date($assignTag, $revieweeId) {
@@ -128,8 +128,8 @@ SQL;
 	/**
 	 * Determine if a reviewer has done any reviews up till now for a given reviewee.
 	 * @param string $assignTag Assignment tag
-	 * @param int $reviewer
-	 * @param int $reviewee
+	 * @param int $reviewerId
+	 * @param int $revieweeId
 	 * @return int Time value of null if no review
 	 */
 	public function has_reviewed($assignTag, $reviewerId, $revieweeId) {
@@ -157,6 +157,7 @@ SQL;
 	 * @param string $assignTag
 	 * @param int $reviewerId
 	 * @param int $revieweeId
+	 * @return array
 	 */
 	public function get_reviewing($assignTag, $reviewerId, $revieweeId) {
 		$pdo = $this->pdo();
@@ -250,6 +251,13 @@ SQL;
 		}
 	}
 
+	/**
+	 * Get the reviewing counts for an assignment.
+	 * @param $semester
+	 * @param $sectionId
+	 * @param $assignTag
+	 * @return array of reviewer/reviewee counts. Keys are reviewerid, revieweeid, count
+	 */
 	public function get_review_counts($semester, $sectionId, $assignTag) {
 		$members = new Members($this->config);
 
@@ -355,37 +363,6 @@ SQL;
 //		return $ret;
 //	}
 
-
-
-//	/**
-//	 * Determine how many reviews there are for a given assignment and section for all reviewer/reviewee combinations
-//	 * @param \Assignments\Assignment $assignment The assignment
-//	 * @param \Section $section The course Section
-//	 * @return array of rows with the keys: reviewer, reviewee, count
-//	 *
-//	 */
-//	public function review_counts(\Assignments\Assignment $assignment, \Section $section) {
-//		$tag = $assignment->get_tag();
-//		$sectionId = $section->get_id();
-//
-//		$ra = new ReviewAssignments($this->course);
-//		$raTable = $ra->get_tablename();
-//
-//		$sql = <<<SQL
-//SELECT r.reviewer as reviewer, r.reviewee as reviewee, count(review) as count FROM `$raTable` ra
-//join $this->tablename r
-//on ra.reviewer=r.reviewer and ra.reviewee = r.reviewee
-//WHERE ra.assigntag=? and r.assigntag=? and section=?
-//group by r.reviewer, r.reviewee
-//order by reviewer, reviewee
-//SQL;
-//
-//		//echo "\n" . $this->sub_sql($sql, array($tag, $tag, $sectionId)) . "\n";
-//
-//		$stmt = $this->pdo()->prepare($sql);
-//		$stmt->execute(array($tag, $tag, $sectionId));
-//		return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-//	}
 
 
 }
