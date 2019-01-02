@@ -36,9 +36,10 @@
 
 <script>
   import {Member} from 'course-cl/js/Members/Member';
-	import ConsoleComponentBase from 'console-cl/js/ConsoleComponentBase.vue';
 	import MembersFetcherComponent from 'course-cl/js/Console/Members/MembersFetcherComponent.vue';
   import MaskVue from 'site-cl/js/Vue/Mask.vue';
+
+  const ConsoleComponentBase = Site.ConsoleComponentBase;
 
 	export default {
 		'extends': ConsoleComponentBase,
