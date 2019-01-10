@@ -15,13 +15,18 @@
     }
   },
   "require": {
-    "cl/course": "^2.0"
+    "cl/course": "^2.1"
   },
   "repositories": [
     {
       "type": "vcs",
       "url": "https://github.com/charles-owen/review-cl.git"
     }
-  ]
+  ],
+  "extra": {
+    "branch-alias": {
+      "dev-master": "2.1.x-dev"
+    }
+  }
 }
 
