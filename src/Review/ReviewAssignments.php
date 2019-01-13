@@ -162,7 +162,9 @@ SQL;
 
 	/**
 	 * Get all reviewing assignments for a course assignnment.
-	 * @param string $assignTag Assignmtag
+	 * @param string $semester The semester, as in 'SS19'
+	 * @param string $sectionId The section ID
+	 * @param string $assignTag Assignment tag
 	 * @return array of arrays, each with keys 'reviewer' and 'reviewee' (holding member ID's)
 	 */
 	public function getReviewers($semester, $sectionId, $assignTag) {

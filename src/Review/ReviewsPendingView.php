@@ -16,6 +16,7 @@ class ReviewsPendingView extends \CL\Course\View {
 	/**
 	 * SectionSelectorView constructor.
 	 * @param Site $site Site object
+	 * @param int $time Current time for dependency injection
 	 */
 	public function __construct(Site $site, $time=null) {
 		parent::__construct($site);

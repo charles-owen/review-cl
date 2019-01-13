@@ -299,6 +299,11 @@ class Reviewing {
         return $result;
     }
 
+	/**
+	 * Present the views for a user as a hidden DIV for passing to client
+	 * @param User $user User we are presenting for
+	 * @return string HTML
+	 */
     public function presentReviews(User $user) {
     	$data = [
     		'assigntag'=>$this->assignment->tag,
