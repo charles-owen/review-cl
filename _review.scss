@@ -47,5 +47,11 @@ div.cl-review {
 
   pre {
     margin: 0;
+    white-space: pre-wrap;
+  }
+
+  div.cl-review-present {
+    margin: 0;
+    white-space: pre-wrap;
   }
 }

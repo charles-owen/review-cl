@@ -7,41 +7,42 @@
         <span v-if="review.role !== undefined">Staff Review</span>
         <span v-else>Review</span> by {{review.by}}
         <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
-      <pre>{{review.review}}</pre>
+      <div class="cl-review-present">{{review.review}}</div>
     </div>
   </div>
 </template>
 
 <script>
-	import {TimeFormatter} from 'site-cl/js/TimeFormatter';
-
   export default {
-  	props: ['json'],
-    data: function() {
-  		return {
-  			assignTag: '',
+    props: ['json'],
+    data: function () {
+      return {
+        assignTag: '',
         reviews: []
       }
     },
     mounted() {
-  		this.assignTag = this.json.assignTag;
-  		this.reviews = this.json.reviews;
+      this.assignTag = this.json.assignTag;
+      this.reviews = this.json.reviews;
     },
     methods: {
       formatTime(time) {
-        return TimeFormatter.relativeUNIX(time, null);
+        return this.$site.TimeFormatter.relativeUNIX(time, null);
       },
-	    showSubmissions(review) {
-      	let ret = '';
-      	for(let tag in review.submissions) {
-      		ret += TimeFormatter.absoluteUNIX(review.submissions[tag].date);
+      showSubmissions(review) {
+        let ret = '';
+        for (let tag in review.submissions) {
+          if(ret !== '') {
+            ret += ' / ';
+          }
+          ret += this.$site.TimeFormatter.absoluteUNIX(review.submissions[tag].date);
         }
 
-        if(ret === '') {
-        	return '';
+        if (ret === '') {
+          return '';
         }
 
-      	return 'Submission: ' + ret;
+        return 'Submission: ' + ret;
       }
     }
   }

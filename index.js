@@ -2,22 +2,22 @@
  * The main Review system entry point
  */
 
-//
-// Install the console components
-//
 import './_review.scss';
 import {ReviewConsole} from './js/Console/ReviewConsole';
 import ReviewVue from './js/ReviewVue.vue';
-import {PageVue} from 'site-cl/js/Vue/PageVue';
-import {InlineVue} from 'site-cl/js/Vue/InlineVue';
-
 import ReviewsVue from './js/ReviewsVue.vue';
 
+//
+// Install the console components
+//
 if(Site.Site.console !== undefined) {
 	ReviewConsole.setup(Site.Site.console);
 }
 
+//
+// Create the inline and page components
+//
 Site.Site.ready(() => {
-    PageVue.create('div.cl-review', 'Review Vue', ReviewVue);
-	InlineVue.create('div.cl-reviews', ReviewsVue);
+    Site.Site.PageVue.create('div.cl-review', 'Review Vue', ReviewVue);
+	Site.Site.InlineVue.create('div.cl-reviews', ReviewsVue);
 });

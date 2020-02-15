@@ -11,7 +11,7 @@
     <div v-for="review in byReviews" class="cl-review">
       <h3 :class="review.reviewee.atLeast(staffRole) ? 'staff' : ''">{{formatTime(review.time)}} Review by {{review.reviewee.name}}
         <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
-      <pre>{{review.meta.review.review}}</pre>
+      <div class="cl-review-present">{{review.meta.review.review}}</div>
     </div>
     <h3>Reviews of this user's assignment.</h3>
     <p v-if="forReviews.length  === 0" class="center">None</p>
@@ -20,7 +20,7 @@
         <span v-if="review.reviewer.atLeast(staffRole)">Staff Review</span>
         <span v-else>Review</span> by {{review.reviewer.name}}
         <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
-      <pre>{{review.meta.review.review}}</pre>
+      <div class="cl-review-present">{{review.meta.review.review}}</div>
     </div>
 
   </div>
@@ -32,17 +32,13 @@
    * @constructor ReviewsByForMemberVue
    */
 
-  import {TimeFormatter} from 'site-cl/js/TimeFormatter';
-  import {Editor} from 'site-cl/js/UI/Editor';
-  import {Member} from 'course-cl/js/Members/Member';
-
   export default {
   	props: ['user', 'assigntag'],
     data: function() {
   		return {
         forReviews: [],
         byReviews: [],
-        staffRole: Member.STAFF,
+        staffRole: Site.Site.Member.STAFF,
         submissions: []
       }
     },
@@ -56,7 +52,7 @@
     },
     mounted() {
 	    const element = this.$refs['editor'];
-	    this.editor = new Editor(element, {
+	    this.editor = new this.$site.Editor(element, {
 		    height: '10em',
 		    classes: ['yellow-pad']
 	    });
@@ -134,14 +130,14 @@
 			    });
 	    },
 		  formatTime(time) {
-			  return TimeFormatter.relativeUNIX(time, null);
+			  return this.$site.TimeFormatter.relativeUNIX(time, null);
 		  },
 	    showSubmissions(review) {
   			let submissions = review.meta.review.submissions;
 
 		    let ret = '';
 		    for(let tag in submissions) {
-			    ret += TimeFormatter.absoluteUNIX(submissions[tag].date);
+			    ret += this.$site.TimeFormatter.absoluteUNIX(submissions[tag].date);
 		    }
 
 		    if(ret === '') {

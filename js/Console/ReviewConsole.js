@@ -25,10 +25,6 @@ ReviewConsole.setup = function(Console) {
         {route: '/review/reviewers/:assigntag', component: ReviewReviewersVue, props: true}
     );
 
-    // Console.components.addRoute(
-    //     {route: '/quiz/result/:memberid/:assigntag/:quiztag', component: QuizResultComponent, props: true}
-    // );
-
     Console.course.assignmentLink('review', 'reviewers', '/review/reviewers/:assigntag');
 }
 
