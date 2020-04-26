@@ -1,5 +1,5 @@
 <template>
-    <router-link :to="root + '/cl/console/grading/' + assigntag + '/' + statusUser.member.id" v-if="statusUser !== null">{{statusUser.userId}}/{{count}}</router-link>
+    <router-link :to="root + '/cl/console/grading/' + assigntag + '/' + statusUser.member.id" v-if="statusUser !== null" :title="statusUser.name">{{statusUser.userId}}/{{count}}</router-link>
 </template>
 
 <script>

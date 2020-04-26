@@ -16,21 +16,27 @@
 
           <table class="small">
             <tr>
-              <th>User</th>
+              <th>Name</th>
+              <th>User ID</th>
               <th v-for="i in maxReviewer">reviewee</th>
               <th v-for="i in maxReviewee">reviewer</th>
             </tr>
             <tr v-for="user in fetcher.users">
+              <td class="small">
+                <router-link :title="user.name" :to="root + '/cl/console/grading/' + assigntag + '/' + user.member.id">
+                  {{user.name}}
+                </router-link>
+              </td>
               <td>
                 <router-link :title="user.name" :to="root + '/cl/console/grading/' + assigntag + '/' + user.member.id">
                   {{user.userId}}
                 </router-link>
               </td>
               <td v-for="i in maxReviewer" :class="cls(reviewer[user.member.id], i-1)">
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewer[user.member.id], i-1)" :count="reviewer[user.member.id][i-1][1]"></status-present>
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewer[user.member.id], i-1)" :count="reviewer[user.member.id] !== undefined ? reviewer[user.member.id][i-1][1] : 0"></status-present>
               </td>
               <td v-for="i in maxReviewee" :class="cls(reviewee[user.member.id], i-1)">
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewee[user.member.id], i-1)" :count="reviewer[user.member.id][i-1][1]"></status-present>
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewee[user.member.id], i-1)" :count="reviewer[user.member.id] !== undefined ? reviewer[user.member.id][i-1][1] : 0"></status-present>
             </td>
             </tr>
           </table>
@@ -129,9 +135,9 @@
         this.maxReviewee = 0;
 
         for (let assign of data) {
-          const reviewer = assign[0];
-          const reviewee = assign[1];
-          const cnt = assign[2];
+          const reviewer = +assign[0];
+          const reviewee = +assign[1];
+          const cnt = +assign[2];
 
           if (this.reviewer[reviewer] === undefined) {
             this.reviewer[reviewer] = [];
