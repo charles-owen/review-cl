@@ -125,7 +125,7 @@ class Reviewing {
      * @param bool $revised true if the due date is a revision
      */
     public function set_due($due, $revisionHours = 24, $revised = false) {
-        $this->due = strtotime($due);
+        $this->due = $this->assignment->relative_time($due); // strtotime($due);
         $this->revisionHours = $revisionHours;
         $this->revised = $revised;
     }
