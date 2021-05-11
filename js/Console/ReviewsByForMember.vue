@@ -82,10 +82,10 @@
         }
 
         for(let review of data.for) {
-	        review.reviewer = new Users.User(review.reviewer);
+	        review.reviewer = new Site.User(review.reviewer);
         }
         for(let review of data.by) {
-	        review.reviewee = new Users.User(review.reviewee);
+	        review.reviewee = new Site.User(review.reviewee);
         }
 
         this.forReviews = data.for;
