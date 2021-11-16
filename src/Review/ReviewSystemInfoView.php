@@ -77,6 +77,16 @@ HTML;
 
 		$html .= Toggle::end();
 
+        $html .= Toggle::begin("I am getting requests to review assignments I've already reviewed", "p");
+        $html .= <<<HTML
+<p>You are required to provide one review for each person you are assigned to review. 
+After your review the student you reviewed can resubmit
+a revision. You will receive a notice when that occurs. You are <em>not</em> required to provide additional
+reviews, but it is courtesy to the student to do so. </p>
+HTML;
+
+        $html .= Toggle::end();
+
 		if($this->user->staff) {
 			$html .= <<<STAFF
 <h3>Staff information (visible only to course staff)</h3>
