@@ -7,17 +7,21 @@ import {ReviewConsole} from './js/Console/ReviewConsole';
 import ReviewVue from './js/ReviewVue.vue';
 import ReviewsVue from './js/ReviewsVue.vue';
 
-//
-// Install the console components
-//
-if(Site.Site.console !== undefined) {
-	ReviewConsole.setup(Site.Site.console);
-}
+if(!Site.Review) {
+	//
+	// Install the console components
+	//
+	if(Site.Console !== undefined) {
+		ReviewConsole.setup(Site.Console)
+	}
 
-//
-// Create the inline and page components
-//
-Site.Site.ready(() => {
-    Site.Site.PageVue.create('div.cl-review', 'Review Vue', ReviewVue);
-	Site.Site.InlineVue.create('div.cl-reviews', ReviewsVue);
-});
+	//
+	// Create the inline and page components
+	//
+	Site.ready(() => {
+		Site.PageVue.create('div.cl-review', 'Review Vue', ReviewVue)
+		Site.InlineVue.create('div.cl-reviews', ReviewsVue)
+	})
+
+	Site.Review = true
+}

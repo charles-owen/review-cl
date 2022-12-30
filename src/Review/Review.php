@@ -12,6 +12,14 @@ use CL\Users\User;
 
 /**
  * Representation of a single peer review
+ *
+ * @property string $assignTag The assignment tag
+ * @property int $id Review record id
+ * @property int $time Review time
+ * @property User $reviewee The reviewee (optional, may not always be available)
+ * @property User $reviewer The reviewer (optional, may not always be available)
+ * @property MetaData $meta Any metadata associated with the review
+
  */
 class Review {
 	/**
@@ -70,7 +78,13 @@ class Review {
 	 * <b>Properties</b>
 	 * Property | Type | Description
 	 * -------- | ---- | -----------
+     * assignTag | string | The assignment tag
 	 * id | int | Review record id
+     * reviewee | User | The reviewee
+     * reviewer | User | The reviewer
+     * time | int | Review time
+     * meta | MetaData | Any metadata associated with the review
+     *
 	 *
 	 * @param string $property Property name
 	 * @return mixed
@@ -112,6 +126,7 @@ class Review {
 	 * <b>Properties</b>
 	 * Property | Type | Description
 	 * -------- | ---- | -----------
+     * id | int | Review record id
 	 *
 	 * @param string $property Property name
 	 * @param mixed $value Value to set
@@ -121,9 +136,6 @@ class Review {
 			case 'id':
 				$this->id = $value;
 				break;
-
-
-
 
 			default:
 				$trace = debug_backtrace();
@@ -156,5 +168,5 @@ class Review {
 	private $time;          // When the review was first created
 
 	private $reviewer = null; // Optional User object for reviewer
-	private $reviewee = null;
+	private $reviewee = null; // Optional User object for reviewee
 }

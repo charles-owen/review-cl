@@ -11,6 +11,11 @@ tests/config.php
 !.yarn/versions
 .pnp.*
 
+dev/design/*.vux
+dev/design/*.bak*
+dev/design/*.lck
+*.vbak*
+
 # IDEs and editors
 /.idea
 .project

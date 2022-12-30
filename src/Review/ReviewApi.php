@@ -69,7 +69,21 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
 	}
 
-
+    /**
+     * Support for reviews by the course staff
+     *
+     * /api/review/staffreview/:assigntag/:memberid
+     * This is used on the assignment grading page
+     *
+     * Returns all reviews by and for a user
+     *
+     * @param Site $site The Site object
+     * @param Server $server The server
+     * @param array $params Parameters for the route
+     * @param int $time Current time
+     * @return JsonAPI
+     * @throws APIException
+     */
 	private function staffreview(Site $site, Server $server, array $params, $time) {
 		$user = $this->isUser($site, Member::STAFF);
 
@@ -142,6 +156,13 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		return $json;
 	}
 
+    /**
+     * Get all reviews by and for a given user.
+     * @param Site $site The Site object
+     * @param string $assignTag Assignment tag
+     * @param int $memberId Member ID we are fetching for
+     * @return array[] with keys 'for' and 'by', each an array
+     */
 	private function getByFor(Site $site, $assignTag, $memberId) {
 		$reviews = new Reviews($site->db);
 		$by = $reviews->get_reviews_by($memberId, $assignTag);
@@ -174,6 +195,19 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		];
 	}
 
+    /**
+     * Submit a review
+     *
+     * /api/review/review/:id
+     *
+     * @param Site $site The Site object
+     * @param User $user Requesting user
+     * @param Server $server The server
+     * @param array $params Parameters for the route
+     * @param int $time Current time
+     * @return JsonAPI
+     * @throws APIException
+     */
 	private function review(Site $site, User $user, Server $server, array $params, $time) {
 		if(count($params) < 2) {
 			throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
