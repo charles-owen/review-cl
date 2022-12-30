@@ -3,7 +3,7 @@
     <div class="full cl-reviewing">
 
       <membersfetcher :fetching="reviewer === null">
-        <template slot-scope="fetcher">
+        <template v-slot="fetcher">
           <div v-if="user.atLeast(instructor)">
             <form method="post" @submit.prevent="assignReviews">
               <p class="center"><button type="submit">Assign Reviews</button>
