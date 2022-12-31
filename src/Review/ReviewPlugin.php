@@ -56,7 +56,6 @@ class ReviewPlugin extends \CL\Site\Plugin implements \CL\Site\IExtension {
 	 */
 	public function install(Site $site) {
 		$this->site = $site;
-//		$site->install("grades", $this);
 	}
 
 
@@ -109,7 +108,7 @@ class ReviewPlugin extends \CL\Site\Plugin implements \CL\Site\IExtension {
 		} else if($object instanceof AssignmentView) {
 			$object->addJS('review');
 		} else if($object instanceof ConsoleView) {
-			$object->addJS('review');
+			$object->addJS('reviewconsole');
 		}
 	}
 
