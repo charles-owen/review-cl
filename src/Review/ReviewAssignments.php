@@ -107,6 +107,7 @@ SQL;
 join $this->tablename reviewassign
 on reviewerid=member.id
 where revieweeid=? and assigntag=?
+order by reviewerid
 SQL;
 
 		$pdo = $this->pdo;
@@ -140,6 +141,7 @@ SQL;
 join $this->tablename reviewassign
 on revieweeid=member.id
 where reviewerid=? and assigntag=?
+order by revieweeid
 SQL;
 
 		$pdo = $this->pdo;
@@ -176,6 +178,7 @@ SQL;
 join $this->tablename reviewassign
 on reviewassign.revieweeid=member.id
 where reviewassign.assigntag=? and member.semester=? and member.section=?
+order by reviewassign.reviewerid, reviewassign.revieweeid
 SQL;
 
 		$pdo = $this->pdo;

@@ -17,9 +17,10 @@ use CL\Users\User;
  * @property int $id Review record id
  * @property int $time Review time
  * @property User $reviewee The reviewee (optional, may not always be available)
+ * @property int $revieweeId The reviewee member ID
  * @property User $reviewer The reviewer (optional, may not always be available)
+ * @property int $reviewerId The reviewer member ID
  * @property MetaData $meta Any metadata associated with the review
-
  */
 class Review {
 	/**
@@ -33,6 +34,7 @@ class Review {
 			$this->revieweeId = +$row[$prefix . 'revieweeid'];
 			$this->reviewerId = +$row[$prefix . 'reviewerid'];
 			$this->time = strtotime($row[$prefix . 'time']);
+            $this->assignTag = $row[$prefix . 'assigntag'];
 			$this->metaData = new MetaData(null, $row[$prefix . 'metadata']);
 
 			if(!empty($row['member_id'])) {
@@ -81,7 +83,9 @@ class Review {
      * assignTag | string | The assignment tag
 	 * id | int | Review record id
      * reviewee | User | The reviewee
+     * revieweeId | int | The reviewee member ID
      * reviewer | User | The reviewer
+     * reviewerId | int | The reviewer member ID
      * time | int | Review time
      * meta | MetaData | Any metadata associated with the review
      *
@@ -103,8 +107,14 @@ class Review {
 			case 'reviewee':
 				return $this->reviewee;
 
+            case 'revieweeId':
+                return $this->revieweeId;
+
 			case 'reviewer':
 				return $this->reviewer;
+
+            case 'reviewerId':
+                return $this->reviewerId;
 
 			case 'meta':
 				return $this->metaData;

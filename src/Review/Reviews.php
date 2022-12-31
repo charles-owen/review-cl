@@ -183,7 +183,14 @@ SQL;
 	}
 
 	/**
-	 * Get all reviews for a given user
+	 * Get all reviews for a given user.
+     *
+     * This gets the reviewer User and Member object, so $review->reviewer is valid.
+     * It does not get the reviewee User and Member objects, so $review->reviewee is not valid.
+     *
+     * This is mainly because we know who we are getting reviews for so the join is not
+     * necessary for the reviewee.
+     *
 	 * @param int $revieweeId Member ID
 	 * @param string $assignTag Assignment
 	 * @return array Review objects
@@ -191,7 +198,9 @@ SQL;
 	public function get_reviews($revieweeId, $assignTag) {
 		$members = new Members($this->config);
 		$sql = $members->memberUserJoinSQL(
-			"reviewerid as review_reviewerid, revieweeid as review_revieweeid, review.id as review_id, review.metadata as review_metadata, review.time as review_time",
+			"reviewerid as review_reviewerid, revieweeid as review_revieweeid, " .
+            "review.id as review_id, review.metadata as review_metadata, review.time as review_time, " .
+            "assigntag as review_assigntag",
 			false, null, 'member_');
 
 		$sql .= <<<SQL
@@ -218,7 +227,14 @@ SQL;
 	}
 
 	/**
-	 * Get all reviews by a given user
+	 * Get all reviews by a given user.
+     *
+     * This gets the reviewee User and Member object, so $review->reviewee is valid.
+     * It does not get the reviewer User and Member objects, so $review->reviewer is not valid.
+     *
+     * This is mainly because we know who we are getting reviews by so the join is not
+     * necessary for the reviewer.
+     *
 	 * @param int $reviewerId Member ID
 	 * @param string $assignTag Assignment
 	 * @return array of Review objects
@@ -226,7 +242,9 @@ SQL;
 	public function get_reviews_by($reviewerId, $assignTag) {
 		$members = new Members($this->config);
 		$sql = $members->memberUserJoinSQL(
-			"reviewerid as review_reviewerid, revieweeid as review_revieweeid, review.id as review_id, review.metadata as review_metadata, review.time as review_time",
+			"reviewerid as review_reviewerid, revieweeid as review_revieweeid, " .
+            "review.id as review_id, review.metadata as review_metadata, " .
+            "review.time as review_time, assigntag as review_assigntag",
 			false, null, 'reviewee_');
 
 		$sql .= <<<SQL
@@ -253,6 +271,9 @@ SQL;
 
 	/**
 	 * Get the reviewing counts for an assignment.
+     *
+     * Only fetches for valid members.
+     *
 	 * @param $semester
 	 * @param $sectionId
 	 * @param $assignTag
@@ -262,12 +283,13 @@ SQL;
 		$members = new Members($this->config);
 
 		$sql = <<<SQL
-select review.reviewerid as reviewerid, review.revieweeid as revieweeid, count(review.id) as count
+select review.reviewerid as reviewerid, review.revieweeid as revieweeid, count(distinct review.id) as count
 from $this->tablename review
 join $members->tablename member
 on review.revieweeid=member.id or review.reviewerid=member.id
 where member.semester=? and member.section=? and review.assigntag=?
 group by review.reviewerid, review.revieweeid
+order by review.reviewerid, review.revieweeid
 SQL;
 
 		$pdo = $this->pdo;
@@ -280,89 +302,5 @@ SQL;
 			return [];
 		}
 	}
-
-//	/** Get all reviews for a given reviewee and assignment
-//	 * @param Assignment $assignment The assignment we are looking for reviews for
-//	 * @param User $reviewee The reviewee
-//	 * @returns Array of results
-//	 */
-//	public function get_reviews(\Assignments\Assignment $assignment, \User $reviewee) {
-//		$pdo = $this->pdo();
-//
-//		$users = new \Users($this->course);
-//		$usersTable = $users->get_tablename();
-//
-//		$sql = <<<SQL
-//select review.id as id, reviewer, date, review, name, role
-//from $this->tablename review
-//join $usersTable user
-//on reviewer=user.id
-//where reviewee=? and assigntag=?
-//order by date desc
-//SQL;
-//
-//		$stmt = $pdo->prepare($sql);
-//		$stmt->execute(array($reviewee->get_id(), $assignment->get_tag()));
-//
-//		$rs = new ReviewSubmissions($this->course);
-//
-//		$ret = array();
-//		foreach($stmt as $row) {
-//			$submissions = $rs->get_submissions($row['id']);
-//			$ret[] = array(
-//				'id' => $row['id'],
-//				'reviewer' => $row['reviewer'],
-//				'date' => strtotime($row['date']),
-//				'review' => $row['review'],
-//				'name' => $row['name'],
-//				'role' => $row['role'],
-//				'submissionids' => $submissions);
-//		}
-//
-//		return $ret;
-//	}
-//
-//	/** Get all reviews for a given reviewer and assignment
-//	 * @param Assignment $assignment The assignment we are looking for reviews for
-//	 * @param User $reviewer The reviewer
-//	 * @returns Array of results
-//	 */
-//	public function get_reviewing(\Assignments\Assignment $assignment, \User $reviewer) {
-//		$pdo = $this->pdo();
-//
-//		$users = new \Users($this->course);
-//		$usersTable = $users->get_tablename();
-//
-//		$sql = <<<SQL
-//select review.id as id, reviewee, date, review, name, role
-//from $this->tablename review
-//join $usersTable user
-//on reviewee=user.id
-//where reviewer=? and assigntag=?
-//order by date desc
-//SQL;
-//
-//		$stmt = $pdo->prepare($sql);
-//		$stmt->execute(array($reviewer->get_id(), $assignment->get_tag()));
-//
-//		$rs = new ReviewSubmissions($this->course);
-//
-//		$ret = array();
-//		foreach($stmt as $row) {
-//			$submissions = $rs->get_submissions($row['id']);
-//			$ret[] = array(
-//				'id' => $row['id'],
-//				'reviewee' => $row['reviewee'],
-//				'date' => strtotime($row['date']),
-//				'review' => $row['review'],
-//				'name' => $row['name'],
-//				'role' => $row['role'],
-//				'submissionids' => $submissions);
-//		}
-//
-//		return $ret;
-//	}
-
-
 
 }
