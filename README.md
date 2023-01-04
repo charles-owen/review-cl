@@ -1,8 +1,8 @@
 # CourseLib Site peer review component
 
-
 ***This is a work in progress***
 
+This module is part of the CourseLib system. It adds peer review capabilities to the system.
 
 ## License
 
