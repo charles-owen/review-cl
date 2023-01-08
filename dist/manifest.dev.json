@@ -1,3 +1,4 @@
 {
-  "Review.js": "/cl/dist/review.dev.js"
+  "Review.js": "/cl/dist/review.dev.js",
+  "ReviewConsole.js": "/cl/dist/reviewconsole.dev.js"
 }
