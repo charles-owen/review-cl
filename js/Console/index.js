@@ -10,5 +10,4 @@ if(Site.Console && !Site.Console.Review) {
 	// Install the console components
 	//
 	ReviewConsole.setup(Site.Console)
-	Site.Console.Review = true;
 }
