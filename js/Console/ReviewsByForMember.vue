@@ -37,7 +37,7 @@ export default {
     return {
       forReviews: [],
       byReviews: [],
-      staffRole: Site.Site.Member.STAFF,
+      staffRole: Site.Member.STAFF,
       submissions: []
     }
   },

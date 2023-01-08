@@ -53,3 +53,4 @@ Thumbs.db
 /doc/latex
 /doc/rtf
 /doc/*.tmp
+/doc/js

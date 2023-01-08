@@ -6,6 +6,9 @@
   "keywords": [
     "Education"
   ],
+  "scripts": {
+    "build:docs": "yarn documentation build js/**/*.vue js/**/*.js --sort-order alpha -f html -o doc/js"
+  },
   "author": "Charles B. Owen",
   "license": "MIT",
   "dependencies": {
@@ -15,5 +18,8 @@
     "site-cl": ">=0.0.1",
     "users-cl": ">=0.0.1",
     "vue": "^3.2.45"
+  },
+  "devDependencies": {
+    "documentation": "^14.0.1"
   }
 }

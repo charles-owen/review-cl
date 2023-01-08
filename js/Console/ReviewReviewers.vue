@@ -48,7 +48,8 @@
 </template>
 
 <script>
-
+import {ConsoleComponentBase} from 'console-cl/index'
+import {MembersFetcherComponent} from 'course-cl/js/Console/index'
 import StatusPresentVue from './StatusPresent.vue';
 
 /**
@@ -62,7 +63,7 @@ import StatusPresentVue from './StatusPresent.vue';
  */
 export default {
   // This is a standard console comoponent
-  'extends': Site.Site.ConsoleComponentBase,
+  'extends': ConsoleComponentBase,
   props: [
       'assigntag'     // The assignment the reviewing is for
   ],
@@ -78,7 +79,7 @@ export default {
     }
   },
   components: {
-    'membersfetcher': Site.MembersFetcherComponentVue,
+    'membersfetcher': MembersFetcherComponent,
     'status-present': StatusPresentVue
   },
   mounted() {

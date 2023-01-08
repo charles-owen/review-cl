@@ -3,13 +3,15 @@
 </template>
 
 <script>
-    /**
-     * @constructor StatusPresentVue
-     * Displays the status of a reviewer or reviewee.
-     * Used by ReviewReviewers.vue
-     */
-    export default {
-        'extends': Site.Site.ConsoleComponentBase,
-        props: ['assigntag', 'statusUser', 'count']
-    }
-</script>
+import {ConsoleComponentBase} from 'console-cl/index'
+
+/**
+ * @constructor StatusPresentVue
+ * Displays the status of a reviewer or reviewee.
+ * Used by ReviewReviewers.vue
+ */
+export default {
+    'extends': ConsoleComponentBase,
+    props: ['assigntag', 'statusUser', 'count']
+}
+</script>*

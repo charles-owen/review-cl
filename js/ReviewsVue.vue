@@ -13,37 +13,43 @@
 </template>
 
 <script>
-  export default {
-    props: ['json'],
-    data: function () {
-      return {
-        assignTag: '',
-        reviews: []
-      }
+/**
+ * This is the inline vue for reviews of an assignment used by the
+ * submission and page the course console grading page.
+ *
+ * @constructor ReviewsVue
+ */
+export default {
+  props: ['json'],
+  data: function () {
+    return {
+      assignTag: '',
+      reviews: []
+    }
+  },
+  mounted() {
+    this.assignTag = this.json.assignTag;
+    this.reviews = this.json.reviews;
+  },
+  methods: {
+    formatTime(time) {
+      return this.$site.TimeFormatter.relativeUNIX(time, null);
     },
-    mounted() {
-      this.assignTag = this.json.assignTag;
-      this.reviews = this.json.reviews;
-    },
-    methods: {
-      formatTime(time) {
-        return this.$site.TimeFormatter.relativeUNIX(time, null);
-      },
-      showSubmissions(review) {
-        let ret = '';
-        for (let tag in review.submissions) {
-          if(ret !== '') {
-            ret += ' / ';
-          }
-          ret += this.$site.TimeFormatter.absoluteUNIX(review.submissions[tag].date);
+    showSubmissions(review) {
+      let ret = '';
+      for (let tag in review.submissions) {
+        if (ret !== '') {
+          ret += ' / ';
         }
-
-        if (ret === '') {
-          return '';
-        }
-
-        return 'Submission: ' + ret;
+        ret += this.$site.TimeFormatter.absoluteUNIX(review.submissions[tag].date);
       }
+
+      if (ret === '') {
+        return '';
+      }
+
+      return 'Submission: ' + ret;
     }
   }
+}
 </script>
