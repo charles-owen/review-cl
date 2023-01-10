@@ -27,7 +27,7 @@ class ReviewsTest extends ReviewDatabaseTestBase {
 	}
 
 	public function test_get_assigned_review_date() {
-		$this->dataSets(['db/user-many.xml', 'db/member.xml']);
+		$this->dataSets(['db/user.xml', 'db/member.xml']);
 
 		$reviews = new Reviews($this->site->db);
 
@@ -57,7 +57,7 @@ class ReviewsTest extends ReviewDatabaseTestBase {
     }
 
 	public function test_get_reviews() {
-		$this->dataSets(['db/user-many.xml', 'db/member.xml']);
+		$this->dataSets(['db/user.xml', 'db/member.xml']);
 
 		$reviews = new Reviews($this->site->db);
 
@@ -98,7 +98,7 @@ class ReviewsTest extends ReviewDatabaseTestBase {
 
 	public function test_get_reviews_by()
 	{
-		$this->dataSets(['db/user-many.xml', 'db/member.xml']);
+		$this->dataSets(['db/user.xml', 'db/member.xml']);
 
 		$reviews = new Reviews($this->site->db);
 
@@ -140,7 +140,7 @@ class ReviewsTest extends ReviewDatabaseTestBase {
 	public function test_get_review_counts() {
 		$data = [[10, 22], [10,35], [22, 10], [22, 35], [35, 10]];
 
-		$this->dataSets(['db/user-many.xml', 'db/member.xml']);
+		$this->dataSets(['db/user.xml', 'db/member.xml']);
 
 		$reviews = new Reviews($this->site->db);
 

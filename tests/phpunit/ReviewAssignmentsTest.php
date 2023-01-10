@@ -26,7 +26,7 @@ class ReviewAssignmentsTest extends ReviewDatabaseTestBase {
     }
 
 	public function test_getReviewers() {
-        $this->dataSets(['db/user-many.xml', 'db/member.xml']);
+        $this->dataSets(['db/user.xml', 'db/member.xml']);
 
 		$reviewAssignments = new ReviewAssignments($this->site->db);
 		$this->assertTrue($reviewAssignments->assignReviewing(22, 35, 'step1'));
@@ -58,7 +58,7 @@ class ReviewAssignmentsTest extends ReviewDatabaseTestBase {
     }
 
     public function test_getMemberReviewees() {
-        $this->dataSets(['db/user-many.xml', 'db/member.xml']);
+        $this->dataSets(['db/user.xml', 'db/member.xml']);
 
         $reviewAssignments = new ReviewAssignments($this->site->db);
         $this->assertTrue($reviewAssignments->assignReviewing(22, 35, 'step1'));
@@ -72,7 +72,7 @@ class ReviewAssignmentsTest extends ReviewDatabaseTestBase {
     }
 
     public function test_getMemberReviewers() {
-        $this->dataSets(['db/user-many.xml', 'db/member.xml']);
+        $this->dataSets(['db/user.xml', 'db/member.xml']);
 
         $reviewAssignments = new ReviewAssignments($this->site->db);
         $this->assertTrue($reviewAssignments->assignReviewing(22, 35, 'step1'));
@@ -86,7 +86,7 @@ class ReviewAssignmentsTest extends ReviewDatabaseTestBase {
     }
 
     public function test_clear() {
-        $this->dataSets(['db/user-many.xml', 'db/member.xml']);
+        $this->dataSets(['db/user.xml', 'db/member.xml']);
 
         $reviewAssignments = new ReviewAssignments($this->site->db);
         $this->assertTrue($reviewAssignments->assignReviewing(22, 35, 'step1'));

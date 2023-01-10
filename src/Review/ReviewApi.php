@@ -31,7 +31,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
 	 * @param Site $site The Site object
 	 * @param Server $server The Server object
 	 * @param array $params Parameters from the router
-	 * @param array $properties Properties extracted from the route
+	 * @param array $properties Properties extracted from the route (not used for endpoints)
 	 * @param int $time Current time
 	 * @return JsonAPI response
 	 * @throws APIException If an error occurs.
