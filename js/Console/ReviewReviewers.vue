@@ -1,19 +1,25 @@
 <template>
   <div class="content">
     <div class="full cl-reviewing">
-
       <membersfetcher :fetching="reviewers === null">
         <template v-slot="fetcher">
           <div v-if="user.atLeast(instructor)">
-            <form method="post" @submit.prevent="assignReviews">
-              <p class="center"><button type="submit">Assign Reviews</button>
-                <select v-model="reviewerCnt">
-                  <option v-for="num in 6" :value="num">{{num}}</option>
-                </select>
-              </p>
-            </form>
+            <div style="display: flex; justify-content: center;">
+              <form method="post" @submit.prevent="assignReviews">
+                <p class="center"><button type="submit">Assign Reviews</button>
+                  <select v-model="reviewerCnt">
+                    <option v-for="num in 6" :value="num">{{num}}</option>
+                  </select>
+                </p>
+              </form>
+              <form method="post" @submit.prevent="sendReminderDialog()">
+                <div style=margin-left:10px>
+                  <p class="center"><button type="submit">Send Reminder</button>
+                  </p>
+                </div>
+              </form>
+            </div>
           </div>
-
           <table class="small">
             <tr>
               <th>Name</th>
@@ -42,7 +48,6 @@
           </table>
         </template>
       </membersfetcher>
-
     </div>
   </div>
 </template>
@@ -230,6 +235,30 @@ export default {
 
       return assign[i][1] < 1 ? 'cl-empty' : '';
 
+    },
+    /**
+     * Uses a message box to edit and send reminder emails to
+     * individual students or the entire class.
+     */
+    sendReminderDialog() {
+      let content = '<div>' + "To" + ':\t<select>' +
+          '<option>Class</option>' +
+          '<option>Student 1</option>' +
+          '</select>\t' + '<br>' + '<br>' +
+          '<div>Subject:\n</div>' +
+          '<div><textarea style="resize:horizontal" rows="1" cols="38">CSE335 Peer Review Pending</textarea></div>' +
+          '<div> <textarea style="resize:both" placeholder="Enter reminder email" rows="6" cols="38">You have a review pending in the peer review system.\n' +
+          '\n' + 'Please go to the Peer Reviewing Status Page to see what reviews are pending.</textarea></div>';
+
+      let buttons = [{contents: "Send"}];
+      let dialogOptions = {title: "Send Reminder",
+                          content: content,
+                          buttons: buttons,
+                          resize: "both",
+                          grabSize: 20,
+                          form: true
+      };
+      new this.$site.Dialog(dialogOptions);
     }
   }
 }
