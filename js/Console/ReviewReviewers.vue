@@ -32,12 +32,18 @@
                   {{user.userId}}
                 </router-link>
               </td>
-              <td v-for="i in maxReviewees" :class="cls(reviewers[user.member.id], i-1)">
+              <td v-for="i in maxReviewees" :class="cls(reviewers[user.member.id], i-1)" align="center">
+                <a v-if="!displayUser(fetcher.users, reviewers[user.member.id], i-1)" @click.default="reassignDialog(user.name, 'Reviewee')" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
+                  <img src="../../../site/img/add-circle.png">
+                </a>
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
-              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)">
+              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)" align="center">
+                <a v-if="!displayUser(fetcher.users, reviewees[user.member.id], i-1)" @click.default="reassignDialog(user.name, 'Reviewer')" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
+                  <img src="../../../site/img/add-circle.png">
+                </a>
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
-            </td>
+              </td>
             </tr>
           </table>
         </template>
@@ -230,6 +236,22 @@ export default {
 
       return assign[i][1] < 1 ? 'cl-empty' : '';
 
+    },
+    reassignDialog(name, type) {
+      let contentString = '<p>Student: ' + name + '</p>' +
+          '<div>' + type + ':\t<select>' +
+          '<option>Doe, John</option>' +
+          '<option>Roe, Jane</option>' +
+          '</select>\t' +
+          '<button>Reassign</button></div>' +
+          '<br>' +
+          '<div>Send Reminder:    <textarea style="resize:none" placeholder="Enter reminder text"></textarea></div>';
+      let buttons = [{contents: "Send",
+                      click: "emailFunc()"}]
+      let dialogOptions = {title: 'Reassign ' + type,
+                            content: contentString,
+                            buttons: buttons};
+      new this.$site.Dialog(dialogOptions);
     }
   }
 }
