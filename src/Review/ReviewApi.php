@@ -64,6 +64,10 @@ class ReviewApi extends \CL\Users\Api\Resource {
 			// /api/review/tables
 			case 'tables':
 				return $this->tables($site, $server, new ReviewTables($site->db));
+
+            // /api/review/notify
+            case 'notify':
+                return $this->notify($site, $server, $params, $time);
 		}
 
 		throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
@@ -327,6 +331,33 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		$json->addData('reviewers', 0, $data);
 		return $json;
 	}
+
+    /**
+     * Get/Post reviewing assignments for an assignment.
+     *
+     * /api/review/notify/:assigntag
+     *
+     * @param Site $site
+     * @param Server $server
+     * @param array $params
+     * @param $time
+     * @return JsonAPI
+     * @throws APIException
+     */
+    private function notify(Site $site, Server $server, array $params, $time)
+    {
+        $post = $server->post;
+        $this->ensure($post, ['mailto', 'name']);
+        $mailto = $post['mailto'];
+        $name = $post['name'];
+
+        $email = $server->__get('email');
+        $email->send($site, $mailto, $name,
+            "Test sent from backend", "This is a test email");
+        $json = new JsonAPI();
+        return $json;
+    }
+
 
 
 }

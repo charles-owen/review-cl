@@ -45,7 +45,7 @@
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
               <td align = "center">
-                <a  @click.default="individualReminder(user.name)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
+                <a  @click.default="individualReminder(user.name, user.email)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
                   <img src = ../../../site/img/send.png>
                 </a>
               </td>
@@ -258,18 +258,38 @@ export default {
                             buttons: buttons};
       new this.$site.Dialog(dialogOptions);
     },
-    individualReminder(name){
+    individualReminder(name, email){
+      let site = this.$site;
       let contentString = '<p>To: ' + name + '</p>' +
           '<div>Subject: \t<input placeholder="Email Subject"></input>\t</div>'+
           '<br'+
           '<div>Send Reminder: \t<textarea style="resize:none" placeholder="Enter reminder text" rows="6" cols="30"></textarea>\t</div>';
 
-      let buttons = [{contents: "Send",
-        click: "emailFunc()"}]
-      let dialogOptions = {title: 'Individual Reminder ',
+      new this.$site.Dialog({
+        title: 'Individual Reminder ',
         content: contentString,
-        buttons: buttons};
-      new this.$site.Dialog(dialogOptions);
+        buttons: [{
+          contents: "Send",
+          click: function click(dialog) {
+            let params = {
+              name: name,
+              mailto: email
+            }
+            site.api.post('/api/review/notify', params)
+                .then((response) => {
+                  if (!response.hasError()) {
+                    site.toast(this, "Notification sent!");
+                  } else {
+                    site.toast(this, response);
+                  }
+                  dialog.close()
+
+                })
+            console.log(email);
+
+          }
+        }]
+      });
 
     }
 
