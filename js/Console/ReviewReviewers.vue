@@ -26,6 +26,7 @@
               <th>User ID</th>
               <th v-for="i in maxReviewees">reviewee</th>
               <th v-for="i in maxReviewers">reviewer</th>
+              <th>Email</th>
             </tr>
             <tr v-for="user in fetcher.users">
               <td class="small">
@@ -38,12 +39,23 @@
                   {{user.userId}}
                 </router-link>
               </td>
-              <td v-for="i in maxReviewees" :class="cls(reviewers[user.member.id], i-1)">
+              <td v-for="i in maxReviewees" :class="cls(reviewers[user.member.id], i-1)" align="center">
+                <a v-if="!displayUser(fetcher.users, reviewers[user.member.id], i-1)" @click.default="reassignDialog(user.name, 'Reviewee')" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
+                  <img src="../../../site/img/add-circle.png">
+                </a>
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
-              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)">
+              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)" align="center">
+                <a v-if="!displayUser(fetcher.users, reviewees[user.member.id], i-1)" @click.default="reassignDialog(user.name, 'Reviewer')" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
+                  <img src="../../../site/img/add-circle.png">
+                </a>
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
-            </td>
+              </td>
+              <td align = "center">
+                <a  @click.default="individualReminder(user.name)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
+                  <img src = ../../../site/img/send.png>
+                </a>
+              </td>
             </tr>
           </table>
         </template>
@@ -251,10 +263,48 @@ export default {
           '\n' + 'Please go to the Peer Reviewing Status Page to see what reviews are pending.</textarea></div>';
 
       let buttons = [{contents: "Send"}];
-      let dialogOptions = {title: "Send Reminder",
-                          content: content,
-                          buttons: buttons,
-                          form: true
+      let dialogOptions = {
+        title: "Send Reminder",
+        content: content,
+        buttons: buttons,
+        form: true
+      };
+      new this.$site.Dialog(dialogOptions);
+    },
+    reassignDialog(name, type) {
+      let contentString = '<p>Student: ' + name + '</p>' +
+          '<div>' + type + ':\t<select>' +
+          '<option>Doe, John</option>' +
+          '<option>Roe, Jane</option>' +
+          '</select>\t' +
+          '<button>Reassign</button></div>' +
+          '<br>' +
+          '<div>Send Reminder:    <textarea style="resize:none" placeholder="Enter reminder text"></textarea></div>';
+      let buttons = [{
+        contents: "Send",
+        click: "emailFunc()"
+      }]
+      let dialogOptions = {
+        title: 'Reassign ' + type,
+        content: contentString,
+        buttons: buttons
+      };
+      new this.$site.Dialog(dialogOptions);
+    },
+    individualReminder(name) {
+      let contentString = '<p>To: ' + name + '</p>' +
+          '<div>Subject: \t<input placeholder="Email Subject"></input>\t</div>' +
+          '<br' +
+          '<div>Send Reminder: \t<textarea style="resize:none" placeholder="Enter reminder text" rows="6" cols="30"></textarea>\t</div>';
+
+      let buttons = [{
+        contents: "Send",
+        click: "emailFunc()"
+      }]
+      let dialogOptions = {
+        title: 'Individual Reminder ',
+        content: contentString,
+        buttons: buttons
       };
       new this.$site.Dialog(dialogOptions);
     }
