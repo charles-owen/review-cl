@@ -243,19 +243,17 @@ export default {
     sendReminderDialog() {
       let content = '<div>' + "To" + ':\t<select>' +
           '<option>Class</option>' +
-          '<option>Student 1</option>' +
+          '<option>Students with reviews pending</option>' +
           '</select>\t' + '<br>' + '<br>' +
           '<div>Subject:\n</div>' +
-          '<div><textarea style="resize:horizontal" rows="1" cols="38">CSE335 Peer Review Pending</textarea></div>' +
-          '<div> <textarea style="resize:both" placeholder="Enter reminder email" rows="6" cols="38">You have a review pending in the peer review system.\n' +
+          '<div><textarea style="resize:none" rows="1" cols="38">CSE335 Peer Review Pending</textarea></div>' +
+          '<div> <textarea style="resize:none" placeholder="Enter reminder email" rows="6" cols="38">You have a review pending in the peer review system.\n' +
           '\n' + 'Please go to the Peer Reviewing Status Page to see what reviews are pending.</textarea></div>';
 
       let buttons = [{contents: "Send"}];
       let dialogOptions = {title: "Send Reminder",
                           content: content,
                           buttons: buttons,
-                          resize: "both",
-                          grabSize: 20,
                           form: true
       };
       new this.$site.Dialog(dialogOptions);
