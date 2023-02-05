@@ -4,15 +4,22 @@
       <membersfetcher :fetching="reviewers === null">
         <template v-slot="fetcher">
           <div v-if="user.atLeast(instructor)">
-            <form method="post" @submit.prevent="assignReviews">
-              <p class="center"><button type="submit">Assign Reviews</button>
-                <select v-model="reviewerCnt">
-                  <option v-for="num in 6" :value="num">{{num}}</option>
-                </select>
-              </p>
-            </form>
+            <div style="display: flex; justify-content: center;">
+              <form method="post" @submit.prevent="assignReviews">
+                <p class="center"><button type="submit">Assign Reviews</button>
+                  <select v-model="reviewerCnt">
+                    <option v-for="num in 6" :value="num">{{num}}</option>
+                  </select>
+                </p>
+              </form>
+              <form method="post" @submit.prevent="sendReminderDialog()">
+                <div style=margin-left:10px>
+                  <p class="center"><button type="submit">Send Reminder</button>
+                  </p>
+                </div>
+              </form>
+            </div>
           </div>
-
           <table class="small">
             <tr>
               <th>Name</th>
@@ -53,7 +60,6 @@
           </table>
         </template>
       </membersfetcher>
-
     </div>
   </div>
 </template>
@@ -242,6 +248,29 @@ export default {
       return assign[i][1] < 1 ? 'cl-empty' : '';
 
     },
+    /**
+     * Uses a message box to edit and send reminder emails to
+     * individual students or the entire class.
+     */
+    sendReminderDialog() {
+      let content = '<div>' + "To" + ':\t<select>' +
+          '<option>Class</option>' +
+          '<option>Students with reviews pending</option>' +
+          '</select>\t' + '<br>' + '<br>' +
+          '<div>Subject:\n</div>' +
+          '<div><textarea style="resize:none" rows="1" cols="38">CSE335 Peer Review Pending</textarea></div>' +
+          '<div> <textarea style="resize:none" placeholder="Enter reminder email" rows="6" cols="38">You have a review pending in the peer review system.\n' +
+          '\n' + 'Please go to the Peer Reviewing Status Page to see what reviews are pending.</textarea></div>';
+
+      let buttons = [{contents: "Send"}];
+      let dialogOptions = {
+        title: "Send Reminder",
+        content: content,
+        buttons: buttons,
+        form: true
+      };
+      new this.$site.Dialog(dialogOptions);
+    },
     reassignDialog(name, type) {
       let contentString = '<p>Student: ' + name + '</p>' +
           '<div>' + type + ':\t<select>' +
@@ -251,28 +280,34 @@ export default {
           '<button>Reassign</button></div>' +
           '<br>' +
           '<div>Send Reminder:    <textarea style="resize:none" placeholder="Enter reminder text"></textarea></div>';
-      let buttons = [{contents: "Send",
-                      click: "emailFunc()"}]
-      let dialogOptions = {title: 'Reassign ' + type,
-                            content: contentString,
-                            buttons: buttons};
+      let buttons = [{
+        contents: "Send",
+        click: "emailFunc()"
+      }]
+      let dialogOptions = {
+        title: 'Reassign ' + type,
+        content: contentString,
+        buttons: buttons
+      };
       new this.$site.Dialog(dialogOptions);
     },
-    individualReminder(name){
+    individualReminder(name) {
       let contentString = '<p>To: ' + name + '</p>' +
-          '<div>Subject: \t<input placeholder="Email Subject"></input>\t</div>'+
-          '<br'+
+          '<div>Subject: \t<input placeholder="Email Subject"></input>\t</div>' +
+          '<br' +
           '<div>Send Reminder: \t<textarea style="resize:none" placeholder="Enter reminder text" rows="6" cols="30"></textarea>\t</div>';
 
-      let buttons = [{contents: "Send",
-        click: "emailFunc()"}]
-      let dialogOptions = {title: 'Individual Reminder ',
+      let buttons = [{
+        contents: "Send",
+        click: "emailFunc()"
+      }]
+      let dialogOptions = {
+        title: 'Individual Reminder ',
         content: contentString,
-        buttons: buttons};
+        buttons: buttons
+      };
       new this.$site.Dialog(dialogOptions);
-
     }
-
   }
 }
 </script>
