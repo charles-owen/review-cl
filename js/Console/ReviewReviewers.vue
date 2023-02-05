@@ -258,23 +258,35 @@ export default {
                             buttons: buttons};
       new this.$site.Dialog(dialogOptions);
     },
+    /**
+     * Handler for sending a reminder to a individual person
+     * @param name of person receiving reminder
+     * @param email to send reminder to
+     */
     individualReminder(name, email){
       let site = this.$site;
       let contentString = '<p>To: ' + name + '</p>' +
-          '<div>Subject: \t<input placeholder="Email Subject"></input>\t</div>'+
+          '<div>Subject: \t<input id="cl-review-notify-individual-subject" placeholder="Email Subject"></input>\t</div>'+
           '<br'+
-          '<div>Send Reminder: \t<textarea style="resize:none" placeholder="Enter reminder text" rows="6" cols="30"></textarea>\t</div>';
+          '<div>Send Reminder: \t<textarea id="cl-review-notify-individual-body" style="resize:none" placeholder="Enter reminder text" rows="6" cols="30"></textarea>\t</div>';
 
       new this.$site.Dialog({
         title: 'Individual Reminder ',
         content: contentString,
         buttons: [{
           contents: "Send",
+          // Handler function for when someone clicks send on the dialog box
           click: function click(dialog) {
+            // Grab the subject/body from the html and put it in params json object
+            let subject = document.querySelector('#cl-review-notify-individual-subject').value;
+            let body = document.querySelector('#cl-review-notify-individual-body').value;
             let params = {
               name: name,
-              mailto: email
+              mailto: email,
+              subject: subject,
+              body: body
             }
+            // Send post request and check for errors, this routes to ReviewApi.php
             site.api.post('/api/review/notify', params)
                 .then((response) => {
                   if (!response.hasError()) {
@@ -282,10 +294,8 @@ export default {
                   } else {
                     site.toast(this, response);
                   }
-                  dialog.close()
-
+                  dialog.close();
                 })
-            console.log(email);
 
           }
         }]

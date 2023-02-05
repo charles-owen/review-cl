@@ -333,9 +333,9 @@ class ReviewApi extends \CL\Users\Api\Resource {
 	}
 
     /**
-     * Get/Post reviewing assignments for an assignment.
+     * Handles the post request for notifying a individual
      *
-     * /api/review/notify/:assigntag
+     * /api/review/notify
      *
      * @param Site $site
      * @param Server $server
@@ -347,14 +347,16 @@ class ReviewApi extends \CL\Users\Api\Resource {
     private function notify(Site $site, Server $server, array $params, $time)
     {
         $post = $server->post;
-        $this->ensure($post, ['mailto', 'name']);
+        $this->ensure($post, ['mailto', 'name', 'subject', 'body']);  // Check that all required params are present
         $mailto = $post['mailto'];
         $name = $post['name'];
+        $subject = $post['subject'];
+        $body = $post['body'];
 
         $email = $server->__get('email');
         $email->send($site, $mailto, $name,
-            "Test sent from backend", "This is a test email");
-        $json = new JsonAPI();
+            $subject, $body);
+        $json = new JsonAPI();  // Must return this object in post requests
         return $json;
     }
 
