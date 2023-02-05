@@ -40,13 +40,13 @@
                 </router-link>
               </td>
               <td v-for="i in maxReviewees" :class="cls(reviewers[user.member.id], i-1)" align="center">
-                <a v-if="!displayUser(fetcher.users, reviewers[user.member.id], i-1)" @click.default="reassignDialog(user.name, 'Reviewee')" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
+                <a v-if="!displayUser(fetcher.users, reviewers[user.member.id], i-1) && !user.atLeast(staff) && user.atLeast(student)" @click.default="reassignDialog(user, 'Reviewee', fetcher.users, i)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
                   <img src="../../../site/img/add-circle.png">
                 </a>
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
               <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)" align="center">
-                <a v-if="!displayUser(fetcher.users, reviewees[user.member.id], i-1)" @click.default="reassignDialog(user.name, 'Reviewer')" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
+                <a v-if="!displayUser(fetcher.users, reviewees[user.member.id], i-1) && !user.atLeast(staff) && user.atLeast(student)" @click.default="reassignDialog(user, 'Reviewer', fetcher.users, i)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
                   <img src="../../../site/img/add-circle.png">
                 </a>
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
@@ -89,6 +89,8 @@ export default {
       assignment: null, // Object that defines an entire assignment
       reviewerCnt: 2,   // Number of reviewers to assign for each student
       instructor: Site.Member.INSTRUCTOR,
+      staff: Site.Member.STAFF,
+      student: Site.Member.STUDENT,
       reviewers: null,  // All of the reviews by member ID
       reviewees: null,  // All of the reviewee by member ID
       maxReviewees: 0,  // Maximum number of reviewees for any reviewer
@@ -242,7 +244,7 @@ export default {
      */
     cls(assign, i) {
       if (assign === undefined || i >= assign.length) {
-        return '';
+        return 'td.cl-reviews-none';
       }
 
       return assign[i][1] < 1 ? 'cl-empty' : '';
@@ -271,25 +273,75 @@ export default {
       };
       new this.$site.Dialog(dialogOptions);
     },
-    reassignDialog(name, type) {
-      let contentString = '<p>Student: ' + name + '</p>' +
-          '<div>' + type + ':\t<select>' +
-          '<option>Doe, John</option>' +
-          '<option>Roe, Jane</option>' +
-          '</select>\t' +
-          '<button>Reassign</button></div>' +
-          '<br>' +
-          '<div>Send Reminder:    <textarea style="resize:none" placeholder="Enter reminder text"></textarea></div>';
-      let buttons = [{
-        contents: "Send",
-        click: "emailFunc()"
-      }]
-      let dialogOptions = {
-        title: 'Reassign ' + type,
-        content: contentString,
-        buttons: buttons
-      };
+    /**
+     * Bring up reassign dialog box. This box allows us to assign a reviewer/reviewee where there
+     * is an empty slot. The users in the drop-down menu are sorted by fewest assigned reviewees/reviewers.
+     * @param reassignUser User who is having a reviewer/reviewee reassigned to them
+     * @param type Type of dialog box to bring up (depends on whether symbol was clicked in reviewer or reviewee column
+     * @param users Array of users in the class
+     * @param reviewIndex Index in the reviewee/reviewer column that was clicked.
+     */
+    reassignDialog(reassignUser, type, users, reviewIndex) {
+      let sortedUsers = this.sortUsersByReviewCount(users, reassignUser, type);
+      let contentString = '<p>Student: ' + reassignUser.name + '</p>' + '<div>' + type + ':\t<select>';
+      for (let i = 0; i < sortedUsers.length; i++) {
+        contentString += '<option>' + sortedUsers[i] + '</option>';
+      }
+      contentString += '</select>';
+      let buttons = [{contents: "Reassign",
+        click: "reassignActual"}];
+      let dialogOptions = {title: 'Reassign ' + type,
+                            content: contentString,
+                            buttons: buttons};
       new this.$site.Dialog(dialogOptions);
+    },
+    /**
+     * Return an array of users in the class sorted by number of reviewers/reviewees (least to most) they have assigned
+     * excluding reassignUser and non-students.
+     * @param users Array of users in the class
+     * @param reassignUser User to exclude from sorted array
+     * @param type Type of button clicked from dialog (determines whether to check reviewers or reviewees array)
+     * @returns {string[]} Array of users sorted by number of reviewers or reviewees
+     */
+    sortUsersByReviewCount(users, reassignUser, type) {
+      let userCountPairs = {};
+      for (let i = 0; i < users.length; i++) {
+        if (users[i].name != reassignUser.name && !users[i].atLeast(this.staff) && users[i].atLeast(this.student)) {
+          userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
+        }
+      }
+      var items = Object.keys(userCountPairs).map(
+          (key) => { return [key, userCountPairs[key]] });
+      items.sort(
+          (first, second) => { return first[1] - second[1] }
+      );
+      var keys = items.map(
+          (e) => { return e[0] });
+      return keys;
+    },
+    /**
+     * Get the number of reviewers/reviewees assigned to this user
+     * @param users Array of users
+     * @param countUser User to find reviewer/reviewee count for
+     * @param type String indicating whether to search for reviewers or reviewees
+     * @returns {number} Number of reviewers/reviewees assigned to this user
+     */
+    countReviews(users, countUser, type) {
+      let count = 0;
+      if (type === "Reviewee") {
+        for (let i = 0; i < this.maxReviewees; i++) {
+          if (this.displayUser(users, this.reviewees[countUser.member.id], i)) {
+            count++;
+          }
+        }
+      } else if (type === "Reviewer") {
+        for (let i = 0; i < this.maxReviewers; i++) {
+          if (this.displayUser(users, this.reviewers[countUser.member.id], i)) {
+            count++;
+          }
+        }
+      }
+      return count;
     },
     individualReminder(name) {
       let contentString = '<p>To: ' + name + '</p>' +
