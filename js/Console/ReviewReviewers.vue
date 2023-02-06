@@ -52,7 +52,7 @@
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
               <td align = "center">
-                <a  @click.default="individualReminder(user.name)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
+                <a  @click.default="individualReminder(user.name, user.email)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
                   <img src = ../../../site/img/send.png>
                 </a>
               </td>
@@ -296,6 +296,49 @@ export default {
       new this.$site.Dialog(dialogOptions);
     },
     /**
+     * Handler for sending a reminder to a individual person
+     * @param name of person receiving reminder
+     * @param email to send reminder to
+     */
+    individualReminder(name, email){
+      let site = this.$site;
+      let contentString = '<p>To: ' + name + '</p>' +
+          '<div>Subject: \t<input id="cl-review-notify-individual-subject" placeholder="Email Subject"></input>\t</div>'+
+          '<br'+
+          '<div>Send Reminder: \t<textarea id="cl-review-notify-individual-body" style="resize:none" placeholder="Enter reminder text" rows="6" cols="30"></textarea>\t</div>';
+
+      new this.$site.Dialog({
+        title: 'Individual Reminder ',
+        content: contentString,
+        buttons: [{
+          contents: "Send",
+          // Handler function for when someone clicks send on the dialog box
+          click: function click(dialog) {
+            // Grab the subject/body from the html and put it in params json object
+            let subject = document.querySelector('#cl-review-notify-individual-subject').value;
+            let body = document.querySelector('#cl-review-notify-individual-body').value;
+            let params = {
+              name: name,
+              mailto: email,
+              subject: subject,
+              body: body
+            }
+            // Send post request and check for errors, this routes to ReviewApi.php
+            site.api.post('/api/review/notify', params)
+                .then((response) => {
+                  if (!response.hasError()) {
+                    site.toast(this, "Notification sent!");
+                  } else {
+                    site.toast(this, response);
+                  }
+                  dialog.close();
+                })
+
+          }
+        }]
+      });
+    },
+    /**
      * Return an array of users in the class sorted by number of reviewers/reviewees (least to most) they have assigned
      * excluding reassignUser and non-students.
      * @param users Array of users in the class
@@ -343,23 +386,6 @@ export default {
       }
       return count;
     },
-    individualReminder(name) {
-      let contentString = '<p>To: ' + name + '</p>' +
-          '<div>Subject: \t<input placeholder="Email Subject"></input>\t</div>' +
-          '<br' +
-          '<div>Send Reminder: \t<textarea style="resize:none" placeholder="Enter reminder text" rows="6" cols="30"></textarea>\t</div>';
-
-      let buttons = [{
-        contents: "Send",
-        click: "emailFunc()"
-      }]
-      let dialogOptions = {
-        title: 'Individual Reminder ',
-        content: contentString,
-        buttons: buttons
-      };
-      new this.$site.Dialog(dialogOptions);
-    }
   }
 }
 </script>

@@ -64,6 +64,10 @@ class ReviewApi extends \CL\Users\Api\Resource {
 			// /api/review/tables
 			case 'tables':
 				return $this->tables($site, $server, new ReviewTables($site->db));
+
+			// /api/review/notify
+			case 'notify':
+				return $this->notify($site, $server, $params, $time);
 		}
 
 		throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
@@ -327,6 +331,35 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		$json->addData('reviewers', 0, $data);
 		return $json;
 	}
+
+    /**
+     * Handles the post request for notifying a individual
+     *
+     * /api/review/notify
+     *
+     * @param Site $site
+     * @param Server $server
+     * @param array $params
+     * @param $time
+     * @return JsonAPI
+     * @throws APIException
+     */
+    private function notify(Site $site, Server $server, array $params, $time)
+    {
+        $post = $server->post;
+        $this->ensure($post, ['mailto', 'name', 'subject', 'body']);  // Check that all required params are present
+        $mailto = $post['mailto'];
+        $name = $post['name'];
+        $subject = $post['subject'];
+        $body = $post['body'];
+
+        $email = $server->__get('email');
+        $email->send($site, $mailto, $name,
+            $subject, $body);
+        $json = new JsonAPI();  // Must return this object in post requests
+        return $json;
+    }
+
 
 
 }
