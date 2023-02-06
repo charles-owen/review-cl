@@ -62,12 +62,12 @@ class ReviewApi extends \CL\Users\Api\Resource {
 				return $this->review($site, $user, $server, $params, $time);
 
 			// /api/review/tables
-			case 'tables':
+                        case 'tables':
 				return $this->tables($site, $server, new ReviewTables($site->db));
 
-            // /api/review/notify
-            case 'notify':
-                return $this->notify($site, $server, $params, $time);
+                        // /api/review/notify          
+                        case 'notify':
+                                return $this->notify($site, $server, $params, $time);
 		}
 
 		throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
