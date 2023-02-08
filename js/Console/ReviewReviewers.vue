@@ -255,23 +255,48 @@ export default {
      * individual students or the entire class.
      */
     sendReminderDialog() {
-      let content = '<div>' + "To" + ':\t<select>' +
-          '<option>Class</option>' +
-          '<option>Students with reviews pending</option>' +
-          '</select>\t' + '<br>' + '<br>' +
+      let site = this.$site;
+      let content = '<div>' + "To Class" + '<br>' + '<br>' +
           '<div>Subject:\n</div>' +
-          '<div><textarea style="resize:none" rows="1" cols="38">CSE335 Peer Review Pending</textarea></div>' +
-          '<div> <textarea style="resize:none" placeholder="Enter reminder email" rows="6" cols="38">You have a review pending in the peer review system.\n' +
+          '<div><textarea id="cl-review-notify-class-subject" style="resize:none" rows="1" cols="38">CSE335 Peer Review Pending</textarea></div>' +
+          '<div> <textarea id="cl-review-notify-class-body" style="resize:none" placeholder="Enter reminder email" rows="6" cols="38">You have a review pending in the peer review system.\n' +
           '\n' + 'Please go to the Peer Reviewing Status Page to see what reviews are pending.</textarea></div>';
 
-      let buttons = [{contents: "Send"}];
-      let dialogOptions = {
-        title: "Send Reminder",
+
+      new this.$site.Dialog({
+        title: 'Send Reminder',
         content: content,
-        buttons: buttons,
+        buttons: [{
+          contents: "Send",
+          // Handler function for when someone clicks send on the dialog box
+          click: function click(dialog) {
+            // Grab the subject/body from the html and put it in params json object
+            let subject = document.querySelector('#cl-review-notify-class-subject').value;
+            let body = document.querySelector('#cl-review-notify-class-body').value;
+            let params = {
+              name: 'Class',
+              mailto: 'Class',
+              subject: subject,
+              body: body,
+              isClass: true
+            }
+            // Send post request and check for errors, this routes to ReviewApi.php
+            site.api.post('/api/review/notify', params)
+                .then((response) => {
+                  if (!response.hasError()) {
+                    site.toast(this, "Notification sent!");
+                  } else {
+                    site.toast(this, response);
+                  }
+                  dialog.close();
+                })
+
+          }
+        }],
         form: true
-      };
-      new this.$site.Dialog(dialogOptions);
+      });
+
+
     },
     /**
      * Bring up reassign dialog box. This box allows us to assign a reviewer/reviewee where there
@@ -294,6 +319,8 @@ export default {
                             content: contentString,
                             buttons: buttons};
       new this.$site.Dialog(dialogOptions);
+
+
     },
     /**
      * Handler for sending a reminder to a individual person
@@ -321,7 +348,8 @@ export default {
               name: name,
               mailto: email,
               subject: subject,
-              body: body
+              body: body,
+              isClass: false
             }
             // Send post request and check for errors, this routes to ReviewApi.php
             site.api.post('/api/review/notify', params)
