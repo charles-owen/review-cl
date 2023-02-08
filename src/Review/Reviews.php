@@ -166,7 +166,7 @@ SQL;
 select *
 from $this->tablename
 where reviewerid=? and revieweeid=? and assigntag=?
-order by time desc
+order by time asc
 SQL;
 
 		$stmt = $pdo->prepare($sql);
@@ -207,7 +207,7 @@ SQL;
 join $this->tablename review
 on reviewerid=member.id
 where assigntag=? and revieweeid=?
-order by review.time desc
+order by review.time asc   <!--   asc makes change for the order of time  -->
 SQL;
 
 		$pdo = $this->pdo;

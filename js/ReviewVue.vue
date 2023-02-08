@@ -8,19 +8,30 @@
         <p class="cl-preview-time">{{formatTime(submission.date)}}</p>
       </div>
 
-      <h2>Review</h2>
+<!--      <h2>Reviews</h2>-->
+<!--      <form method="post" style="display: none;" @submit.prevent="submit">-->
+<!--        <div ref="editor" class="shadow"></div>-->
+<!--        <input type="submit" value="SUBMIT">-->
+<!--      </form>-->
+
+      <!--   Zhuofan Zeng code for this week  -->
+      <h2>Reviews</h2>
+      <p class="cl-reviews-none" v-if="reviewing.length === 0">  <!-- v-if determines whether the length of the reviewing is 0-->
+        *** None Yet ***
+      </p>
+      <div v-for="review in reviewing" class="cl-review"> <!--   v-for loop reviewing, the return value of each loop review  -->
+        Reviewer:
+        <div class="cl-review-present">{{review.meta.review.review}}<!--   review.meta.review.review takes the value, also inside the loop  -->
+          <p style="font-size: 10px; color: green;">{{formatTime(review.time)}}
+          </p><!--   review.time takes value of time  -->
+        </div>
+      </div>
+
       <form method="post" @submit.prevent="submit">
         <div ref="editor" class="shadow"></div>
-        <p><input type="submit" value="Submit Review"></p>
+        <input type="submit" value="Send">
       </form>
-
-      <h2>Previous Reviews</h2>
-      <p class="cl-reviews-none" v-if="reviewing.length === 0">*** None Yet ***</p>
-      <div v-for="review in reviewing" class="cl-review">
-        <h3>{{formatTime(review.time)}} Review by Me
-          <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
-        <div class="cl-review-present">{{review.meta.review.review}}</div>
-      </div>
+      <!--   Zhuofan Zeng code for this week   -->
     </div>
   </div>
 </template>
@@ -48,8 +59,8 @@ export default {
 
     const element = this.$refs['editor'];
     this.editor = new this.$site.Editor(element, {
-      height: '10em',
-      classes: ['yellow-pad']
+      height: '1em',
+      classes: ['#F3F3F3']
     });
 
     let submissions = {};

@@ -224,7 +224,6 @@ SQL;
 		}
 	}
 
-
 	/**
 	 * Clear all reviewing assignments for a given semester/section/assignment
 	 * @param string $semester
@@ -256,4 +255,55 @@ SQL;
 			return false;
 		}
 	}
+
+//<!--week5 Zhuofan Zeng new added content-->
+    /**
+     * Get the list of reviewer
+     * @param $revieweeid
+     * @return array|false
+     */
+    public function getReviewerIds($revieweeid)
+    {
+        $sql = <<<SQL
+                    select reviewerid
+                    from capstone_reviewassignment
+                    where revieweeid = $revieweeid 
+                    and assigntag = 'design3'
+                SQL;
+        $pdo = $this->pdo;
+        try {
+            $stmt = $pdo->prepare($sql); //(Pre-processing via pdo)
+            $stmt->execute();  //(Execution of queries)
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC); //(after querying, fetchAll: get all result)
+        } catch(\PDOException $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get messages from current reviewer
+     * @param  $revieweeid  (I check)
+     * @param  $reviewerid  (Check my works)
+     * @return array|false
+     */
+    public function getReviewContent($revieweeid,$reviewerid)
+    {
+        $sql = <<<SQL
+                    select id,metadata,time,reviewerid,revieweeid
+                    from capstone_review
+                    where reviewerid = $reviewerid
+                    and  revieweeid = $revieweeid
+                    and assigntag = 'design3'
+                SQL;
+        //var_dump($sql);die();
+        $pdo = $this->pdo;
+        try {
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch(\PDOException $e) {
+            return false;
+        }
+    }
 }
+//<!--week5 end-->
