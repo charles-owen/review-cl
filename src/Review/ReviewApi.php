@@ -347,15 +347,37 @@ class ReviewApi extends \CL\Users\Api\Resource {
     private function notify(Site $site, Server $server, array $params, $time)
     {
         $post = $server->post;
-        $this->ensure($post, ['mailto', 'name', 'subject', 'body']);  // Check that all required params are present
+        $this->ensure($post, ['mailto', 'name', 'subject', 'body', 'isClass']);  // Check that all required params are present
         $mailto = $post['mailto'];
         $name = $post['name'];
         $subject = $post['subject'];
         $body = $post['body'];
+        $isClass = $post['isClass'];
 
         $email = $server->__get('email');
-        $email->send($site, $mailto, $name,
-            $subject, $body);
+        // If it is a class notification then take class members, and loop over them sending each theh email.
+        if ($isClass)
+        {
+            $user = $this->isUser($site, Member::STAFF);
+            $members = new Members($site->db);
+            $query = $members->query(['semester'=>$user->member->semester,
+                'section'=>$user->member->sectionId]);
+            foreach($query as $user) {
+                // Ignore any guest users or drops
+                if (!$user->atLeast(Member::STUDENT)) {
+                    continue;
+                }
+                $email->send($site, $user->email, $user->name,
+                    $subject, $body);
+            }
+        }
+        // If it is not a class reminder send to the certain individual provided
+        else
+        {
+            $email->send($site, $mailto, $name,
+                $subject, $body);
+        }
+
         $json = new JsonAPI();  // Must return this object in post requests
         return $json;
     }
