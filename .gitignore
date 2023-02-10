@@ -54,3 +54,6 @@ Thumbs.db
 /doc/rtf
 /doc/*.tmp
 /doc/js
+
+# node modules
+node_modules/
