@@ -68,6 +68,11 @@ class ReviewApi extends \CL\Users\Api\Resource {
 			// /api/review/notify
 			case 'notify':
 				return $this->notify($site, $server, $params, $time);
+
+            // /api/review/reassign/:assigntag
+            case 'reassign':
+                return $this->reassign($site, $server, $params, $time);
+
 		}
 
 		throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
@@ -382,6 +387,52 @@ class ReviewApi extends \CL\Users\Api\Resource {
         return $json;
     }
 
+    /**
+     * Handles the post request for reassigning reviewers/reviewees
+     *
+     * /api/review/reassign/:assigntag
+     *
+     * @param Site $site
+     * @param Server $server
+     * @param array $params
+     * @param $time
+     * @return JsonAPI
+     * @throws APIException
+     */
 
+    private function reassign(Site $site, Server $server, array $params, $time)
+    {
+        $user = $this->isUser($site, Member::STAFF);
+        $reviewAssignments = new ReviewAssignments($site->db);
+        $members = new Members($site->db);
+        if(count($params) < 2) {
+            throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
+        }
+        //grabbing the semseter and semester id for the user
+        $semester = $user->member->semester;
+        $sectionId = $user->member->sectionId;
+        $assignTag = $params[1];
+        if($server->requestMethod === 'POST') {
+            $post = $server->post;
+            $this->ensure($post, ['reviewer', 'reviewee']);  // Check that all required params are present
+            //get the reviewer and reviewee passed into the params from reassign dialog box
+            $reviewer = $post['reviewer'];
+            $reviewee = $post['reviewee'];
+            //check if the combination of reviewer reviewee is a duplicate
+            if(!$reviewAssignments->isReviewer($reviewer['id'], $reviewee['id'], $assignTag)){
+                  //if not go ahead and assign the combination
+                $reviewAssignments->assignReviewing($reviewer['id'], $reviewee['id'], $assignTag);
+            }
+            else{
+                //otherwise give error that this is already a combination
+                throw new APIException("This is already a reviewer/reviewee combination");
+            }
+
+        }
+
+        $json = new JsonAPI(); // Must return this object in post requests
+        return $json;
+
+    }
 
 }
