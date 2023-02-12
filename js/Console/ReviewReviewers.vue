@@ -69,6 +69,7 @@ import {ConsoleComponentBase} from 'console-cl/index'
 import {MembersFetcherComponent} from 'course-cl/js/Console/index'
 import StatusPresentVue from './StatusPresent.vue';
 import ReviewReassignVue from './ReviewReassign.vue';
+import ReviewReminderVue from './ReviewReminder.vue';
 
 const VueDialog = Site.site.VueDialog;
 
@@ -259,47 +260,93 @@ export default {
      */
     sendReminderDialog() {
       let site = this.$site;
-      let content = '<div>' + "To Class" + '<br>' + '<br>' +
-          '<div>Subject:\n</div>' +
-          '<div><textarea id="cl-review-notify-class-subject" style="resize:none" rows="1" cols="38">CSE335 Peer Review Pending</textarea></div>' +
-          '<div> <textarea id="cl-review-notify-class-body" style="resize:none" placeholder="Enter reminder email" rows="6" cols="38">You have a review pending in the peer review system.\n' +
-          '\n' + 'Please go to the Peer Reviewing Status Page to see what reviews are pending.</textarea></div>';
 
-
-      new this.$site.Dialog({
-        title: 'Send Reminder',
-        content: content,
-        buttons: [{
-          contents: "Send",
-          // Handler function for when someone clicks send on the dialog box
-          click: function click(dialog) {
-            // Grab the subject/body from the html and put it in params json object
-            let subject = document.querySelector('#cl-review-notify-class-subject').value;
-            let body = document.querySelector('#cl-review-notify-class-body').value;
-            let params = {
-              name: 'Class',
-              mailto: 'Class',
-              subject: subject,
-              body: body,
-              isClass: true
-            }
-            // Send post request and check for errors, this routes to ReviewApi.php
-            site.api.post('/api/review/notify', params)
-                .then((response) => {
-                  if (!response.hasError()) {
-                    site.toast(this, "Notification sent!");
-                  } else {
-                    site.toast(this, response);
-                  }
-                  dialog.close();
-                })
-
+      let buttons = [{
+        contents: "Send",
+        // Handler function for when someone clicks send on the dialog box
+        click: function click(dialog) {
+          // Grab the subject/body from the html and put it in params json object
+          let subject = document.querySelector('#cl-review-notify-subject').value;
+          let body = document.querySelector('#cl-review-notify-body').value;
+          let params = {
+            name: 'Class',
+            mailto: 'Class',
+            subject: subject,
+            body: body,
+            isClass: true
           }
-        }],
-        form: true
-      });
+          // Send post request and check for errors, this routes to ReviewApi.php
+          site.api.post('/api/review/notify', params)
+              .then((response) => {
+                if (!response.hasError()) {
+                  site.toast(this, "Notification sent!");
+                } else {
+                  site.toast(this, response);
+                }
+                dialog.close();
+              })
 
+        }
+      }];
 
+      new VueDialog(this.$site, {
+        title: 'Class Reminder',
+        vue: ReviewReminderVue,
+        data: function () {
+          return {
+            to: "Class"
+          }
+        },
+        buttons: buttons,
+        parent: this
+      })
+    },
+    /**
+     * Handler for sending a reminder to a individual person
+     * @param name of person receiving reminder
+     * @param email to send reminder to
+     */
+    individualReminder(name, email){
+      let site = this.$site;
+      let buttons = [{
+        contents: "Send",
+        // Handler function for when someone clicks send on the dialog box
+        click: function click(dialog) {
+          // Grab the subject/body from the html and put it in params json object
+          let subject = document.querySelector('#cl-review-notify-subject').value;
+          let body = document.querySelector('#cl-review-notify-body').value;
+          let params = {
+            name: name,
+            mailto: email,
+            subject: subject,
+            body: body,
+            isClass: false
+          }
+          // Send post request and check for errors, this routes to ReviewApi.php
+          site.api.post('/api/review/notify', params)
+              .then((response) => {
+                if (!response.hasError()) {
+                  site.toast(this, "Notification sent!");
+                } else {
+                  site.toast(this, response);
+                }
+                dialog.close();
+              })
+
+        }
+      }];
+
+      new VueDialog(this.$site, {
+        title: 'Individual Reminder',
+        vue: ReviewReminderVue,
+        data: function () {
+          return {
+            to: name
+          }
+        },
+        buttons: buttons,
+        parent: this
+      })
     },
     /**
      * Bring up reassign dialog box. This box allows us to assign a reviewer/reviewee where there
@@ -311,17 +358,7 @@ export default {
      */
     reassignDialog(reassignUser, type, users, reviewIndex) {
       let sortedUsers = this.sortUsersByReviewCount(users, reassignUser, type);
-      let contentString = '<p>Student: ' + reassignUser.name + '</p>' + '<div>' + type + ':\t<select id = "cl-review-reassign-selector">';
-      for (let i = 0; i < sortedUsers.length; i++) {
-        contentString += '<option>' + sortedUsers[i] + '</option>';
-      }
-      contentString += '</select>';
-
-      //variable for the site
       let site = this.$site;
-      //variable for the assignment tag
-      let assignTag = this.assigntag;
-
       let buttons = [{
         contents: "Reassign",
         //handler function for action when clicking reassign button
@@ -363,7 +400,7 @@ export default {
           }
 
           // Send post request and check for errors, this routes to ReviewApi.php
-          site.api.post('/api/review/reassign/' + assignTag, params)
+          site.api.post('/api/review/reassign/' + this.assignTag, params)
               .then((response) => {
                 if (!response.hasError()) {
                   site.toast(this, "Reassignment Made");
@@ -383,55 +420,12 @@ export default {
         data: function () {
           return {
             sortedUsers: sortedUsers,
-            reassignUser: reassignUser
+            reassignUser: reassignUser,
+            assignType: type
           }
         },
         buttons: buttons,
         parent: this
-      });
-    },
-    /**
-     * Handler for sending a reminder to a individual person
-     * @param name of person receiving reminder
-     * @param email to send reminder to
-     */
-    individualReminder(name, email){
-      let site = this.$site;
-      let contentString = '<p>To: ' + name + '</p>' +
-          '<div>Subject: \t<input id="cl-review-notify-individual-subject" placeholder="Email Subject"></input>\t</div>'+
-          '<br'+
-          '<div>Send Reminder: \t<textarea id="cl-review-notify-individual-body" style="resize:none" placeholder="Enter reminder text" rows="6" cols="30"></textarea>\t</div>';
-
-      new this.$site.Dialog({
-        title: 'Individual Reminder ',
-        content: contentString,
-        buttons: [{
-          contents: "Send",
-          // Handler function for when someone clicks send on the dialog box
-          click: function click(dialog) {
-            // Grab the subject/body from the html and put it in params json object
-            let subject = document.querySelector('#cl-review-notify-individual-subject').value;
-            let body = document.querySelector('#cl-review-notify-individual-body').value;
-            let params = {
-              name: name,
-              mailto: email,
-              subject: subject,
-              body: body,
-              isClass: false
-            }
-            // Send post request and check for errors, this routes to ReviewApi.php
-            site.api.post('/api/review/notify', params)
-                .then((response) => {
-                  if (!response.hasError()) {
-                    site.toast(this, "Notification sent!");
-                  } else {
-                    site.toast(this, response);
-                  }
-                  dialog.close();
-                })
-
-          }
-        }]
       });
     },
     /**
