@@ -308,13 +308,72 @@ export default {
      */
     reassignDialog(reassignUser, type, users, reviewIndex) {
       let sortedUsers = this.sortUsersByReviewCount(users, reassignUser, type);
-      let contentString = '<p>Student: ' + reassignUser.name + '</p>' + '<div>' + type + ':\t<select>';
+      let contentString = '<p>Student: ' + reassignUser.name + '</p>' + '<div>' + type + ':\t<select id = "cl-review-reassign-selector">';
       for (let i = 0; i < sortedUsers.length; i++) {
         contentString += '<option>' + sortedUsers[i] + '</option>';
       }
       contentString += '</select>';
-      let buttons = [{contents: "Reassign",
-        click: "reassignActual"}];
+
+      //variable for the site
+      let site = this.$site;
+      //variable for the assignment tag
+      let assignTag = this.assigntag;
+
+      let buttons = [{
+        contents: "Reassign",
+        //handler function for action when clicking reassign button
+        click: function click(dialog) {
+          //getting the select menu
+          let selector = document.querySelector('#cl-review-reassign-selector')
+          //getting the name of the student selected from the drop down menu
+          let selected_student = selector.options[selector.selectedIndex].innerHTML;
+
+          //the student who will be the reviewer
+          var reviewer;
+          //the student who will be the reviewee
+          var reviewee;
+
+          //loop through users and find the user that matches the name selected from drop down
+          for(let i = 0; i<users.length; i++){
+            if(users[i].name === selected_student){
+              //if we are reassigning reviewer
+              if(type === "Reviewer"){
+                //reviewer is the student selected from drop down menu
+                reviewer = users[i];
+                //reviewee will be the reassignUser
+                reviewee = reassignUser;
+              }
+              //if we are reassigning reviewee
+              else{
+                //reviewer will be the reassignUser
+                reviewer = reassignUser;
+                //reviewee is the student selected from drop down menu
+                reviewee = users[i];
+              }
+            }
+          }
+
+          //params for that will be fed to the api call
+          let params = {
+            reviewer: reviewer,
+            reviewee: reviewee
+          }
+
+          // Send post request and check for errors, this routes to ReviewApi.php
+          site.api.post('/api/review/reassign/' + assignTag, params)
+              .then((response) => {
+                if (!response.hasError()) {
+                  site.toast(this, "Reassignment Made");
+                } else {
+                  site.toast(this, response);
+                }
+                dialog.close();
+              })
+
+        }
+
+      }];
+
       let dialogOptions = {title: 'Reassign ' + type,
                             content: contentString,
                             buttons: buttons};
@@ -377,8 +436,15 @@ export default {
     sortUsersByReviewCount(users, reassignUser, type) {
       let userCountPairs = {};
       for (let i = 0; i < users.length; i++) {
-        if (users[i].name != reassignUser.name && !users[i].atLeast(this.staff) && users[i].atLeast(this.student)) {
-          userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
+        if (users[i].name != reassignUser.name && !users[i].atLeast(this.staff) && users[i].atLeast(this.student)){
+          //if the user is already at the maximum reviewees dont add the to the drop down list
+          if(type === "Reviewee" && this.countReviews(users, users[i], type) < this.maxReviewees) {
+            userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
+          }
+          //if the user is already at the maximum reviewers dont add the to the drop down list
+          if(type === "Reviewer" && this.countReviews(users, users[i], type) < this.maxReviewers){
+            userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
+          }
         }
       }
       var items = Object.keys(userCountPairs).map(
