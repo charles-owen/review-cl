@@ -416,12 +416,14 @@ class ReviewApi extends \CL\Users\Api\Resource {
             $post = $server->post;
             $this->ensure($post, ['reviewer', 'reviewee']);  // Check that all required params are present
             //get the reviewer and reviewee passed into the params from reassign dialog box
-            $reviewer = $post['reviewer'];
-            $reviewee = $post['reviewee'];
+            $reviewer_post = $post['reviewer'];
+            $reviewee_post = $post['reviewee'];
+            $reviewer = $members->query(['semester'=>$semester, 'section'=>$sectionId,'userId' => $reviewer_post['id'] ,'role'=>Member::STUDENT])[0];
+            $reviewee = $members->query(['semester'=>$semester, 'section'=>$sectionId,'userId' => $reviewee_post['id'] ,'role'=>Member::STUDENT])[0];
             //check if the combination of reviewer reviewee is a duplicate
-            if(!$reviewAssignments->isReviewer($reviewer['id'], $reviewee['id'], $assignTag)){
-                  //if not go ahead and assign the combination
-                $reviewAssignments->assignReviewing($reviewer['id'], $reviewee['id'], $assignTag);
+            if(!$reviewAssignments->isReviewer($reviewer->member->id, $reviewee->member->id, $assignTag)){
+                //if not go ahead and assign the combination
+                $reviewAssignments->assignReviewing($reviewer->member->id, $reviewee->member->id, $assignTag);
             }
             else{
                 //otherwise give error that this is already a combination
