@@ -68,6 +68,9 @@
 import {ConsoleComponentBase} from 'console-cl/index'
 import {MembersFetcherComponent} from 'course-cl/js/Console/index'
 import StatusPresentVue from './StatusPresent.vue';
+import ReviewReassignVue from './ReviewReassign.vue';
+
+const VueDialog = Site.site.VueDialog;
 
 /**
  * View for Review assignments. Indicates the assignments of students to review
@@ -374,12 +377,18 @@ export default {
 
       }];
 
-      let dialogOptions = {title: 'Reassign ' + type,
-                            content: contentString,
-                            buttons: buttons};
-      new this.$site.Dialog(dialogOptions);
-
-
+      new VueDialog(this.$site, {
+        title: 'Reassign ' + type,
+        vue: ReviewReassignVue,
+        data: function () {
+          return {
+            sortedUsers: sortedUsers,
+            reassignUser: reassignUser
+          }
+        },
+        buttons: buttons,
+        parent: this
+      });
     },
     /**
      * Handler for sending a reminder to a individual person
