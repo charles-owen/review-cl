@@ -305,5 +305,35 @@ SQL;
             return false;
         }
     }
+    //<!--week7 Zhuofan Zeng new added content-->
+    /**
+     * Save data to comment form
+     * @param $time
+     * @param $metadata
+     * @param $reviewerid
+     * @param $revieweeid
+     * @return bool
+     */
+    public function saveContent($time,$metadata,$reviewerid,$revieweeid)
+    {
+        $sql = <<<SQL
+                   INSERT INTO capstone_review (assigntag,time,metadata,reviewerid,revieweeid) 
+                   VALUES ('design3',"$time",'$metadata',$reviewerid,$revieweeid)
+                SQL;
+
+        $pdo = $this->pdo;
+        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        try {   //Catch anomalies
+            //Ready for execution
+            $stmt = $pdo->prepare($sql);
+//            var_dump($stmt->execute());die();
+            // $stmt->execute() execution
+            if ($stmt->execute() === false) return false;
+        } catch(\PDOException $e) {
+            return false;
+        }
+        return true;
+    }
 }
+//<!--week7 end  line 310-339-->
 //<!--week5 end-->

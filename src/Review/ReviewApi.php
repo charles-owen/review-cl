@@ -65,11 +65,9 @@ class ReviewApi extends \CL\Users\Api\Resource {
 			case 'tables':
 				return $this->tables($site, $server, new ReviewTables($site->db));
 
-			// /api/review/notify
-			case 'notify':
-				return $this->notify($site, $server, $params, $time);
+            case 'saveContent':
+                return $this->saveContent($site, $server, $params, $time);
 		}
-
 		throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
 	}
 
@@ -331,35 +329,39 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		$json->addData('reviewers', 0, $data);
 		return $json;
 	}
-
+// Zhuofan Zeng week6 new added content
+// Zhuofan Zeng week7 new added content
     /**
-     * Handles the post request for notifying a individual
-     *
-     * /api/review/notify
-     *
-     * @param Site $site
-     * @param Server $server
-     * @param array $params
-     * @param $time
-     * @return JsonAPI
-     * @throws APIException
+     * Save the reply data
      */
-    private function notify(Site $site, Server $server, array $params, $time)
+    protected function saveContent(Site $site, Server $server, array $params, $time)
     {
-        $post = $server->post;
-        $this->ensure($post, ['mailto', 'name', 'subject', 'body']);  // Check that all required params are present
-        $mailto = $post['mailto'];
-        $name = $post['name'];
-        $subject = $post['subject'];
-        $body = $post['body'];
-
-        $email = $server->__get('email');
-        $email->send($site, $mailto, $name,
-            $subject, $body);
-        $json = new JsonAPI();  // Must return this object in post requests
-        return $json;
+        //todo Accepted parameters
+        $content = strip_tags($_POST['content']);
+        $userid = $_POST['memberid'];   //The member_id passed in from the database
+        //week 7 new added content
+        if (empty($content) || empty($userid)){
+            echo "<script>alert('The content cannot be empty!');location.href='".$_SERVER["HTTP_REFERER"]."';</script>";
+        }
+        $memberId = $GLOBALS['user']->dataJWT['member_id']; //Get the member_id of the current user ；member_id = ad
+        //Reference ReviewAssignments class; prepare for querying the database later
+        $time = date('Y-m-d H:i:s',time());//Time data
+        $reviewerid = $memberId;
+        $revieweeid = $userid;
+        $metadata = json_encode([
+            'review' => [
+                'review' => $content,
+                'submissions' => [],
+            ]
+        ],JSON_UNESCAPED_UNICODE);
+        //start
+        $review = new ReviewAssignments($site->db);
+        if ($review->saveContent($time,$metadata,$reviewerid,$revieweeid)){
+            echo "<script>alert('Submit successfully!');location.href='".$_SERVER["HTTP_REFERER"]."';</script>";
+        }else{
+            return false;
+        }
     }
-
-
-
 }
+// week 7 Zhuofan Zeng new added content end
+// week 6 Zhuofan Zeng new added content end
