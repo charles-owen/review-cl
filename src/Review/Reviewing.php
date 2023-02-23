@@ -10,10 +10,13 @@
 namespace CL\Review;
 
 use CL\Course\Assignment;
+use CL\Course\Member;
+use CL\Course\Members;
 use CL\Users\User;
 use CL\Course\Submission\Submission;
 use CL\Course\Submission\Submissions;
 use CL\Site\Email;
+use CL\Users\Users;
 
 /**
  * Class that manages peer review for an assignment
@@ -149,6 +152,25 @@ class Reviewing {
 	 */
     public function after_due($time) {
         return $time > $this->due;
+    }
+
+    /**
+     * Boolean for denoting if at least one reviewer/reviewee assignment has been made
+     * @param $user the user that we will extract semester and sectionid information from
+     * @return bool denoting if at least one reviewer/reviewee assignment has been made
+     */
+    public function is_assigned(){
+        $site = $this->assignment->site;
+        $assignTag = $this->assignment->tag;
+        $reviewAssignments = new ReviewAssignments($site->db);
+        $semester =$this->assignment->semester;
+        $sectionId =$this->assignment->section->id;
+        $assignments = $reviewAssignments->getReviewers($semester, $sectionId, $assignTag);
+
+        if (!$assignments){
+            return false;
+        }
+        return true;
     }
 
 //	/**
