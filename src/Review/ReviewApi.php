@@ -435,7 +435,29 @@ class ReviewApi extends \CL\Users\Api\Resource {
 
         }
 
-        $json = new JsonAPI(); // Must return this object in post requests
+        $reviews = new Reviews($site->db);
+        $counts = $reviews->get_review_counts($semester, $sectionId, $assignTag);
+        $mapping = [];
+        foreach($counts as $count) {
+            if(!isset($mapping[+$count['reviewerid']])) {
+                $mapping[+$count['reviewerid']] = [];
+            }
+
+            $mapping[+$count['reviewerid']][+$count['revieweeid']] = $count['count'];
+        }
+
+        $assignments = $reviewAssignments->getReviewers($semester, $sectionId, $assignTag);
+        $data = [];
+        foreach($assignments as $assignment) {
+            $count = isset($mapping[+$assignment['reviewer']]) &&
+            isset($mapping[+$assignment['reviewer']][+$assignment['reviewee']]) ?
+                $mapping[+$assignment['reviewer']][+$assignment['reviewee']] : 0;
+
+            $data[] = [+$assignment['reviewer'], +$assignment['reviewee'], $count];
+        }
+
+        $json = new JsonAPI();
+        $json->addData('reviewers', 0, $data);
         return $json;
 
     }

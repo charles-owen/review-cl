@@ -319,6 +319,9 @@ export default {
       //variable for the assignment tag
       let assignTag = this.assigntag;
 
+      //variable to hold this to call functions within click function
+      let tempThis = this;
+
       let buttons = [{
         contents: "Reassign",
         //handler function for action when clicking reassign button
@@ -364,6 +367,8 @@ export default {
               .then((response) => {
                 if (!response.hasError()) {
                   site.toast(this, "Reassignment Made");
+                  //calling take to reflect change when dialog box is closed
+                  tempThis.take(response);
                 } else {
                   site.toast(this, response);
                 }
@@ -371,6 +376,9 @@ export default {
               })
 
         }
+
+
+
 
       }];
 
@@ -479,7 +487,7 @@ export default {
         }
       }
       return count;
-    },
+    }
   }
 }
 </script>
