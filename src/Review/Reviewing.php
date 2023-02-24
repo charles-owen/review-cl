@@ -160,6 +160,9 @@ class Reviewing {
      * @return bool denoting if at least one reviewer/reviewee assignment has been made
      */
     public function is_assigned(){
+        /*
+         * Get reviewers for this assignment
+         */
         $site = $this->assignment->site;
         $assignTag = $this->assignment->tag;
         $reviewAssignments = new ReviewAssignments($site->db);
@@ -167,6 +170,9 @@ class Reviewing {
         $sectionId =$this->assignment->section->id;
         $assignments = $reviewAssignments->getReviewers($semester, $sectionId, $assignTag);
 
+        /*
+         * If there aren't any assignments, return false
+         */
         if (!$assignments){
             return false;
         }
@@ -494,6 +500,48 @@ MSG;
 	        "$coursename Peer Review Pending", $message);
     }
 
+    /**
+     * Notify instructors of a course and semester if a student submits and there are no reviewer/reviewee assignments.
+     */
+    private function notifyMissingAssignments() {
+        /*
+         * Get Members and Users table
+         */
+        $site = $this->assignment->site;
+        $members = new Members($site->db);
+        $users = new Users($site->db);
+
+        /*
+         * Create email contents
+         */
+        $message = <<<MSG
+        <p>A student has submitted to a peer review assignment without any review/reviewee pairs made. </p>
+        <p>Please go to the <a href="$url">Reviewing Page</a> to assign reviewer/reviewee pairs.</p>
+        MSG;
+
+        /*
+         * Get all members in the section
+         */
+        $all = $members->getAllBySection($this->assignment->semester, $this->assignment->section->id);
+
+        /*
+         * Create URL to assign reviewer/reviewees
+         */
+        $url = $site->server . $site->root . '/cl/console/review/reviewers/' . $this->assignment->tag;
+        $coursename = $site->siteName;
+
+        $email = $this->__get('email');
+        /*
+         * Send an email to each staff member in section
+         */
+        foreach($all as $member) {
+            $user = $users->get($member->userId);
+            if($user->staff) {
+                $email->send($site, $user->email, $user->displayName,
+                    "$coursename Peer Review Pairs: No Pairings Made", $message);
+            }
+        }
+    }
 
 	/**
 	 * Handle a submission of a review
