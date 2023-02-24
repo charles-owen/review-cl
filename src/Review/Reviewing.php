@@ -409,6 +409,14 @@ HTML;
             return false;
         }
 
+        /*
+         * If none of the students have been assigned to one-another, then email instructors
+         */
+        if (!$this->is_assigned()) {
+            // Email Instructors
+            $this->notifyMissingAssignments();
+        }
+
         // Get the reviewers for this submission
         $reviewAssignments = new ReviewAssignments($this->assignment->site->db);
         $reviewers = $reviewAssignments->getMemberReviewers($user->member->id, $this->assignment->tag);
