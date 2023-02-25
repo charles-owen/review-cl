@@ -323,13 +323,27 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		}
 
 		$assignments = $reviewAssignments->getReviewers($semester, $sectionId, $assignTag);
+
 		$data = [];
 		foreach($assignments as $assignment) {
-			$count = isset($mapping[+$assignment['reviewer']]) &&
-				isset($mapping[+$assignment['reviewer']][+$assignment['reviewee']]) ?
-				$mapping[+$assignment['reviewer']][+$assignment['reviewee']] : 0;
 
-			$data[] = [+$assignment['reviewer'], +$assignment['reviewee'], $count];
+            //dropped user logic here
+            //query to see if the reviewer is a student
+            $reviewer = $members->query(['semester'=>$semester, 'section'=>$sectionId,'id' => $assignment['reviewer'] ,'role'=>Member::STUDENT]);
+            //query to see if the reviewee is a student
+            $reviewee = $members->query(['semester'=>$semester, 'section'=>$sectionId,'id' => $assignment['reviewee'] ,'role'=>Member::STUDENT]);
+
+//            print_r($reviewer);
+//            print_r($reviewee);
+
+            //if both are students then only add to data list
+            if(count($reviewer) > 0 and count($reviewee) > 0) {
+                $count = isset($mapping[+$assignment['reviewer']]) &&
+                isset($mapping[+$assignment['reviewer']][+$assignment['reviewee']]) ?
+                    $mapping[+$assignment['reviewer']][+$assignment['reviewee']] : 0;
+
+                $data[] = [+$assignment['reviewer'], +$assignment['reviewee'], $count];
+            }
 		}
 
 		$json = new JsonAPI();
@@ -449,11 +463,24 @@ class ReviewApi extends \CL\Users\Api\Resource {
         $assignments = $reviewAssignments->getReviewers($semester, $sectionId, $assignTag);
         $data = [];
         foreach($assignments as $assignment) {
-            $count = isset($mapping[+$assignment['reviewer']]) &&
-            isset($mapping[+$assignment['reviewer']][+$assignment['reviewee']]) ?
-                $mapping[+$assignment['reviewer']][+$assignment['reviewee']] : 0;
 
-            $data[] = [+$assignment['reviewer'], +$assignment['reviewee'], $count];
+            //dropped user logic here
+            //query to see if the reviewer is a student
+            $reviewer = $members->query(['semester'=>$semester, 'section'=>$sectionId,'id' => $assignment['reviewer'] ,'role'=>Member::STUDENT]);
+            //query to see if the reviewee is a student
+            $reviewee = $members->query(['semester'=>$semester, 'section'=>$sectionId,'id' => $assignment['reviewee'] ,'role'=>Member::STUDENT]);
+
+//            print_r($reviewer);
+//            print_r($reviewee);
+
+            //if both are students then only add to data list
+            if(count($reviewer) > 0 and count($reviewee) > 0) {
+                $count = isset($mapping[+$assignment['reviewer']]) &&
+                isset($mapping[+$assignment['reviewer']][+$assignment['reviewee']]) ?
+                    $mapping[+$assignment['reviewer']][+$assignment['reviewee']] : 0;
+
+                $data[] = [+$assignment['reviewer'], +$assignment['reviewee'], $count];
+            }
         }
 
         $json = new JsonAPI();

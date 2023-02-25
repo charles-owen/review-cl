@@ -197,6 +197,7 @@ export default {
         }
 
 
+
         this.reviewers[reviewer].push([reviewee, cnt]);
         if (this.reviewers[reviewer].length > this.maxReviewees) {
           this.maxReviewees = this.reviewers[reviewer].length;
@@ -212,6 +213,16 @@ export default {
           this.maxReviewers = this.reviewers[reviewer].length;
         }
       }
+
+      //printing these to show that tables break when all records dont have the same number
+      //displays maxReviewers count
+      console.log(this.maxReviewers);
+      //displays maxReviewees count
+      console.log(this.maxReviewees);
+      //display reviewers array
+      console.log(this.reviewers);
+      //display reviewees list
+      console.log(this.reviewees);
 
     },
     /**
