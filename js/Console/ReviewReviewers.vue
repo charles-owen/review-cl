@@ -22,13 +22,32 @@
           </div>
           <table class="small">
             <tr>
+              <th style="min-width: 105px"></th>
               <th>Name</th>
               <th>User ID</th>
               <th v-for="i in maxReviewees">reviewee</th>
               <th v-for="i in maxReviewers">reviewer</th>
-              <th>Email</th>
             </tr>
             <tr v-for="user in fetcher.users">
+              <td>
+                <div>
+                  <a @click.prevent="individualReminder(user.name, user.email)" href="javascript:;">
+                    <img :src="mail" title="Email" alt="Email">
+                  </a>
+                  <a @click.prevent="reassignDialog(user, 'Reviewee', fetcher.users)" href="javascript:;">
+                    <img :src="plus" title="Add Reviewee" alt="Add Reviewee">
+                  </a>
+                  <a @click.prevent="removeDialog(user, 'Reviewee', fetcher.users)" href="javascript:;">
+                    <img :src="remove" title="Remove Reviewee" alt="Remove Reviewee">
+                  </a>
+                  <a @click.prevent="reassignDialog(user, 'Reviewer', fetcher.users)" href="javascript:;">
+                    <img :src="plus" title="Add Reviewer" alt="Add Reviewer">
+                  </a>
+                  <a @click.prevent="removeDialog(user, 'Reviewer', fetcher.users)" href="javascript:;">
+                    <img :src="remove" title="Remove Reviewer" alt="Remove Reviewer">
+                  </a>
+                </div>
+              </td>
               <td class="small">
                 <router-link :title="user.name" :to="root + '/cl/console/grading/' + assigntag + '/' + user.member.id">
                   {{user.name}}
@@ -39,22 +58,11 @@
                   {{user.userId}}
                 </router-link>
               </td>
-              <td v-for="i in maxReviewees" :class="cls(reviewers[user.member.id], i-1)" align="center">
-                <a v-if="!displayUser(fetcher.users, reviewers[user.member.id], i-1) && !user.atLeast(staff) && user.atLeast(student)" @click.default="reassignDialog(user, 'Reviewee', fetcher.users, i)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
-                  <img src="../../../site/img/add-circle.png">
-                </a>
+              <td v-for="i in maxReviewees" :class="cls(reviewers[user.member.id], i-1)">
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
-              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)" align="center">
-                <a v-if="!displayUser(fetcher.users, reviewees[user.member.id], i-1) && !user.atLeast(staff) && user.atLeast(student)" @click.default="reassignDialog(user, 'Reviewer', fetcher.users, i)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
-                  <img src="../../../site/img/add-circle.png">
-                </a>
+              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)">
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
-              </td>
-              <td align = "center">
-                <a  @click.default="individualReminder(user.name, user.email)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
-                  <img src = ../../../site/img/send.png>
-                </a>
               </td>
             </tr>
           </table>
@@ -69,7 +77,9 @@ import {ConsoleComponentBase} from 'console-cl/index'
 import {MembersFetcherComponent} from 'course-cl/js/Console/index'
 import StatusPresentVue from './StatusPresent.vue';
 import ReviewReassignVue from './ReviewReassign.vue';
+import ReviewRemoveVue from './ReviewRemove.vue';
 import ReviewReminderVue from './ReviewReminder.vue';
+
 
 const VueDialog = Site.site.VueDialog;
 
@@ -92,13 +102,16 @@ export default {
     return {
       assignment: null, // Object that defines an entire assignment
       reviewerCnt: 2,   // Number of reviewers to assign for each student
-      instructor: Site.Member.INSTRUCTOR,
-      staff: Site.Member.STAFF,
-      student: Site.Member.STUDENT,
+      instructor: Site.Member.INSTRUCTOR, // Enum for instructor permissions
+      staff: Site.Member.STAFF, // Enum for staff permissions
+      student: Site.Member.STUDENT, // Enum for student permissions
       reviewers: null,  // All of the reviews by member ID
       reviewees: null,  // All of the reviewee by member ID
       maxReviewees: 0,  // Maximum number of reviewees for any reviewer
-      maxReviewers: 0   // Maximum number of reviewers for any reviewee
+      maxReviewers: 0,   // Maximum number of reviewers for any reviewee
+      mail: Site.root + '/vendor/cl/site/img/mail.png', // Mail icon png
+      plus: Site.root + '/vendor/cl/site/img/plus.png', // Plus icon png
+      remove: Site.root + '/vendor/cl/site/img/x.png' // X (delete) icon png
     }
   },
   components: {
@@ -348,6 +361,38 @@ export default {
         parent: this
       })
     },
+    removeDialog(removeUser, type, users)
+    {
+      let assignedReviews = [];
+      if (type === "Reviewee") {
+        for (let i = 0; i < this.maxReviewers; i++) {
+          if (this.displayUser(users, this.reviewers[removeUser.member.id], i)) {
+            assignedReviews.push(this.displayUser(users, this.reviewers[removeUser.member.id], i).name)
+          }
+        }
+      }
+      else if (type === "Reviewer") {
+        for (let i = 0; i < this.maxReviewees; i++) {
+          if (this.displayUser(users, this.reviewees[removeUser.member.id], i)) {
+            assignedReviews.push(this.displayUser(users, this.reviewees[removeUser.member.id], i).name)
+          }
+        }
+      }
+      let buttons = [];
+      new VueDialog(this.$site, {
+        title: 'Remove ' + type,
+        vue: ReviewRemoveVue,
+        data: function () {
+          return {
+            assignedReviews: assignedReviews,
+            removeUser: removeUser,
+            removeType: type
+          }
+        },
+        buttons: buttons,
+        parent: this
+      });
+    },
     /**
      * Bring up reassign dialog box. This box allows us to assign a reviewer/reviewee where there
      * is an empty slot. The users in the drop-down menu are sorted by fewest assigned reviewees/reviewers.
@@ -356,7 +401,7 @@ export default {
      * @param users Array of users in the class
      * @param reviewIndex Index in the reviewee/reviewer column that was clicked.
      */
-    reassignDialog(reassignUser, type, users, reviewIndex) {
+    reassignDialog(reassignUser, type, users) {
       let sortedUsers = this.sortUsersByReviewCount(users, reassignUser, type);
       let site = this.$site;
       let buttons = [{
@@ -441,11 +486,11 @@ export default {
       for (let i = 0; i < users.length; i++) {
         if (users[i].name != reassignUser.name && !users[i].atLeast(this.staff) && users[i].atLeast(this.student)){
           //if the user is already at the maximum reviewees dont add the to the drop down list
-          if(type === "Reviewee" && this.countReviews(users, users[i], type) < this.maxReviewees) {
+          if(type === "Reviewee") {
             userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
           }
           //if the user is already at the maximum reviewers dont add the to the drop down list
-          if(type === "Reviewer" && this.countReviews(users, users[i], type) < this.maxReviewers){
+          if(type === "Reviewer"){
             userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
           }
         }
