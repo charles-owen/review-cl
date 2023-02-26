@@ -43,13 +43,15 @@
                 <a v-if="!displayUser(fetcher.users, reviewers[user.member.id], i-1) && !user.atLeast(staff) && user.atLeast(student)" @click.default="reassignDialog(user, 'Reviewee', fetcher.users, i)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
                   <img src="../../../site/img/add-circle.png">
                 </a>
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined ? reviewers[user.member.id][i-1][1] : 0"></status-present>
+                <!--Changed ternary operator for count to check if reviewer array has enough entries                -->
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined && i-1 < reviewers.length ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
               <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)" align="center">
                 <a v-if="!displayUser(fetcher.users, reviewees[user.member.id], i-1) && !user.atLeast(staff) && user.atLeast(student)" @click.default="reassignDialog(user, 'Reviewer', fetcher.users, i)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
                   <img src="../../../site/img/add-circle.png">
                 </a>
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
+                <!--Changed ternary operator for count to check if reviewees array has enough entries                -->
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined && i-1 < reviewees.length ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
               <td align = "center">
                 <a  @click.default="individualReminder(user.name, user.email)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
@@ -208,21 +210,13 @@ export default {
           this.reviewees[reviewee] = [];
         }
 
+        //made sure maxReviewers was updating properly
         this.reviewees[reviewee].push([reviewer, cnt]);
         if (this.reviewees[reviewee].length > this.maxReviewers) {
-          this.maxReviewers = this.reviewers[reviewer].length;
+          this.maxReviewers = this.reviewees[reviewee].length;
         }
       }
 
-      //printing these to show that tables break when all records dont have the same number
-      //displays maxReviewers count
-      console.log(this.maxReviewers);
-      //displays maxReviewees count
-      console.log(this.maxReviewees);
-      //display reviewers array
-      console.log(this.reviewers);
-      //display reviewees list
-      console.log(this.reviewees);
 
     },
     /**
