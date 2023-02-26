@@ -333,8 +333,6 @@ class ReviewApi extends \CL\Users\Api\Resource {
             //query to see if the reviewee is a student
             $reviewee = $members->query(['semester'=>$semester, 'section'=>$sectionId,'id' => $assignment['reviewee'] ,'role'=>Member::STUDENT]);
 
-//            print_r($reviewer);
-//            print_r($reviewee);
 
             //if both are students then only add to data list
             if(count($reviewer) > 0 and count($reviewee) > 0) {
@@ -469,9 +467,6 @@ class ReviewApi extends \CL\Users\Api\Resource {
             $reviewer = $members->query(['semester'=>$semester, 'section'=>$sectionId,'id' => $assignment['reviewer'] ,'role'=>Member::STUDENT]);
             //query to see if the reviewee is a student
             $reviewee = $members->query(['semester'=>$semester, 'section'=>$sectionId,'id' => $assignment['reviewee'] ,'role'=>Member::STUDENT]);
-
-//            print_r($reviewer);
-//            print_r($reviewee);
 
             //if both are students then only add to data list
             if(count($reviewer) > 0 and count($reviewee) > 0) {
