@@ -12,7 +12,7 @@
                   </select>
                 </p>
               </form>
-              <form method="post" @submit.prevent="sendReminderDialog()">
+              <form method="post" @submit.prevent="maybeSendReminder()">
                 <div style=margin-left:10px>
                   <p class="center"><button type="submit">Send Reminder</button>
                   </p>
@@ -52,7 +52,7 @@
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
               <td align = "center">
-                <a  @click.default="individualReminder(user.name, user.email)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
+                <a  @click.default="maybeIndividualReminder(user.id, user.name)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
                   <img src = ../../../site/img/send.png>
                 </a>
               </td>
@@ -251,50 +251,36 @@ export default {
 
     },
     /**
-     * Uses a message box to edit and send reminder emails to
-     * individual students or the entire class.
+     * Dialog pop up to confirm user wants to send class wide reminder.
      */
-    sendReminderDialog() {
+    maybeSendReminder() {
+      new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to send a reminder for reviews to the entire class?',
+          this.$site.Dialog.MessageBox.OKCANCEL, () => {
+            this.sendReminder();
+          });
+    },
+    /**
+     * Uses a message box to edit and send reminder emails to
+     * the entire class.
+     */
+    sendReminder() {
       let site = this.$site;
-      let content = '<div>' + "To Class" + '<br>' + '<br>' +
-          '<div>Subject:\n</div>' +
-          '<div><textarea id="cl-review-notify-class-subject" style="resize:none" rows="1" cols="38">CSE335 Peer Review Pending</textarea></div>' +
-          '<div> <textarea id="cl-review-notify-class-body" style="resize:none" placeholder="Enter reminder email" rows="6" cols="38">You have a review pending in the peer review system.\n' +
-          '\n' + 'Please go to the Peer Reviewing Status Page to see what reviews are pending.</textarea></div>';
+      //variable for the assignment tag
+      let assignTag = this.assigntag;
 
-
-      new this.$site.Dialog({
-        title: 'Send Reminder',
-        content: content,
-        buttons: [{
-          contents: "Send",
-          // Handler function for when someone clicks send on the dialog box
-          click: function click(dialog) {
-            // Grab the subject/body from the html and put it in params json object
-            let subject = document.querySelector('#cl-review-notify-class-subject').value;
-            let body = document.querySelector('#cl-review-notify-class-body').value;
-            let params = {
-              name: 'Class',
-              mailto: 'Class',
-              subject: subject,
-              body: body,
-              isClass: true
+      let params = {
+        userId: 'null',
+        isClass: true
+      }
+      // Send post request and check for errors, this routes to ReviewApi.php
+      site.api.post('/api/review/notify/' + assignTag, params)
+          .then((response) => {
+            if (!response.hasError()) {
+              site.toast(this, "Notification sent!");
+            } else {
+              site.toast(this, response);
             }
-            // Send post request and check for errors, this routes to ReviewApi.php
-            site.api.post('/api/review/notify', params)
-                .then((response) => {
-                  if (!response.hasError()) {
-                    site.toast(this, "Notification sent!");
-                  } else {
-                    site.toast(this, response);
-                  }
-                  dialog.close();
-                })
-
-          }
-        }],
-        form: true
-      });
+          })
 
 
     },
@@ -382,48 +368,36 @@ export default {
 
     },
     /**
+     * Dialog pop up to confirm user wants to send individual reminder.
+     */
+    maybeIndividualReminder(userId, name) {
+      new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to send a reminder to ' + name + '?',
+          this.$site.Dialog.MessageBox.OKCANCEL, () => {
+            this.individualReminder(userId);
+          });
+    },
+    /**
      * Handler for sending a reminder to a individual person
      * @param name of person receiving reminder
      * @param email to send reminder to
      */
-    individualReminder(name, email){
+    individualReminder(userId){
       let site = this.$site;
-      let contentString = '<p>To: ' + name + '</p>' +
-          '<div>Subject: \t<input id="cl-review-notify-individual-subject" placeholder="Email Subject"></input>\t</div>'+
-          '<br'+
-          '<div>Send Reminder: \t<textarea id="cl-review-notify-individual-body" style="resize:none" placeholder="Enter reminder text" rows="6" cols="30"></textarea>\t</div>';
-
-      new this.$site.Dialog({
-        title: 'Individual Reminder ',
-        content: contentString,
-        buttons: [{
-          contents: "Send",
-          // Handler function for when someone clicks send on the dialog box
-          click: function click(dialog) {
-            // Grab the subject/body from the html and put it in params json object
-            let subject = document.querySelector('#cl-review-notify-individual-subject').value;
-            let body = document.querySelector('#cl-review-notify-individual-body').value;
-            let params = {
-              name: name,
-              mailto: email,
-              subject: subject,
-              body: body,
-              isClass: false
+      //variable for the assignment tag
+      let assignTag = this.assigntag;
+      let params = {
+        userId: userId,
+        isClass: false
+      }
+      // Send post request and check for errors, this routes to ReviewApi.php
+      site.api.post('/api/review/notify/' + assignTag, params)
+          .then((response) => {
+            if (!response.hasError()) {
+              site.toast(this, "Notification sent!");
+            } else {
+              site.toast(this, response);
             }
-            // Send post request and check for errors, this routes to ReviewApi.php
-            site.api.post('/api/review/notify', params)
-                .then((response) => {
-                  if (!response.hasError()) {
-                    site.toast(this, "Notification sent!");
-                  } else {
-                    site.toast(this, response);
-                  }
-                  dialog.close();
-                })
-
-          }
-        }]
-      });
+          })
     },
     /**
      * Return an array of users in the class sorted by number of reviewers/reviewees (least to most) they have assigned
