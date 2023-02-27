@@ -14,13 +14,15 @@
 <!--        <input type="submit" value="SUBMIT">-->
 <!--      </form>-->
 
-      <!--   Zhuofan Zeng code for this week  -->
-      <h2>Reviews</h2>
+      <!--   Zhuofan Zeng code for week4  -->
+<!--      <h2>Review & Chat</h2>-->
+      <h3 style="text-align: center;background: #00723f;color: white;">Review & Chat</h3>
       <p class="cl-reviews-none" v-if="reviewing.length === 0">  <!-- v-if determines whether the length of the reviewing is 0-->
         *** None Yet ***
       </p>
       <div v-for="review in reviewing" class="cl-review"> <!--   v-for loop reviewing, the return value of each loop review  -->
-        Reviewer:
+        <p v-if="review.isReview"><strong>Reviewee:</strong></p >
+        <p v-else=""><strong>Me:</strong></p >
         <div class="cl-review-present">{{review.meta.review.review}}<!--   review.meta.review.review takes the value, also inside the loop  -->
           <p style="font-size: 10px; color: green;">{{formatTime(review.time)}}
           </p><!--   review.time takes value of time  -->
@@ -31,7 +33,7 @@
         <div ref="editor" class="shadow"></div>
         <input type="submit" value="Send">
       </form>
-      <!--   Zhuofan Zeng code for this week   -->
+      <!--   Zhuofan Zeng code for week4  end -->
     </div>
   </div>
 </template>
@@ -86,7 +88,7 @@ export default {
         text: text,
         submissions: this.submissions
       }
-
+      // Request backend data API
       this.$site.api.post(`/api/review/review/${this.json.id}`, params)
           .then((response) => {
             if (!response.hasError()) {

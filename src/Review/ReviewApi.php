@@ -341,7 +341,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
         $userid = $_POST['memberid'];   //The member_id passed in from the database
         //week 7 new added content
         if (empty($content) || empty($userid)){
-            echo "<script>alert('The content cannot be empty!');location.href='".$_SERVER["HTTP_REFERER"]."';</script>";
+            echo "<script>alert('You must enter some text to send!');location.href='".$_SERVER["HTTP_REFERER"]."';</script>";
         }
         $memberId = $GLOBALS['user']->dataJWT['member_id']; //Get the member_id of the current user ；member_id = ad
         //Reference ReviewAssignments class; prepare for querying the database later

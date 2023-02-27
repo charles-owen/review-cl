@@ -152,35 +152,93 @@ SQL;
 		return true;
 	}
 
-	/**
+//	/**
+//	 * Get all reviews for a given assignment/reviewer/reviewee combination.
+//	 * @param string $assignTag
+//	 * @param int $reviewerId
+//	 * @param int $revieweeId
+//	 * @return array
+//	 */
+//	public function get_reviewing($assignTag, $reviewerId, $revieweeId) {
+//		$pdo = $this->pdo();
+//
+//		$sql = <<<SQL
+//select *
+//from $this->tablename
+//where reviewerid=? and revieweeid=? and assigntag=?
+//order by time asc
+//SQL;
+//
+//		$stmt = $pdo->prepare($sql);
+//		$stmt->execute([$reviewerId, $revieweeId, $assignTag]);
+//		$ret = [];
+//		foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+//			$ret[] = [
+//				'time'=>strtotime($row['time']),
+//				'meta'=>(new MetaData(null, $row['metadata']))->data
+//			];
+//		}
+//
+//		return $ret;
+//	}
+
+// Zhuofan Zeng week8/9 new added content
+    /**
 	 * Get all reviews for a given assignment/reviewer/reviewee combination.
 	 * @param string $assignTag
 	 * @param int $reviewerId
 	 * @param int $revieweeId
 	 * @return array
 	 */
-	public function get_reviewing($assignTag, $reviewerId, $revieweeId) {
-		$pdo = $this->pdo();
+    public function get_reviewing($assignTag, $reviewerId, $revieweeId)
+    {
+        //todo Get all the comment data
+        $memberId = $reviewerId;
+        //Find out the two users who left messages to each other based on the ID
+        $tempArr1 = $this->getAllReview($assignTag, $reviewerId, $revieweeId, $memberId);
+        $tempArr2 = $this->getAllReview($assignTag, $revieweeId, $reviewerId, $memberId);
+        //todo Combination based on the fetched comment data
+        if (!empty($tempArr1) && !empty($tempArr2)){
+            $tempArr = array_merge($tempArr1,$tempArr2); //Temporary array
+        }else{
+            if (!empty($tempArr1)) $tempArr = $tempArr1;
+            if (!empty($tempArr2)) $tempArr = $tempArr2;
+        }
+        if (empty($tempArr)) return [];
+        $con = array_column($tempArr,null,'id'); // Take out the complete array with ID as key
+        sort($con); //sort via ID
+//        echo '<pre>';
+//            print_r($con);
+//        echo '</pre>';
+//        die();
+        return $con;
+    }
 
-		$sql = <<<SQL
-select *
-from $this->tablename
-where reviewerid=? and revieweeid=? and assigntag=?
-order by time asc
-SQL;
 
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute([$reviewerId, $revieweeId, $assignTag]);
-		$ret = [];
-		foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-			$ret[] = [
-				'time'=>strtotime($row['time']),
-				'meta'=>(new MetaData(null, $row['metadata']))->data
-			];
-		}
-
-		return $ret;
-	}
+    public function getAllReview($assignTag, $reviewerId, $revieweeId, $memberId)
+    {
+        //todo Query the comments sent by the current user
+        $pdo = $this->pdo();
+        $sql = <<<SQL
+                    select *
+                    from $this->tablename
+                    where reviewerid=? and revieweeid=? and assigntag=?
+                    order by time asc
+               SQL;
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$reviewerId, $revieweeId, $assignTag]);
+        $ret = [];
+        foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $ret[] = [
+                'time'=>strtotime($row['time']),
+                'id'=>$row['id'],  // Used to determine the chronological order and display the comments in order of ID (numbers from smallest to largest) when displaying them.
+                'isReview'=> $memberId==$row['reviewerid'] ? false : true,
+                'meta'=>(new MetaData(null, $row['metadata']))->data
+            ];
+        }
+        return $ret;
+    }
+// Zhuofan Zeng week8/9 new added content
 
 	/**
 	 * Get all reviews for a given user.
