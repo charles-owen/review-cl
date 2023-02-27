@@ -52,7 +52,8 @@ export default {
   data: function () {
     return {
       reviewing: [],
-      submissions: {}
+      submissions: {},
+      resizeObserver: null,
     }
   },
   mounted() {
@@ -75,7 +76,14 @@ export default {
 
     this.submissions = submissions;
 
+    this.resizeObserver = new ResizeObserver(this.onResize);
+    this.resizeObserver.observe(this.$refs.diagramImage[0]);
+    this.onResize();
+
     handler.init();
+  },
+  beforeUnmount() {
+    this.resizeObserver.unobserve(this.$refs.diagramImage[0]);
   },
   methods: {
     submit() {
@@ -127,7 +135,10 @@ export default {
     },
     previewImg(submission) {
       return this.$site.root + '/cl/review/img/' + submission.id;
-    }
+    },
+    onResize() {
+      handler.setSize(this.$refs.diagramImage[0]);
+    },
   }
 }
 </script>
