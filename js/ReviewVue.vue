@@ -37,6 +37,9 @@
 
 <script>
 import {UserVueBase} from 'users-cl/index'
+import {CanvasHandler} from './canvas_handler'
+
+var handler = new CanvasHandler();
 
 /**
  * This is the page for a review of an assignment by a member.
@@ -71,6 +74,8 @@ export default {
     }
 
     this.submissions = submissions;
+
+    handler.init();
   },
   methods: {
     submit() {
