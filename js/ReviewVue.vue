@@ -4,7 +4,15 @@
       <div v-for="submission in json.submissions" class="cl-submission-view">
         <h2>{{submission.name}}</h2>
         <pre v-if="submission.type === 'text'" class="cl-preview yellow-pad">{{submission.text}}</pre>
-        <figure v-if="submission.type === 'image'" class="cl-preview"><img :src="previewImg(submission)"></figure>
+
+        <div class="container">
+          <!-- <figure v-if="submission.type === 'image'" class="cl-preview"> -->
+          <img ref="diagramImage" class="diagram" :src="previewImg(submission)">
+          <canvas class="canvas-drawing" id="drawing"></canvas>
+          <svg class="svg-drawing" id="drawing-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          <!-- </figure> -->
+        </div>
+
         <p class="cl-preview-time">{{formatTime(submission.date)}}</p>
       </div>
 
