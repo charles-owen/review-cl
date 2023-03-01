@@ -59,10 +59,12 @@
                 </router-link>
               </td>
               <td v-for="i in maxReviewees" :class="cls(reviewers[user.member.id], i-1)">
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined ? reviewers[user.member.id][i-1][1] : 0"></status-present>
+                <!--Changed ternary operator for count to check if reviewer array has enough entries                -->
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined && i-1 < reviewers.length ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
               <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)">
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
+                <!--Changed ternary operator for count to check if reviewees array has enough entries                -->
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined && i-1 < reviewees.length ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
             </tr>
           </table>
@@ -214,6 +216,7 @@ export default {
         }
 
 
+
         this.reviewers[reviewer].push([reviewee, cnt]);
         if (this.reviewers[reviewer].length > this.maxReviewees) {
           this.maxReviewees = this.reviewers[reviewer].length;
@@ -224,11 +227,13 @@ export default {
           this.reviewees[reviewee] = [];
         }
 
+        //made sure maxReviewers was updating properly
         this.reviewees[reviewee].push([reviewer, cnt]);
         if (this.reviewees[reviewee].length > this.maxReviewers) {
-          this.maxReviewers = this.reviewers[reviewer].length;
+          this.maxReviewers = this.reviewees[reviewee].length;
         }
       }
+
 
     },
     /**
@@ -404,6 +409,11 @@ export default {
     reassignDialog(reassignUser, type, users) {
       let sortedUsers = this.sortUsersByReviewCount(users, reassignUser, type);
       let site = this.$site;
+      //variable for the assignment tag
+      let assignTag = this.assigntag;
+
+      //variable to hold this to call functions within click function
+      let tempThis = this;
       let buttons = [{
         contents: "Reassign",
         //handler function for action when clicking reassign button
@@ -443,12 +453,13 @@ export default {
             reviewer: reviewer,
             reviewee: reviewee
           }
-
           // Send post request and check for errors, this routes to ReviewApi.php
-          site.api.post('/api/review/reassign/' + this.assignTag, params)
+          site.api.post('/api/review/reassign/' + assignTag, params)
               .then((response) => {
                 if (!response.hasError()) {
                   site.toast(this, "Reassignment Made");
+                  //calling take to reflect change when dialog box is closed
+                  tempThis.take(response);
                 } else {
                   site.toast(this, response);
                 }
@@ -456,6 +467,9 @@ export default {
               })
 
         }
+
+
+
 
       }];
 
@@ -527,7 +541,7 @@ export default {
         }
       }
       return count;
-    },
+    }
   }
 }
 </script>
