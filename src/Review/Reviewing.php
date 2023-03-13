@@ -561,6 +561,11 @@ MSG;
         $users = new Users($site->db);
 
         /*
+          * Create URL to assign reviewer/reviewees
+          */
+        $url = $site->server . $site->root . '/cl/console/review/reviewers/' . $this->assignment->tag;
+
+        /*
          * Create email contents
          */
         $message = <<<MSG
@@ -573,10 +578,6 @@ MSG;
          */
         $all = $members->getAllBySection($this->assignment->semester, $this->assignment->section->id);
 
-        /*
-         * Create URL to assign reviewer/reviewees
-         */
-        $url = $site->server . $site->root . '/cl/console/review/reviewers/' . $this->assignment->tag;
         $coursename = $site->siteName;
 
         $email = $this->__get('email');
