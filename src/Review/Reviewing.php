@@ -185,7 +185,7 @@ class Reviewing {
      * @param User $user
      * @return bool True if the user has submitted in all assignment categories
      */
-    private function has_submitted(User $user) {
+     function has_submitted(User $user) {
         $this->assignment->load();
         $submissions = $this->assignment->submissions;
         $submissiontags = [];

@@ -12,7 +12,7 @@
                   </select>
                 </p>
               </form>
-              <form method="post" @submit.prevent="maybeSendReminder()">
+              <form method="post" @submit.prevent="maybeSendNotification()">
                 <div style=margin-left:10px>
                   <p class="center"><button type="submit">Send Reminder</button>
                   </p>
@@ -52,7 +52,7 @@
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
               <td align = "center">
-                <a  @click.default="maybeIndividualReminder(user.id, user.name)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
+                <a  @click.default="maybeIndividualNotification(user.id, user.name)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
                   <img src = ../../../site/img/send.png>
                 </a>
               </td>
@@ -253,17 +253,17 @@ export default {
     /**
      * Dialog pop up to confirm user wants to send class wide reminder.
      */
-    maybeSendReminder() {
+    maybeSendNotification() {
       new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to send a reminder for reviews to the entire class?',
           this.$site.Dialog.MessageBox.OKCANCEL, () => {
-            this.sendReminder();
+            this.sendNotification();
           });
     },
     /**
      * Uses a message box to edit and send reminder emails to
      * the entire class.
      */
-    sendReminder() {
+    sendNotification() {
       let site = this.$site;
       //variable for the assignment tag
       let assignTag = this.assigntag;
@@ -276,7 +276,8 @@ export default {
       site.api.post('/api/review/notify/' + assignTag, params)
           .then((response) => {
             if (!response.hasError()) {
-              site.toast(this, "Notification sent!");
+              let notificationsSent = response.getData('notificationsSent').attributes;
+              site.toast(this, notificationsSent + " Notifications Sent!");
             } else {
               site.toast(this, response);
             }
@@ -370,10 +371,10 @@ export default {
     /**
      * Dialog pop up to confirm user wants to send individual reminder.
      */
-    maybeIndividualReminder(userId, name) {
+    maybeIndividualNotification(userId, name) {
       new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to send a reminder to ' + name + '?',
           this.$site.Dialog.MessageBox.OKCANCEL, () => {
-            this.individualReminder(userId);
+            this.individualNotification(userId);
           });
     },
     /**
@@ -381,7 +382,7 @@ export default {
      * @param name of person receiving reminder
      * @param email to send reminder to
      */
-    individualReminder(userId){
+    individualNotification(userId){
       let site = this.$site;
       //variable for the assignment tag
       let assignTag = this.assigntag;
@@ -393,7 +394,18 @@ export default {
       site.api.post('/api/review/notify/' + assignTag, params)
           .then((response) => {
             if (!response.hasError()) {
-              site.toast(this, "Notification sent!");
+              let notificationUnavailable = response.getData('notificationUnavailable').attributes;
+              let notificationSent = response.getData('notificationsSent').attributes;
+              if(notificationUnavailable) {
+                site.toast(this, "Notification cancelled: user has not submitted")
+              }
+              else if(notificationSent == 1) {
+                site.toast(this, "Notification sent!");
+              }
+              else {
+                site.toast(this, "Notification cancelled: no reviews need to be done.");
+              }
+
             } else {
               site.toast(this, response);
             }

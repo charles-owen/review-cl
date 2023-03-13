@@ -360,6 +360,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
         // Get the assignment
         $section = $site->course->get_section_for($user);
         $assignment = $section->get_assignment($assignTag);
+        $reviewing = $assignment->reviewing;
         if($assignment === null || $assignment->reviewing === null) {
             throw new APIException("Review assignment does not exist");
         }
@@ -376,17 +377,19 @@ class ReviewApi extends \CL\Users\Api\Resource {
         $members = new Members($site->db);
 
         // If it is a class notification then the member list to notify is the list of all members
-        if ($isClass)
-        {
+        if ($isClass) {
             $membersList = $members->query(['semester'=>$semester,
                 'section'=>$sectionId]);
         }
         // If it is not a class reminder send to the certain individual provided
-        else
-        {
+        else {
             $userId = $post['userId'];
             $membersList = $members->query(['semester'=>$semester, 'section'=>$sectionId,'userId' => $userId ,'role'=>Member::STUDENT]);
         }
+        // Variable to keep track of the number of reviews sent for return.
+        $notificationsSent = 0;
+        // Variable to keep track of if a notification was unable to send (If users have not submitted yet)
+        $notificationUnavailable = false;
 
         // Send the notifications if the user has completed the assignment and has not done all reviews
         foreach($membersList as $user) {
@@ -398,8 +401,11 @@ class ReviewApi extends \CL\Users\Api\Resource {
             // For each of the users reviewees check if they have reviewed, if not mark that the user should be notified
             $reviewees = $reviewAssignments->getMemberReviewees($user->member->id, $assignTag);
             foreach($reviewees as $reviewee) {
-                if(!$reviews->has_reviewed($assignTag, $user->member->id, $reviewee['reviewee']->member->id))
-                {
+                // If the reviewee has not submitted the user should not be notified
+                if(!$reviewing->has_submitted($reviewee['reviewee'])) {
+                    continue;
+                }
+                if(!$reviews->has_reviewed($assignTag, $user->member->id, $reviewee['reviewee']->member->id)) {
                     $shouldNotify = true;
                 }
             }
@@ -409,11 +415,18 @@ class ReviewApi extends \CL\Users\Api\Resource {
             // then notifies, then return.
             if($shouldNotify)
             {
-                $assignment->reviewing->maybe_remind($user);
+                if($reviewing->maybe_remind($user)) {
+                    $notificationsSent++;
+                }
+                else {
+                    $notificationUnavailable = true;
+                }
             }
         }
 
         $json = new JsonAPI();  // Must return this object in post requests
+        $json->addData('notificationsSent', 0, $notificationsSent);
+        $json->addData('notificationUnavailable', 0, $notificationUnavailable);
         return $json;
 
     }
