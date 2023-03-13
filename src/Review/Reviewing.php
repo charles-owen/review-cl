@@ -586,7 +586,7 @@ MSG;
          */
         foreach($all as $member) {
             $user = $users->get($member->userId);
-            if($user->staff) {
+            if($user->role === User::ADMIN) {
                 $email->send($site, $user->email, $user->displayName,
                     "$coursename Peer Review Pairs: No Pairings Made", $message);
             }
