@@ -245,7 +245,7 @@ function initSlider(slider_id, func) {
 
 
 // adapted from https://stackoverflow.com/a/62862049
-function cssColor(h, s, l) {
+export function cssColor(h, s, l) {
     return 'hsl(H, S%, L%)'
         .replace(/H/, h)
         .replace(/S/, s)

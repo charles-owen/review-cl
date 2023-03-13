@@ -4,8 +4,30 @@
       <div v-for="submission in json.submissions" class="cl-submission-view">
         <h2>{{submission.name}}</h2>
         <pre v-if="submission.type === 'text'" class="cl-preview yellow-pad">{{submission.text}}</pre>
-
+        <div class="hue-slider-container">
+            {{ hueValue }}%
+            <input
+              type="range"
+              min="1"
+              max="100"
+              id="hueSlider"
+              v-model="hueValue"
+              class="slider"
+            />
+        </div>
+        <div class="hue-slider-container">
+            Line width: {{ widthValue }}
+            <input
+              type="range"
+              min="1"
+              max="50"
+              id="widthSlider"
+              v-model="widthValue"
+              class="slider"
+            />
+        </div>
         <div class="container">
+
           <!-- <figure v-if="submission.type === 'image'" class="cl-preview"> -->
           <img ref="diagramImage" class="diagram" :src="previewImg(submission)">
           <canvas class="canvas-drawing" id="drawing"></canvas>
@@ -37,7 +59,7 @@
 
 <script>
 import {UserVueBase} from 'users-cl/index'
-import {CanvasHandler} from './canvas_handler'
+import {CanvasHandler, cssColor} from './canvas_handler'
 
 var handler = new CanvasHandler();
 
@@ -54,6 +76,8 @@ export default {
       reviewing: [],
       submissions: {},
       resizeObserver: null,
+      hueValue: 50,
+      widthValue: 5,
     }
   },
   mounted() {
@@ -139,6 +163,16 @@ export default {
     onResize() {
       handler.setSize(this.$refs.diagramImage[0]);
     },
+  },
+  watch: {
+    hueValue(newVal, oldVal){
+      handler.hue = newVal;
+      var slider = document.getElementById('hueSlider');
+      slider.style.accentColor = cssColor(handler.hue, handler.saturation, handler.lightness);
+    },
+    widthValue(newVal, oldVal){
+      handler.line_width = newVal;
+    }
   }
 }
 </script>
