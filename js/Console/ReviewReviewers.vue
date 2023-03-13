@@ -37,7 +37,7 @@
                 </a>
               </td>
               <td>
-                <div>
+                <div class="aligncontrols">
                   <a @click.prevent="reassignDialog(user, 'Reviewee', fetcher.users)" href="javascript:;">
                     <img :src="plus" title="Add Reviewee" alt="Add Reviewee">
                   </a>
@@ -47,7 +47,7 @@
                 </div>
               </td>
               <td>
-                <div>
+                <div class="aligncontrols">
                   <a @click.prevent="reassignDialog(user, 'Reviewer', fetcher.users)" href="javascript:;">
                     <img :src="plus" title="Add Reviewer" alt="Add Reviewer">
                   </a>
@@ -622,5 +622,11 @@ export default {
 }
 .width38px {
   min-width: 38px;
+}
+
+.aligncontrols {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }
 </style>

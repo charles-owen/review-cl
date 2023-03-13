@@ -449,7 +449,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
             }
 
         }
-        return $this->refreshTable($site, $params);
+        return $this->generatePairingJSON($site, $params);
     }
 
     /**
@@ -498,10 +498,18 @@ class ReviewApi extends \CL\Users\Api\Resource {
             }
 
         }
-        return $this->refreshTable($site, $params);
+        return $this->generatePairingJSON($site, $params);
     }
 
-    private function refreshTable(Site $site, $params)
+    /**
+     * Generates reviewer/reviewee pairings to allow for live updating
+     *
+     * @param Site $site
+     * @param $params
+     * @return JsonAPI
+     * @throws APIException
+     */
+    private function generatePairingJSON(Site $site, $params)
     {
         $user = $this->isUser($site, Member::STAFF);
         $reviewAssignments = new ReviewAssignments($site->db);
