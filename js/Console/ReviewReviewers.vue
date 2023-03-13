@@ -22,7 +22,9 @@
           </div>
           <table class="small">
             <tr>
-              <th style="min-width: 105px"></th>
+              <th class="width38px"></th>
+              <th>&#177Reviewee</th>
+              <th>&#177Reviewer</th>
               <th>Name</th>
               <th>User ID</th>
               <th v-for="i in maxReviewees">reviewee</th>
@@ -30,16 +32,22 @@
             </tr>
             <tr v-for="user in fetcher.users">
               <td>
+                <a @click.prevent="individualReminder(user.name, user.email)" href="javascript:;">
+                  <img :src="mail" title="Email" alt="Email">
+                </a>
+              </td>
+              <td>
                 <div>
-                  <a @click.prevent="individualReminder(user.name, user.email)" href="javascript:;">
-                    <img :src="mail" title="Email" alt="Email">
-                  </a>
                   <a @click.prevent="reassignDialog(user, 'Reviewee', fetcher.users)" href="javascript:;">
                     <img :src="plus" title="Add Reviewee" alt="Add Reviewee">
                   </a>
                   <a @click.prevent="removeDialog(user, 'Reviewee', fetcher.users)" href="javascript:;">
                     <img :src="remove" title="Remove Reviewee" alt="Remove Reviewee">
                   </a>
+                </div>
+              </td>
+              <td>
+                <div>
                   <a @click.prevent="reassignDialog(user, 'Reviewer', fetcher.users)" href="javascript:;">
                     <img :src="plus" title="Add Reviewer" alt="Add Reviewer">
                   </a>
@@ -112,7 +120,7 @@ export default {
       maxReviewees: 0,  // Maximum number of reviewees for any reviewer
       maxReviewers: 0,   // Maximum number of reviewers for any reviewee
       mail: Site.root + '/vendor/cl/site/img/mail.png', // Mail icon png
-      plus: Site.root + '/vendor/cl/site/img/plus.png', // Plus icon png
+      plus: Site.root + '/vendor/cl/site/img/add-circle.png', // Plus icon png
       remove: Site.root + '/vendor/cl/site/img/x.png' // X (delete) icon png
     }
   },
@@ -383,7 +391,69 @@ export default {
           }
         }
       }
-      let buttons = [];
+      let site = this.$site;
+      //variable for the assignment tag
+      let assignTag = this.assigntag;
+      //variable to hold this to call functions within click function
+      let tempThis = this;
+      let buttons = [{
+        contents: "Remove",
+        //handler function for action when clicking reassign button
+        click: function click(dialog) {
+          //getting the select menu
+          let selector = document.querySelector('#cl-review-remove-selector')
+          //getting the name of the student selected from the drop down menu
+          let selected_student = selector.options[selector.selectedIndex].innerHTML;
+
+          //the student who is the reviewer
+          var reviewer;
+          //the student who is the reviewee
+          var reviewee;
+
+          //loop through users and find the user that matches the name selected from drop down
+          for(let i = 0; i<users.length; i++){
+            if(users[i].name === selected_student){
+              //if we are reassigning reviewer
+              if(type === "Reviewer"){
+                //reviewer is the student selected from drop down menu
+                reviewer = users[i];
+                //reviewee will be the removeUser
+                reviewee = removeUser;
+              }
+              //if we are reassigning reviewee
+              else{
+                //reviewer will be the removeUser
+                reviewer = removeUser;
+                //reviewee is the student selected from drop down menu
+                reviewee = users[i];
+              }
+            }
+          }
+
+          //params for that will be fed to the api call
+          let params = {
+            reviewer: reviewer,
+            reviewee: reviewee
+          }
+          // Send post request and check for errors, this routes to ReviewApi.php
+          site.api.post('/api/review/remove/' + assignTag, params)
+              .then((response) => {
+                if (!response.hasError()) {
+                  site.toast(this, "Removal Complete");
+                  //calling take to reflect change when dialog box is closed
+                  tempThis.take(response);
+                } else {
+                  site.toast(this, response);
+                }
+                dialog.close();
+              })
+
+        }
+
+
+
+
+      }];
       new VueDialog(this.$site, {
         title: 'Remove ' + type,
         vue: ReviewRemoveVue,
@@ -545,3 +615,12 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.aligncenter {
+  text-align: center;
+}
+.width38px {
+  min-width: 38px;
+}
+</style>
