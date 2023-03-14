@@ -73,6 +73,9 @@ class ReviewApi extends \CL\Users\Api\Resource {
             case 'reassign':
                 return $this->reassign($site, $server, $params, $time);
 
+            case 'remove':
+                return $this->remove($site, $server, $params, $time);
+
 		}
 
 		throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
@@ -446,7 +449,75 @@ class ReviewApi extends \CL\Users\Api\Resource {
             }
 
         }
+        return $this->generatePairingJSON($site, $params);
+    }
 
+    /**
+     * Handles the post request for removing reviewers
+     *
+     * /api/review/remove/:assigntag
+     *
+     * @param Site $site
+     * @param Server $server
+     * @param array $params
+     * @param $time
+     * @return JsonAPI
+     * @throws APIException
+     */
+    private function remove(Site $site, Server $server, array $params, $time)
+    {
+        $user = $this->isUser($site, Member::STAFF);
+        $reviewAssignments = new ReviewAssignments($site->db);
+        $members = new Members($site->db);
+        if(count($params) < 2) {
+            throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
+        }
+        //grabbing the semseter and semester id for the user
+        $semester = $user->member->semester;
+        $sectionId = $user->member->sectionId;
+        $assignTag = $params[1];
+        if($server->requestMethod === 'POST') {
+            $post = $server->post;
+            $this->ensure($post, ['reviewer', 'reviewee']);  // Check that all required params are present
+            //get the reviewer and reviewee passed into the params from reassign dialog box
+            $reviewer_post = $post['reviewer'];
+            $reviewee_post = $post['reviewee'];
+
+            //grab reviewer and reviewee memberid
+            $reviewer = $members->query(['semester'=>$semester, 'section'=>$sectionId,'userId' => $reviewer_post['id'] ,'role'=>Member::STUDENT])[0];
+            $reviewee = $members->query(['semester'=>$semester, 'section'=>$sectionId,'userId' => $reviewee_post['id'] ,'role'=>Member::STUDENT])[0];
+
+            //check if the combination of reviewer reviewee exists
+            if($reviewAssignments->isReviewer($reviewer->member->id, $reviewee->member->id, $assignTag)){
+                //if yes remove the review
+                $reviewAssignments->removeReviewing($reviewer->member->id, $reviewee->member->id, $assignTag);
+            }
+            else{
+                //otherwise give error that the combination does not exist
+                throw new APIException("This reviewer/reviewee pairing does not exist");
+            }
+
+        }
+        return $this->generatePairingJSON($site, $params);
+    }
+
+    /**
+     * Generates reviewer/reviewee pairings to allow for live updating
+     *
+     * @param Site $site
+     * @param $params
+     * @return JsonAPI
+     * @throws APIException
+     */
+    private function generatePairingJSON(Site $site, $params)
+    {
+        $user = $this->isUser($site, Member::STAFF);
+        $reviewAssignments = new ReviewAssignments($site->db);
+        $members = new Members($site->db);
+        //grabbing the semseter and semester id for the user
+        $semester = $user->member->semester;
+        $sectionId = $user->member->sectionId;
+        $assignTag = $params[1];
         $reviews = new Reviews($site->db);
         $counts = $reviews->get_review_counts($semester, $sectionId, $assignTag);
         $mapping = [];
@@ -481,7 +552,6 @@ class ReviewApi extends \CL\Users\Api\Resource {
         $json = new JsonAPI();
         $json->addData('reviewers', 0, $data);
         return $json;
-
     }
 
 }
