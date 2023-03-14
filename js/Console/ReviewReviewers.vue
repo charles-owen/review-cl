@@ -32,7 +32,7 @@
             </tr>
             <tr v-for="user in fetcher.users">
               <td>
-                <a @click.prevent="maybeIndividualNotification(user.name, user.email)" href="javascript:;">
+                <a @click.prevent="maybeIndividualNotification(user.id, user.name)" href="javascript:;">
                   <img :src="mail" title="Email" alt="Email">
                 </a>
               </td>
@@ -75,12 +75,6 @@
                   <img src="../../../site/img/add-circle.png">
                 </a>
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
-              </td>
-              <td align = "center">
-                <a  @click.default="maybeIndividualNotification(user.id, user.name)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
-                  <img src = ../../../site/img/send.png>
-                </a>
-
               </td>
             </tr>
           </table>
