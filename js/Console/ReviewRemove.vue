@@ -2,7 +2,7 @@
   <p>Student: {{removeUser.name}}</p>
   <div>
     <label>{{removeType}}: </label>
-    <select id="cl-review-reassign-selector">
+    <select id="cl-review-remove-selector">
       <option v-for="user in assignedReviews">{{user}}</option>
     </select>
   </div>

@@ -69,6 +69,20 @@ SQL;
 		}
 	}
 
+    public function removeReviewing($reviewerId, $revieweeId, $assignTag) {
+        $sql = <<<SQL
+delete from $this->tablename where reviewerid=? AND revieweeid=? AND assigntag=?
+SQL;
+
+        $pdo = $this->pdo;
+        try {
+            $stmt = $pdo->prepare($sql);
+            return $stmt->execute([$reviewerId, $revieweeId, $assignTag]);
+        } catch(\PDOException $e) {
+            return false;
+        }
+    }
+
 	/**
 	 * Is this a valid reviewer/reviewee combination for this assignment?
 	 * @param int $reviewerId
