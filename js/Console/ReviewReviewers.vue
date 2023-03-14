@@ -22,13 +22,40 @@
           </div>
           <table class="small">
             <tr>
+              <th class="width38px"></th>
+              <th>&#177Reviewee</th>
+              <th>&#177Reviewer</th>
               <th>Name</th>
               <th>User ID</th>
               <th v-for="i in maxReviewees">reviewee</th>
               <th v-for="i in maxReviewers">reviewer</th>
-              <th>Email</th>
             </tr>
             <tr v-for="user in fetcher.users">
+              <td>
+                <a @click.prevent="individualReminder(user.name, user.email)" href="javascript:;">
+                  <img :src="mail" title="Email" alt="Email">
+                </a>
+              </td>
+              <td>
+                <div class="aligncontrols">
+                  <a @click.prevent="reassignDialog(user, 'Reviewee', fetcher.users)" href="javascript:;">
+                    <img :src="plus" title="Add Reviewee" alt="Add Reviewee">
+                  </a>
+                  <a @click.prevent="removeDialog(user, 'Reviewee', fetcher.users)" href="javascript:;">
+                    <img :src="remove" title="Remove Reviewee" alt="Remove Reviewee">
+                  </a>
+                </div>
+              </td>
+              <td>
+                <div class="aligncontrols">
+                  <a @click.prevent="reassignDialog(user, 'Reviewer', fetcher.users)" href="javascript:;">
+                    <img :src="plus" title="Add Reviewer" alt="Add Reviewer">
+                  </a>
+                  <a @click.prevent="removeDialog(user, 'Reviewer', fetcher.users)" href="javascript:;">
+                    <img :src="remove" title="Remove Reviewer" alt="Remove Reviewer">
+                  </a>
+                </div>
+              </td>
               <td class="small">
                 <router-link :title="user.name" :to="root + '/cl/console/grading/' + assigntag + '/' + user.member.id">
                   {{user.name}}
@@ -39,22 +66,13 @@
                   {{user.userId}}
                 </router-link>
               </td>
-              <td v-for="i in maxReviewees" :class="cls(reviewers[user.member.id], i-1)" align="center">
-                <a v-if="!displayUser(fetcher.users, reviewers[user.member.id], i-1) && !user.atLeast(staff) && user.atLeast(student)" @click.default="reassignDialog(user, 'Reviewee', fetcher.users, i)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
-                  <img src="../../../site/img/add-circle.png">
-                </a>
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined ? reviewers[user.member.id][i-1][1] : 0"></status-present>
+              <td v-for="i in maxReviewees" :class="cls(reviewers[user.member.id], i-1)">
+                <!--Changed ternary operator for count to check if reviewer array has enough entries                -->
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined && i-1 < reviewers.length ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
-              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)" align="center">
-                <a v-if="!displayUser(fetcher.users, reviewees[user.member.id], i-1) && !user.atLeast(staff) && user.atLeast(student)" @click.default="reassignDialog(user, 'Reviewer', fetcher.users, i)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
-                  <img src="../../../site/img/add-circle.png">
-                </a>
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
-              </td>
-              <td align = "center">
-                <a  @click.default="individualReminder(user.name, user.email)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
-                  <img src = ../../../site/img/send.png>
-                </a>
+              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)">
+                <!--Changed ternary operator for count to check if reviewees array has enough entries                -->
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined && i-1 < reviewees.length ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
             </tr>
           </table>
@@ -68,6 +86,12 @@
 import {ConsoleComponentBase} from 'console-cl/index'
 import {MembersFetcherComponent} from 'course-cl/js/Console/index'
 import StatusPresentVue from './StatusPresent.vue';
+import ReviewReassignVue from './ReviewReassign.vue';
+import ReviewRemoveVue from './ReviewRemove.vue';
+import ReviewReminderVue from './ReviewReminder.vue';
+
+
+const VueDialog = Site.site.VueDialog;
 
 /**
  * View for Review assignments. Indicates the assignments of students to review
@@ -88,13 +112,16 @@ export default {
     return {
       assignment: null, // Object that defines an entire assignment
       reviewerCnt: 2,   // Number of reviewers to assign for each student
-      instructor: Site.Member.INSTRUCTOR,
-      staff: Site.Member.STAFF,
-      student: Site.Member.STUDENT,
+      instructor: Site.Member.INSTRUCTOR, // Enum for instructor permissions
+      staff: Site.Member.STAFF, // Enum for staff permissions
+      student: Site.Member.STUDENT, // Enum for student permissions
       reviewers: null,  // All of the reviews by member ID
       reviewees: null,  // All of the reviewee by member ID
       maxReviewees: 0,  // Maximum number of reviewees for any reviewer
-      maxReviewers: 0   // Maximum number of reviewers for any reviewee
+      maxReviewers: 0,   // Maximum number of reviewers for any reviewee
+      mail: Site.root + '/vendor/cl/site/img/mail.png', // Mail icon png
+      plus: Site.root + '/vendor/cl/site/img/add-circle.png', // Plus icon png
+      remove: Site.root + '/vendor/cl/site/img/x.png' // X (delete) icon png
     }
   },
   components: {
@@ -197,6 +224,7 @@ export default {
         }
 
 
+
         this.reviewers[reviewer].push([reviewee, cnt]);
         if (this.reviewers[reviewer].length > this.maxReviewees) {
           this.maxReviewees = this.reviewers[reviewer].length;
@@ -207,11 +235,13 @@ export default {
           this.reviewees[reviewee] = [];
         }
 
+        //made sure maxReviewers was updating properly
         this.reviewees[reviewee].push([reviewer, cnt]);
         if (this.reviewees[reviewee].length > this.maxReviewers) {
-          this.maxReviewers = this.reviewers[reviewer].length;
+          this.maxReviewers = this.reviewees[reviewee].length;
         }
       }
+
 
     },
     /**
@@ -256,47 +286,187 @@ export default {
      */
     sendReminderDialog() {
       let site = this.$site;
-      let content = '<div>' + "To Class" + '<br>' + '<br>' +
-          '<div>Subject:\n</div>' +
-          '<div><textarea id="cl-review-notify-class-subject" style="resize:none" rows="1" cols="38">CSE335 Peer Review Pending</textarea></div>' +
-          '<div> <textarea id="cl-review-notify-class-body" style="resize:none" placeholder="Enter reminder email" rows="6" cols="38">You have a review pending in the peer review system.\n' +
-          '\n' + 'Please go to the Peer Reviewing Status Page to see what reviews are pending.</textarea></div>';
 
-
-      new this.$site.Dialog({
-        title: 'Send Reminder',
-        content: content,
-        buttons: [{
-          contents: "Send",
-          // Handler function for when someone clicks send on the dialog box
-          click: function click(dialog) {
-            // Grab the subject/body from the html and put it in params json object
-            let subject = document.querySelector('#cl-review-notify-class-subject').value;
-            let body = document.querySelector('#cl-review-notify-class-body').value;
-            let params = {
-              name: 'Class',
-              mailto: 'Class',
-              subject: subject,
-              body: body,
-              isClass: true
-            }
-            // Send post request and check for errors, this routes to ReviewApi.php
-            site.api.post('/api/review/notify', params)
-                .then((response) => {
-                  if (!response.hasError()) {
-                    site.toast(this, "Notification sent!");
-                  } else {
-                    site.toast(this, response);
-                  }
-                  dialog.close();
-                })
-
+      let buttons = [{
+        contents: "Send",
+        // Handler function for when someone clicks send on the dialog box
+        click: function click(dialog) {
+          // Grab the subject/body from the html and put it in params json object
+          let subject = document.querySelector('#cl-review-notify-subject').value;
+          let body = document.querySelector('#cl-review-notify-body').value;
+          let params = {
+            name: 'Class',
+            mailto: 'Class',
+            subject: subject,
+            body: body,
+            isClass: true
           }
-        }],
-        form: true
+          // Send post request and check for errors, this routes to ReviewApi.php
+          site.api.post('/api/review/notify', params)
+              .then((response) => {
+                if (!response.hasError()) {
+                  site.toast(this, "Notification sent!");
+                } else {
+                  site.toast(this, response);
+                }
+                dialog.close();
+              })
+
+        }
+      }];
+
+      new VueDialog(this.$site, {
+        title: 'Class Reminder',
+        vue: ReviewReminderVue,
+        data: function () {
+          return {
+            to: "Class"
+          }
+        },
+        buttons: buttons,
+        parent: this
+      })
+    },
+    /**
+     * Handler for sending a reminder to a individual person
+     * @param name of person receiving reminder
+     * @param email to send reminder to
+     */
+    individualReminder(name, email){
+      let site = this.$site;
+      let buttons = [{
+        contents: "Send",
+        // Handler function for when someone clicks send on the dialog box
+        click: function click(dialog) {
+          // Grab the subject/body from the html and put it in params json object
+          let subject = document.querySelector('#cl-review-notify-subject').value;
+          let body = document.querySelector('#cl-review-notify-body').value;
+          let params = {
+            name: name,
+            mailto: email,
+            subject: subject,
+            body: body,
+            isClass: false
+          }
+          // Send post request and check for errors, this routes to ReviewApi.php
+          site.api.post('/api/review/notify', params)
+              .then((response) => {
+                if (!response.hasError()) {
+                  site.toast(this, "Notification sent!");
+                } else {
+                  site.toast(this, response);
+                }
+                dialog.close();
+              })
+
+        }
+      }];
+
+      new VueDialog(this.$site, {
+        title: 'Individual Reminder',
+        vue: ReviewReminderVue,
+        data: function () {
+          return {
+            to: name
+          }
+        },
+        buttons: buttons,
+        parent: this
+      })
+    },
+    removeDialog(removeUser, type, users)
+    {
+      let assignedReviews = [];
+      if (type === "Reviewee") {
+        for (let i = 0; i < this.maxReviewees; i++) {
+          if (this.displayUser(users, this.reviewers[removeUser.member.id], i)) {
+            assignedReviews.push(this.displayUser(users, this.reviewers[removeUser.member.id], i).name)
+          }
+        }
+      }
+      else if (type === "Reviewer") {
+        for (let i = 0; i < this.maxReviewers; i++) {
+          if (this.displayUser(users, this.reviewees[removeUser.member.id], i)) {
+            assignedReviews.push(this.displayUser(users, this.reviewees[removeUser.member.id], i).name)
+          }
+        }
+      }
+      let site = this.$site;
+      //variable for the assignment tag
+      let assignTag = this.assigntag;
+      //variable to hold this to call functions within click function
+      let tempThis = this;
+      let buttons = [{
+        contents: "Remove",
+        //handler function for action when clicking reassign button
+        click: function click(dialog) {
+          //getting the select menu
+          let selector = document.querySelector('#cl-review-remove-selector')
+          //getting the name of the student selected from the drop down menu
+          let selected_student = selector.options[selector.selectedIndex].innerHTML;
+
+          //the student who is the reviewer
+          var reviewer;
+          //the student who is the reviewee
+          var reviewee;
+
+          //loop through users and find the user that matches the name selected from drop down
+          for(let i = 0; i<users.length; i++){
+            if(users[i].name === selected_student){
+              //if we are reassigning reviewer
+              if(type === "Reviewer"){
+                //reviewer is the student selected from drop down menu
+                reviewer = users[i];
+                //reviewee will be the removeUser
+                reviewee = removeUser;
+              }
+              //if we are reassigning reviewee
+              else{
+                //reviewer will be the removeUser
+                reviewer = removeUser;
+                //reviewee is the student selected from drop down menu
+                reviewee = users[i];
+              }
+            }
+          }
+
+          //params for that will be fed to the api call
+          let params = {
+            reviewer: reviewer,
+            reviewee: reviewee
+          }
+          // Send post request and check for errors, this routes to ReviewApi.php
+          site.api.post('/api/review/remove/' + assignTag, params)
+              .then((response) => {
+                if (!response.hasError()) {
+                  site.toast(this, "Removal Complete");
+                  //calling take to reflect change when dialog box is closed
+                  tempThis.take(response);
+                } else {
+                  site.toast(this, response);
+                }
+                dialog.close();
+              })
+
+        }
+
+
+
+
+      }];
+      new VueDialog(this.$site, {
+        title: 'Remove ' + type,
+        vue: ReviewRemoveVue,
+        data: function () {
+          return {
+            assignedReviews: assignedReviews,
+            removeUser: removeUser,
+            removeType: type
+          }
+        },
+        buttons: buttons,
+        parent: this
       });
-
-
     },
     /**
      * Bring up reassign dialog box. This box allows us to assign a reviewer/reviewee where there
@@ -306,19 +476,14 @@ export default {
      * @param users Array of users in the class
      * @param reviewIndex Index in the reviewee/reviewer column that was clicked.
      */
-    reassignDialog(reassignUser, type, users, reviewIndex) {
+    reassignDialog(reassignUser, type, users) {
       let sortedUsers = this.sortUsersByReviewCount(users, reassignUser, type);
-      let contentString = '<p>Student: ' + reassignUser.name + '</p>' + '<div>' + type + ':\t<select id = "cl-review-reassign-selector">';
-      for (let i = 0; i < sortedUsers.length; i++) {
-        contentString += '<option>' + sortedUsers[i] + '</option>';
-      }
-      contentString += '</select>';
-
-      //variable for the site
       let site = this.$site;
       //variable for the assignment tag
       let assignTag = this.assigntag;
 
+      //variable to hold this to call functions within click function
+      let tempThis = this;
       let buttons = [{
         contents: "Reassign",
         //handler function for action when clicking reassign button
@@ -358,12 +523,13 @@ export default {
             reviewer: reviewer,
             reviewee: reviewee
           }
-
           // Send post request and check for errors, this routes to ReviewApi.php
           site.api.post('/api/review/reassign/' + assignTag, params)
               .then((response) => {
                 if (!response.hasError()) {
                   site.toast(this, "Reassignment Made");
+                  //calling take to reflect change when dialog box is closed
+                  tempThis.take(response);
                 } else {
                   site.toast(this, response);
                 }
@@ -372,57 +538,23 @@ export default {
 
         }
 
+
+
+
       }];
 
-      let dialogOptions = {title: 'Reassign ' + type,
-                            content: contentString,
-                            buttons: buttons};
-      new this.$site.Dialog(dialogOptions);
-
-
-    },
-    /**
-     * Handler for sending a reminder to a individual person
-     * @param name of person receiving reminder
-     * @param email to send reminder to
-     */
-    individualReminder(name, email){
-      let site = this.$site;
-      let contentString = '<p>To: ' + name + '</p>' +
-          '<div>Subject: \t<input id="cl-review-notify-individual-subject" placeholder="Email Subject"></input>\t</div>'+
-          '<br'+
-          '<div>Send Reminder: \t<textarea id="cl-review-notify-individual-body" style="resize:none" placeholder="Enter reminder text" rows="6" cols="30"></textarea>\t</div>';
-
-      new this.$site.Dialog({
-        title: 'Individual Reminder ',
-        content: contentString,
-        buttons: [{
-          contents: "Send",
-          // Handler function for when someone clicks send on the dialog box
-          click: function click(dialog) {
-            // Grab the subject/body from the html and put it in params json object
-            let subject = document.querySelector('#cl-review-notify-individual-subject').value;
-            let body = document.querySelector('#cl-review-notify-individual-body').value;
-            let params = {
-              name: name,
-              mailto: email,
-              subject: subject,
-              body: body,
-              isClass: false
-            }
-            // Send post request and check for errors, this routes to ReviewApi.php
-            site.api.post('/api/review/notify', params)
-                .then((response) => {
-                  if (!response.hasError()) {
-                    site.toast(this, "Notification sent!");
-                  } else {
-                    site.toast(this, response);
-                  }
-                  dialog.close();
-                })
-
+      new VueDialog(this.$site, {
+        title: 'Reassign ' + type,
+        vue: ReviewReassignVue,
+        data: function () {
+          return {
+            sortedUsers: sortedUsers,
+            reassignUser: reassignUser,
+            assignType: type
           }
-        }]
+        },
+        buttons: buttons,
+        parent: this
       });
     },
     /**
@@ -437,13 +569,44 @@ export default {
       let userCountPairs = {};
       for (let i = 0; i < users.length; i++) {
         if (users[i].name != reassignUser.name && !users[i].atLeast(this.staff) && users[i].atLeast(this.student)){
-          //if the user is already at the maximum reviewees dont add the to the drop down list
-          if(type === "Reviewee" && this.countReviews(users, users[i], type) < this.maxReviewees) {
-            userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
+          if(type === "Reviewee") {
+            //variable that gets set if there is a duplicate being added to the drop down menu
+            let duplicate = false;
+            //check to make sure the user is in the reviewers array first(if a student is late added it will be undefined)
+            if(this.reviewers[reassignUser.member.id] !== undefined) {
+              //loop through the currently assigned reviewees to the reassignedUser(reviewer)
+              for (let j = 0; j < this.reviewers[reassignUser.member.id].length; j++) {
+                //if the user is already in the list of reviewees set the duplicate flag
+                if (users[i].member.id === this.reviewers[reassignUser.member.id][j][0]) {
+                  duplicate = true;
+                  break;
+                }
+              }
+            }
+            //Add the pairing if they are not duplicate
+            if(duplicate === false) {
+              userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
+            }
           }
-          //if the user is already at the maximum reviewers dont add the to the drop down list
-          if(type === "Reviewer" && this.countReviews(users, users[i], type) < this.maxReviewers){
-            userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
+
+          if(type === "Reviewer"){
+            //variable that gets set if there is a duplicate being added to the drop down menu
+            let duplicate = false;
+            //check to make sure the user is in the reviewees array first(if a student is late added it will be undefined)
+            if(this.reviewees[reassignUser.member.id] !== undefined){
+              //loop through the currently assigned reviewers to the reassignedUser(reviewee)
+              for(let j = 0; j< this.reviewees[reassignUser.member.id].length;j++){
+                //if the user is already in the list of reviewers set the duplicate flag
+                if(users[i].member.id === this.reviewees[reassignUser.member.id][j][0]){
+                  duplicate = true;
+                  break;
+                }
+              }
+            }
+            //Add the pairing if they are not duplicate
+            if(duplicate === false) {
+              userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
+            }
           }
         }
       }
@@ -479,7 +642,22 @@ export default {
         }
       }
       return count;
-    },
+    }
   }
 }
 </script>
+
+<style scoped>
+.aligncenter {
+  text-align: center;
+}
+.width38px {
+  min-width: 38px;
+}
+
+.aligncontrols {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+</style>
