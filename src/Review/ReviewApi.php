@@ -65,7 +65,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
 			case 'tables':
 				return $this->tables($site, $server, new ReviewTables($site->db));
 
-			// /api/review/notify
+			// /api/review/notify/:assigntag
 			case 'notify':
 				return $this->notify($site, $server, $params, $time);
 
@@ -355,7 +355,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
     /**
      * Handles the post request for notifying a individual
      *
-     * /api/review/notify
+     * /api/review/notify/:assigntag
      *
      * @param Site $site
      * @param Server $server
@@ -366,40 +366,84 @@ class ReviewApi extends \CL\Users\Api\Resource {
      */
     private function notify(Site $site, Server $server, array $params, $time)
     {
+        $user = $this->isUser($site, Member::STAFF);
         $post = $server->post;
-        $this->ensure($post, ['mailto', 'name', 'subject', 'body', 'isClass']);  // Check that all required params are present
-        $mailto = $post['mailto'];
-        $name = $post['name'];
-        $subject = $post['subject'];
-        $body = $post['body'];
+        $this->ensure($post, ['userId', 'isClass']);  // Check that all required params are present
         $isClass = $post['isClass'];
+        $assignTag = $params[1];
 
-        $email = $server->__get('email');
-        // If it is a class notification then take class members, and loop over them sending each theh email.
-        if ($isClass)
-        {
-            $user = $this->isUser($site, Member::STAFF);
-            $members = new Members($site->db);
-            $query = $members->query(['semester'=>$user->member->semester,
-                'section'=>$user->member->sectionId]);
-            foreach($query as $user) {
-                // Ignore any guest users or drops
-                if (!$user->atLeast(Member::STUDENT)) {
-                    continue;
-                }
-                $email->send($site, $user->email, $user->name,
-                    $subject, $body);
-            }
+        // Get the assignment
+        $section = $site->course->get_section_for($user);
+        $assignment = $section->get_assignment($assignTag);
+        $reviewing = $assignment->reviewing;
+        if($assignment === null || $assignment->reviewing === null) {
+            throw new APIException("Review assignment does not exist");
+        }
+
+        // Get the assignment's reviews
+        $reviewAssignments = new ReviewAssignments($site->db);
+        $reviews = new Reviews($site->db);
+
+        //grabbing the semseter and semester id for the user
+        $semester = $user->member->semester;
+        $sectionId = $user->member->sectionId;
+
+        // Members of the class
+        $members = new Members($site->db);
+
+        // If it is a class notification then the member list to notify is the list of all members
+        if ($isClass) {
+            $membersList = $members->query(['semester'=>$semester,
+                'section'=>$sectionId]);
         }
         // If it is not a class reminder send to the certain individual provided
-        else
-        {
-            $email->send($site, $mailto, $name,
-                $subject, $body);
+        else {
+            $userId = $post['userId'];
+            $membersList = $members->query(['semester'=>$semester, 'section'=>$sectionId,'userId' => $userId ,'role'=>Member::STUDENT]);
+        }
+        // Variable to keep track of the number of reviews sent for return.
+        $notificationsSent = 0;
+        // Variable to keep track of if a notification was unable to send (If users have not submitted yet)
+        $notificationUnavailable = false;
+
+        // Send the notifications if the user has completed the assignment and has not done all reviews
+        foreach($membersList as $user) {
+            // Ignore any guest users or drops
+            if(!$user->atLeast(Member::STUDENT)) {
+                continue;
+            }
+            $shouldNotify = false;
+            // For each of the users reviewees check if they have reviewed, if not mark that the user should be notified
+            $reviewees = $reviewAssignments->getMemberReviewees($user->member->id, $assignTag);
+            foreach($reviewees as $reviewee) {
+                // If the reviewee has not submitted the user should not be notified
+                if(!$reviewing->has_submitted($reviewee['reviewee'])) {
+                    continue;
+                }
+                if(!$reviews->has_reviewed($assignTag, $user->member->id, $reviewee['reviewee']->member->id)) {
+                    $shouldNotify = true;
+                }
+            }
+
+
+            // If the flag to notify is true then call maybe_remind which ensures the user has finished the assignment
+            // then notifies, then return.
+            if($shouldNotify)
+            {
+                if($reviewing->maybe_remind($user)) {
+                    $notificationsSent++;
+                }
+                else {
+                    $notificationUnavailable = true;
+                }
+            }
         }
 
         $json = new JsonAPI();  // Must return this object in post requests
+        $json->addData('notificationsSent', 0, $notificationsSent);
+        $json->addData('notificationUnavailable', 0, $notificationUnavailable);
         return $json;
+
     }
 
     /**

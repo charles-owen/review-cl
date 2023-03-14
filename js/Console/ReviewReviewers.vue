@@ -12,7 +12,7 @@
                   </select>
                 </p>
               </form>
-              <form method="post" @submit.prevent="sendReminderDialog()">
+              <form method="post" @submit.prevent="maybeSendNotification()">
                 <div style=margin-left:10px>
                   <p class="center"><button type="submit">Send Reminder</button>
                   </p>
@@ -32,7 +32,7 @@
             </tr>
             <tr v-for="user in fetcher.users">
               <td>
-                <a @click.prevent="individualReminder(user.name, user.email)" href="javascript:;">
+                <a @click.prevent="maybeIndividualNotification(user.id, user.name)" href="javascript:;">
                   <img :src="mail" title="Email" alt="Email">
                 </a>
               </td>
@@ -70,9 +70,11 @@
                 <!--Changed ternary operator for count to check if reviewer array has enough entries                -->
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined && i-1 < reviewers.length ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
-              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)">
-                <!--Changed ternary operator for count to check if reviewees array has enough entries                -->
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined && i-1 < reviewees.length ? reviewees[user.member.id][i-1][1] : 0"></status-present>
+              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)" align="center">
+                <a v-if="!displayUser(fetcher.users, reviewees[user.member.id], i-1) && !user.atLeast(staff) && user.atLeast(student)" @click.default="reassignDialog(user, 'Reviewer', fetcher.users, i)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
+                  <img src="../../../site/img/add-circle.png">
+                </a>
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
             </tr>
           </table>
@@ -281,98 +283,41 @@ export default {
 
     },
     /**
-     * Uses a message box to edit and send reminder emails to
-     * individual students or the entire class.
+     * Dialog pop up to confirm user wants to send class wide reminder.
      */
-    sendReminderDialog() {
-      let site = this.$site;
-
-      let buttons = [{
-        contents: "Send",
-        // Handler function for when someone clicks send on the dialog box
-        click: function click(dialog) {
-          // Grab the subject/body from the html and put it in params json object
-          let subject = document.querySelector('#cl-review-notify-subject').value;
-          let body = document.querySelector('#cl-review-notify-body').value;
-          let params = {
-            name: 'Class',
-            mailto: 'Class',
-            subject: subject,
-            body: body,
-            isClass: true
-          }
-          // Send post request and check for errors, this routes to ReviewApi.php
-          site.api.post('/api/review/notify', params)
-              .then((response) => {
-                if (!response.hasError()) {
-                  site.toast(this, "Notification sent!");
-                } else {
-                  site.toast(this, response);
-                }
-                dialog.close();
-              })
-
-        }
-      }];
-
-      new VueDialog(this.$site, {
-        title: 'Class Reminder',
-        vue: ReviewReminderVue,
-        data: function () {
-          return {
-            to: "Class"
-          }
-        },
-        buttons: buttons,
-        parent: this
-      })
+    maybeSendNotification() {
+      new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to send a reminder for reviews to the entire class?',
+          this.$site.Dialog.MessageBox.OKCANCEL, () => {
+            this.sendNotification();
+          });
     },
     /**
-     * Handler for sending a reminder to a individual person
-     * @param name of person receiving reminder
-     * @param email to send reminder to
+     * Uses a message box to edit and send reminder emails to
+     * the entire class.
      */
-    individualReminder(name, email){
+    sendNotification() {
       let site = this.$site;
-      let buttons = [{
-        contents: "Send",
-        // Handler function for when someone clicks send on the dialog box
-        click: function click(dialog) {
-          // Grab the subject/body from the html and put it in params json object
-          let subject = document.querySelector('#cl-review-notify-subject').value;
-          let body = document.querySelector('#cl-review-notify-body').value;
-          let params = {
-            name: name,
-            mailto: email,
-            subject: subject,
-            body: body,
-            isClass: false
-          }
-          // Send post request and check for errors, this routes to ReviewApi.php
-          site.api.post('/api/review/notify', params)
-              .then((response) => {
-                if (!response.hasError()) {
-                  site.toast(this, "Notification sent!");
-                } else {
-                  site.toast(this, response);
-                }
-                dialog.close();
-              })
+      //variable for the assignment tag
+      let assignTag = this.assigntag;
 
-        }
-      }];
+      let params = {
+        userId: 'null',
+        isClass: true
+      }
+      // Send post request and check for errors, this routes to ReviewApi.php
+      site.api.post('/api/review/notify/' + assignTag, params)
+          .then((response) => {
+            if (!response.hasError()) {
+              let notificationsSent = response.getData('notificationsSent').attributes;
+              site.toast(this, notificationsSent + " Notifications Sent!");
+            } else {
+              site.toast(this, response);
+            }
+          })
 
-      new VueDialog(this.$site, {
-        title: 'Individual Reminder',
-        vue: ReviewReminderVue,
-        data: function () {
-          return {
-            to: name
-          }
-        },
-        buttons: buttons,
-        parent: this
-      })
+
+
+
     },
     removeDialog(removeUser, type, users)
     {
@@ -543,19 +488,56 @@ export default {
 
       }];
 
-      new VueDialog(this.$site, {
-        title: 'Reassign ' + type,
-        vue: ReviewReassignVue,
-        data: function () {
-          return {
-            sortedUsers: sortedUsers,
-            reassignUser: reassignUser,
-            assignType: type
-          }
-        },
-        buttons: buttons,
-        parent: this
-      });
+      let dialogOptions = {title: 'Reassign ' + type,
+                            content: contentString,
+                            buttons: buttons};
+      new this.$site.Dialog(dialogOptions);
+
+
+    },
+    /**
+     * Dialog pop up to confirm user wants to send individual reminder.
+     */
+    maybeIndividualNotification(userId, name) {
+      new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to send a reminder to ' + name + '?',
+          this.$site.Dialog.MessageBox.OKCANCEL, () => {
+            this.individualNotification(userId);
+          });
+    },
+    /**
+     * Handler for sending a reminder to a individual person
+     * @param name of person receiving reminder
+     * @param email to send reminder to
+     */
+    individualNotification(userId){
+      let site = this.$site;
+      //variable for the assignment tag
+      let assignTag = this.assigntag;
+      let params = {
+        userId: userId,
+        isClass: false
+      }
+      // Send post request and check for errors, this routes to ReviewApi.php
+      site.api.post('/api/review/notify/' + assignTag, params)
+          .then((response) => {
+            if (!response.hasError()) {
+              let notificationUnavailable = response.getData('notificationUnavailable').attributes;
+              let notificationSent = response.getData('notificationsSent').attributes;
+              if(notificationUnavailable) {
+                site.toast(this, "Notification cancelled: user has not submitted")
+              }
+              else if(notificationSent == 1) {
+                site.toast(this, "Notification sent!");
+              }
+              else {
+                site.toast(this, "Notification cancelled: no reviews need to be done.");
+              }
+
+            } else {
+              site.toast(this, response);
+            }
+          })
+
     },
     /**
      * Return an array of users in the class sorted by number of reviewers/reviewees (least to most) they have assigned

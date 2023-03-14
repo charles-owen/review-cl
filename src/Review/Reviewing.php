@@ -251,7 +251,7 @@ class Reviewing {
      * @param User $user
      * @return bool True if the user has submitted in all assignment categories
      */
-    private function has_submitted(User $user) {
+     function has_submitted(User $user) {
         $this->assignment->load();
         $submissions = $this->assignment->submissions;
         $submissiontags = [];
@@ -510,6 +510,26 @@ HTML;
 
         return true;
     }
+
+    /**
+     * Remind a reviewer they have reviews ready to do if they can.
+     * @param User $reviewer
+     * @return true if mail was sent
+     */
+    public function maybe_remind(User $reviewer) {
+        /*
+         * A user is only able to do reviews if they have submitted in all
+         * categories.
+         */
+        if(!$this->has_submitted($reviewer)) {
+            return false;
+        }
+
+        $this->notify($reviewer);
+
+        return true;
+    }
+
 
 	/**
 	 * Notify a reviewer than a submission has occurred
