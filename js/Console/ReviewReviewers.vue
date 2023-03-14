@@ -378,14 +378,14 @@ export default {
     {
       let assignedReviews = [];
       if (type === "Reviewee") {
-        for (let i = 0; i < this.maxReviewers; i++) {
+        for (let i = 0; i < this.maxReviewees; i++) {
           if (this.displayUser(users, this.reviewers[removeUser.member.id], i)) {
             assignedReviews.push(this.displayUser(users, this.reviewers[removeUser.member.id], i).name)
           }
         }
       }
       else if (type === "Reviewer") {
-        for (let i = 0; i < this.maxReviewees; i++) {
+        for (let i = 0; i < this.maxReviewers; i++) {
           if (this.displayUser(users, this.reviewees[removeUser.member.id], i)) {
             assignedReviews.push(this.displayUser(users, this.reviewees[removeUser.member.id], i).name)
           }
