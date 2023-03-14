@@ -569,13 +569,44 @@ export default {
       let userCountPairs = {};
       for (let i = 0; i < users.length; i++) {
         if (users[i].name != reassignUser.name && !users[i].atLeast(this.staff) && users[i].atLeast(this.student)){
-          //if the user is already at the maximum reviewees dont add the to the drop down list
           if(type === "Reviewee") {
-            userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
+            //variable that gets set if there is a duplicate being added to the drop down menu
+            let duplicate = false;
+            //check to make sure the user is in the reviewers array first(if a student is late added it will be undefined)
+            if(this.reviewers[reassignUser.member.id] !== undefined) {
+              //loop through the currently assigned reviewees to the reassignedUser(reviewer)
+              for (let j = 0; j < this.reviewers[reassignUser.member.id].length; j++) {
+                //if the user is already in the list of reviewees set the duplicate flag
+                if (users[i].member.id === this.reviewers[reassignUser.member.id][j][0]) {
+                  duplicate = true;
+                  break;
+                }
+              }
+            }
+            //Add the pairing if they are not duplicate
+            if(duplicate === false) {
+              userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
+            }
           }
-          //if the user is already at the maximum reviewers dont add the to the drop down list
+
           if(type === "Reviewer"){
-            userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
+            //variable that gets set if there is a duplicate being added to the drop down menu
+            let duplicate = false;
+            //check to make sure the user is in the reviewees array first(if a student is late added it will be undefined)
+            if(this.reviewees[reassignUser.member.id] !== undefined){
+              //loop through the currently assigned reviewers to the reassignedUser(reviewee)
+              for(let j = 0; j< this.reviewees[reassignUser.member.id].length;j++){
+                //if the user is already in the list of reviewers set the duplicate flag
+                if(users[i].member.id === this.reviewees[reassignUser.member.id][j][0]){
+                  duplicate = true;
+                  break;
+                }
+              }
+            }
+            //Add the pairing if they are not duplicate
+            if(duplicate === false) {
+              userCountPairs[users[i].name] = this.countReviews(users, users[i], type);
+            }
           }
         }
       }
