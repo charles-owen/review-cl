@@ -71,10 +71,7 @@
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined && i-1 < reviewers.length ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
               <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)" align="center">
-                <a v-if="!displayUser(fetcher.users, reviewees[user.member.id], i-1) && !user.atLeast(staff) && user.atLeast(student)" @click.default="reassignDialog(user, 'Reviewer', fetcher.users, i)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
-                  <img src="../../../site/img/add-circle.png">
-                </a>
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined && i-1 < reviewees.length ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
             </tr>
           </table>
@@ -488,12 +485,19 @@ export default {
 
       }];
 
-      let dialogOptions = {title: 'Reassign ' + type,
-                            content: contentString,
-                            buttons: buttons};
-      new this.$site.Dialog(dialogOptions);
-
-
+      new VueDialog(this.$site, {
+        title: 'Reassign ' + type,
+        vue: ReviewReassignVue,
+        data: function () {
+          return {
+            sortedUsers: sortedUsers,
+            reassignUser: reassignUser,
+            assignType: type
+          }
+        },
+        buttons: buttons,
+        parent: this
+      });
     },
     /**
      * Dialog pop up to confirm user wants to send individual reminder.
