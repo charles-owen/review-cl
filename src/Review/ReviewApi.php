@@ -247,9 +247,12 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		}
 
 		$post = $server->post;
-		$this->ensure($post, ['text', 'submissions']);
+		$this->ensure($post, ['text', 'annotation', 'submissions']);
 		$text = strip_tags($post['text']);
-		$reviewing = $assignment->reviewing->submit($user, $reviewee, $text, $post['submissions'], $time);
+		$annotation = $post['annotation']; // TODO: sanitize this somehow
+		$annotation_width = $post['annotation_width'];
+		$annotation_height = $post['annotation_height'];
+		$reviewing = $assignment->reviewing->submit($user, $reviewee, $text, $annotation, $annotation_width, $annotation_height, $post['submissions'], $time);
 
 		$json = new JsonAPI();
 		$json->addData('reviewing', 0, $reviewing);

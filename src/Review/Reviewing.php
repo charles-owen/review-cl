@@ -334,6 +334,9 @@ HTML;
 			    'id'=>$review->id,
 			    'time'=>$review->time,
 			    'review'=>$review->meta->get('review', 'review'),
+			    'annotation'=>$review->meta->get('annotation', 'annotation'),
+			    'annotation_width'=>$review->meta->get('annotation_width', 'annotation_width'),
+			    'annotation_height'=>$review->meta->get('annotation_height', 'annotation_height'),
 			    'submissions'=>$review->meta->get('review', 'submissions', [])
 		    ];
 
@@ -478,15 +481,16 @@ MSG;
 	 * @param User $reviewer The reviewer
 	 * @param User $reviewee The reviewee
 	 * @param string $text Review text
+     * @param string $annotation Drawing annotation, if any
 	 * @param array $submissionIds Submissions this review is for
 	 * @param int $time Time of the review
 	 * @return array of reviews
 	 */
-    public function submit(User $reviewer, User $reviewee, $text, $submissionIds, $time) {
+    public function submit(User $reviewer, User $reviewee, $text, $annotation, $annotation_width, $annotation_height,  $submissionIds, $time) {
         $reviews = new Reviews($this->assignment->site->db);
 	    $review = new Review();
 	    $review->set($this->assignment->tag, $reviewer->member->id,
-		    $reviewee->member->id, $text, $time, $submissionIds);
+		    $reviewee->member->id, $text, $annotation, $annotation_width, $annotation_height,  $time, $submissionIds);
 	    $reviews->add($review);
 
         $this->notify_reviewed($reviewee, $text);
