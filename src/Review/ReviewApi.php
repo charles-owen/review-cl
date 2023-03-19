@@ -67,6 +67,9 @@ class ReviewApi extends \CL\Users\Api\Resource {
 
             case 'saveContent':
                 return $this->saveContent($site, $server, $params, $time);
+
+            case 'getReviewerContent':
+                return $this->getReviewerContent($site, $server, $params, $time);
 		}
 		throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
 	}
@@ -361,6 +364,24 @@ class ReviewApi extends \CL\Users\Api\Resource {
         }else{
             return false;
         }
+    }
+    /**
+     * 获取作业评价的内容
+     * @param Site $site
+     * @param Server $server
+     * @param array $params
+     * @param $time
+     * @return false|string
+     */
+    protected function getReviewerContent(Site $site, Server $server, array $params, $time)
+    {
+        $assignmentViewClass = new AssignmentView($site,'design3');
+        $res = $assignmentViewClass->getReviewerContent();
+        return json_encode([
+            'code' => 200,
+            'msg' => 'success',
+            'data' => $res
+        ]);
     }
 }
 // week 7 Zhuofan Zeng new added content end
