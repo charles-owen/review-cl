@@ -50,6 +50,7 @@
         <h3>{{formatTime(review.time)}} Review by Me
           <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
         <div class="cl-review-present">{{review.meta.review.review}}</div>
+        <svg xmlns="http://www.w3.org/2000/svg" v-html="review.meta.annotation.annotation" :height="review.meta.annotation_height.annotation_height" :width="review.meta.annotation_width.annotation_width"></svg>
       </div>
     </div>
   </div>
