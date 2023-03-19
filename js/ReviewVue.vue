@@ -126,6 +126,8 @@ export default {
         type: 'text/plain',
         text: text,
         annotation: annotation,
+        annotation_width: this.annotation_width,
+        annotation_height: this.annotation_height,
         submissions: this.submissions
       }
 
@@ -168,6 +170,8 @@ export default {
     },
     onResize() {
       handler.setSize(this.$refs.diagramImage[0]);
+      this.annotation_width = this.$refs.diagramImage[0].clientWidth;
+      this.annotation_height = this.$refs.diagramImage[0].clientHeight;
     },
   },
   watch: {
