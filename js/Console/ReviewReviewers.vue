@@ -631,14 +631,14 @@ export default {
     countReviews(users, countUser, type) {
       let count = 0;
       if (type === "Reviewee") {
-        for (let i = 0; i < this.maxReviewees; i++) {
-          if (this.displayUser(users, this.reviewers[countUser.member.id], i)) {
+        for (let i = 0; i < this.maxReviewers; i++) {
+          if (this.displayUser(users, this.reviewees[countUser.member.id], i)) {
             count++;
           }
         }
       } else if (type === "Reviewer") {
-        for (let i = 0; i < this.maxReviewers; i++) {
-          if (this.displayUser(users, this.reviewees[countUser.member.id], i)) {
+        for (let i = 0; i < this.maxReviewees; i++) {
+          if (this.displayUser(users, this.reviewers[countUser.member.id], i)) {
             count++;
           }
         }
@@ -682,7 +682,7 @@ export default {
         //if reviewer, set sorter to get the number of reviewers assigned to each user and sort
         case SortKey.reviewer:
           sorter = (a, b) => {
-            const ret = this.countReviews(users,a,"Reviewer") - this.countReviews(users,b,"Reviewer")
+            const ret = this.countReviews(users,a,"Reviewee") - this.countReviews(users,b,"Reviewee")
             if(ret !== 0) {
               return ret;
             }
@@ -694,7 +694,7 @@ export default {
         //if reviewee, set the sorter to get the number of reviewees assigned to each user and sort
         case SortKey.reviewee:
           sorter = (a, b) => {
-            const ret =  this.countReviews(users,a,"Reviewee") - this.countReviews(users,b,"Reviewee")
+            const ret =  this.countReviews(users,a,"Reviewer") - this.countReviews(users,b,"Reviewer")
             if(ret !== 0) {
               return ret;
             }
