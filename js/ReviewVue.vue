@@ -31,7 +31,7 @@
           <!-- <figure v-if="submission.type === 'image'" class="cl-preview"> -->
           <img ref="diagramImage" class="diagram" :src="previewImg(submission)">
           <canvas class="canvas-drawing" id="drawing"></canvas>
-          <svg class="svg-drawing" id="drawing-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          <svg ref="svgImage" class="svg-drawing" id="drawing-svg" xmlns="http://www.w3.org/2000/svg"></svg>
           <!-- </figure> -->
         </div>
 
@@ -100,11 +100,14 @@ export default {
 
     this.submissions = submissions;
 
+    this.annotation = this.$refs['svgImage'][0];
+
     this.resizeObserver = new ResizeObserver(this.onResize);
     this.resizeObserver.observe(this.$refs.diagramImage[0]);
     this.onResize();
 
     handler.init();
+
   },
   beforeUnmount() {
     this.resizeObserver.unobserve(this.$refs.diagramImage[0]);
@@ -117,9 +120,12 @@ export default {
         return;
       }
 
+      const annotation = this.annotation.innerHTML;
+
       let params = {
         type: 'text/plain',
         text: text,
+        annotation: annotation,
         submissions: this.submissions
       }
 
