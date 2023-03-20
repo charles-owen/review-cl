@@ -10,10 +10,16 @@
 namespace CL\Review;
 
 use CL\Course\Assignment;
+use CL\Course\Member;
+use CL\Course\Members;
+use CL\Site\Api\JsonAPI;
+use CL\Site\Site;
+use CL\Site\System\Server;
 use CL\Users\User;
 use CL\Course\Submission\Submission;
 use CL\Course\Submission\Submissions;
 use CL\Site\Email;
+use CL\Users\Users;
 
 /**
  * Class that manages peer review for an assignment
@@ -151,6 +157,66 @@ class Reviewing {
         return $time > $this->due;
     }
 
+    /**
+     * Boolean for denoting if at least one reviewer/reviewee assignment has been made
+     * @param $user the user that we will extract semester and sectionid information from
+     * @return bool denoting if at least one reviewer/reviewee assignment has been made
+     */
+    public function isAssigned(){
+        /*
+         * Get reviewers for this assignment
+         */
+        $site = $this->assignment->site;
+        $assignTag = $this->assignment->tag;
+        $reviewAssignments = new ReviewAssignments($site->db);
+        $semester =$this->assignment->semester;
+        $sectionId =$this->assignment->section->id;
+        $assignments = $reviewAssignments->getReviewers($semester, $sectionId, $assignTag);
+
+        /*
+         * If there aren't any assignments, return false
+         */
+        if (!$assignments){
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * This function checks if the setting table shows that we have emailed instructors about no reviewer/ee assignments
+     * @return bool
+     * @throws \CL\Tables\TableException
+     */
+    public function hasNotifiedInstructors() {
+        /*
+        * Get semester, sectionId, and assignTag for this assignment
+        */
+        $site = $this->assignment->site;
+        $assignTag = $this->assignment->tag;
+        $reviewAssignments = new ReviewAssignments($site->db);
+        $semester =$this->assignment->semester;
+        $sectionId =$this->assignment->section->id;
+
+        /*
+         * Read from the setting data table
+         */
+        $settings = new \CL\Course\Settings($site->db);
+        $member = $user->member;
+        $setting = $settings->read('course', $semester, $sectionId,
+            'instructor-notifications', $assignTag);
+
+        /*
+         * If not notified, set the key 'notified' to true and return false, else return true
+         */
+        if (!$setting->get('notified')){
+            $setting->set('notified', false);
+            $settings->write($setting);
+            return false;
+        }
+        return true;
+    }
+
+
 //	/**
 //	 * Get the number of hours after a review that a user can revised
 //	 * @return int Number of hours
@@ -185,7 +251,7 @@ class Reviewing {
      * @param User $user
      * @return bool True if the user has submitted in all assignment categories
      */
-    private function has_submitted(User $user) {
+     function has_submitted(User $user) {
         $this->assignment->load();
         $submissions = $this->assignment->submissions;
         $submissiontags = [];
@@ -384,6 +450,17 @@ HTML;
             return false;
         }
 
+        /*
+         * If none of the instructors haven't been notified before,
+         * and students have been assigned to one-another, then email instructors
+         */
+        if (!$this->hasNotifiedInstructors()){
+            if (!$this->isAssigned()) {
+                // Email Instructors
+                $this->notifyMissingAssignments();
+            }
+        }
+
         // Get the reviewers for this submission
         $reviewAssignments = new ReviewAssignments($this->assignment->site->db);
         $reviewers = $reviewAssignments->getMemberReviewers($user->member->id, $this->assignment->tag);
@@ -437,6 +514,26 @@ HTML;
         return true;
     }
 
+    /**
+     * Remind a reviewer they have reviews ready to do if they can.
+     * @param User $reviewer
+     * @return true if mail was sent
+     */
+    public function maybe_remind(User $reviewer) {
+        /*
+         * A user is only able to do reviews if they have submitted in all
+         * categories.
+         */
+        if(!$this->has_submitted($reviewer)) {
+            return false;
+        }
+
+        $this->notify($reviewer);
+
+        return true;
+    }
+
+
 	/**
 	 * Notify a reviewer than a submission has occurred
 	 * @param User $reviewer The reviewer
@@ -475,6 +572,60 @@ MSG;
 	        "$coursename Peer Review Pending", $message);
     }
 
+    /**
+     * Notify instructors of a course and semester if a student submits and there are no reviewer/reviewee assignments.
+     */
+    private function notifyMissingAssignments() {
+        /*
+         * Get Members and Users table
+         */
+        $site = $this->assignment->site;
+        $members = new Members($site->db);
+        $users = new Users($site->db);
+
+        /*
+          * Create URL to assign reviewer/reviewees
+          */
+        $url = $site->server . $site->root . '/cl/console/review/reviewers/' . $this->assignment->tag;
+
+        /*
+         * Create email contents
+         */
+        $message = <<<MSG
+        <p>A student has submitted to a peer review assignment without any review/reviewee pairs made. </p>
+        <p>Please go to the <a href="$url">Reviewing Page</a> to assign reviewer/reviewee pairs.</p>
+        MSG;
+
+        /*
+         * Get all members in the section
+         */
+        $all = $members->getAllBySection($this->assignment->semester, $this->assignment->section->id);
+
+        $coursename = $site->siteName;
+
+        $email = $this->__get('email');
+        /*
+         * Send an email to each staff member in section
+         */
+        foreach($all as $member) {
+            $user = $users->get($member->userId);
+            if($user->role === User::ADMIN) {
+                $email->send($site, $user->email, $user->displayName,
+                    "$coursename Peer Review Pairs: No Pairings Made", $message);
+            }
+        }
+
+        /*
+         * Write to the setting data table for this assignment and set "notified" to true
+         */
+        $settings = new \CL\Course\Settings($site->db);
+        $member = $user->member;
+        $setting = $settings->read('course', $this->assignment->semester, $this->assignment->section->id,
+            'instructor-notifications', $this->assignment->tag);
+
+        $setting->set('notified', true);
+        $settings->write($setting);
+    }
 
 	/**
 	 * Handle a submission of a review
