@@ -70,7 +70,7 @@
                 <!--Changed ternary operator for count to check if reviewer array has enough entries                -->
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined && i-1 < reviewers.length ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
-              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)" align="center">
+              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)">
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined && i-1 < reviewees.length ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
             </tr>
