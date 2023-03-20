@@ -69,6 +69,20 @@ SQL;
 		}
 	}
 
+    public function removeReviewing($reviewerId, $revieweeId, $assignTag) {
+        $sql = <<<SQL
+delete from $this->tablename where reviewerid=? AND revieweeid=? AND assigntag=?
+SQL;
+
+        $pdo = $this->pdo;
+        try {
+            $stmt = $pdo->prepare($sql);
+            return $stmt->execute([$reviewerId, $revieweeId, $assignTag]);
+        } catch(\PDOException $e) {
+            return false;
+        }
+    }
+
 	/**
 	 * Is this a valid reviewer/reviewee combination for this assignment?
 	 * @param int $reviewerId
@@ -256,7 +270,6 @@ SQL;
 		}
 	}
 
-//<!--week5 Zhuofan Zeng new added content-->
     /**
      * Get the list of reviewer
      * @param $revieweeid
@@ -282,8 +295,8 @@ SQL;
 
     /**
      * Get messages from current reviewer
-     * @param  $revieweeid  (I check)
-     * @param  $reviewerid  (Check my works)
+     * @param  $revieweeid
+     * @param  $reviewerid
      * @return array|false
      */
     public function getReviewContent($revieweeid,$reviewerid)
@@ -305,7 +318,7 @@ SQL;
             return false;
         }
     }
-    //<!--week7 Zhuofan Zeng new added content-->
+
     /**
      * Save data to comment form
      * @param $time
@@ -335,6 +348,4 @@ SQL;
         return true;
     }
 }
-//<!--week7 end  line 310-339-->
-//<!--week5 end-->
 
