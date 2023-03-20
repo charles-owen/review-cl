@@ -1,30 +1,36 @@
-.container {
-    /* display: inline-block !important; */
+.cl-review-diagram {
     position: relative;
-    width:100%; height:100%;
-    /* position:absolute; */
+    display: inline-block;
+    width: 100%;
+    height: 100%;
 }
 
-.canvas-drawing {
-    width:100%; height:100%;
-    position:absolute; top:0px; left:0px;
-
-    touch-action: none;
-    z-index: 2;
+.cl-review-diagram img {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
-.svg-drawing {
-    width:100%; height:100%;
-    position:absolute; top:0px; left:0px;
+.cl-review-diagram svg {
+    position: absolute;
+    top: 0;
+    left: 0;
 
-    touch-action: none;
     z-index: 1;
+    touch-action: none;
 }
 
-.diagram {
-    width:100%; height:100%;
-    position:relative;
+.cl-review-diagram canvas {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+
+    z-index: 2;
+    touch-action: none;
 }
+
 
 /* .sliders {
     position: absolute;

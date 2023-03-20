@@ -26,12 +26,12 @@
               class="slider"
             />
         </div>
-        <div class="container">
+        <div class="cl-review-diagram">
 
           <!-- <figure v-if="submission.type === 'image'" class="cl-preview"> -->
-          <img ref="diagramImage" class="diagram" :src="previewImg(submission)">
+          <img ref="diagramImage" :src="previewImg(submission)">
           <canvas class="canvas-drawing" id="drawing"></canvas>
-          <svg ref="svgImage" class="svg-drawing" id="drawing-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          <svg ref="svgImage" id="drawing-svg" xmlns="http://www.w3.org/2000/svg"></svg>
           <!-- </figure> -->
         </div>
 
@@ -51,6 +51,9 @@
           <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
         <div class="cl-review-present">{{review.meta.review.review}}</div>
         <svg xmlns="http://www.w3.org/2000/svg" v-html="review.meta.annotation.annotation" :height="review.meta.annotation_height.annotation_height" :width="review.meta.annotation_width.annotation_width"></svg>
+        <!-- TODO: save submission ID as metadata somehow and use it here -->
+        <!-- <img ref="diagramImage" class="diagram" :src="previewImg(submission)"> -->
+
       </div>
     </div>
   </div>
