@@ -82,6 +82,114 @@ class ReviewApiTest extends ReviewDatabaseTestBase {
         }
 	}
 
+    public function test_remove_reassign() {
+        $this->dataSets(['db/user.xml', 'db/member.xml', 'db/reviewassignment.xml']);
+
+        // Create a site that has the modules we need. The modules
+        // that are installed are defined by cl/installed.php
+        $site = $this->createSite();
+
+        // Get an instructor member and set as the
+        // current user in the Site object
+        $members = new Members($this->site->db);
+        $admin = $members->getAsUser(1);
+        $site->users->user = $admin;
+
+        // Open the site.
+        $site->start(['open'=>true]);
+
+        // Object to test
+        $api = new ReviewApi();
+
+        $time1 = strtotime('1/10/2023 12:01am');
+        $server = new ServerMock();
+
+        $server->setServer('REQUEST_URI', '/api/review/reviewers/design2');
+        $ret = $api->apiDispatch($site, $server, ['reviewers', 'design2'], [], $time1);
+
+        $json = json_decode($ret, true);
+        $reviewers = $json['data'][0]['attributes'];
+
+        $expected = [
+            [22, 35],
+            [22, 47],
+            [35, 47],
+            [35, 49],
+            [47, 22],
+            [47, 35]
+        ];
+
+        // Ensure proper setup
+        $this->assertEquals(6, count($reviewers));
+        foreach($expected as $pair) {
+            $this->assertContains([$pair[0], $pair[1], 0], $reviewers);
+        }
+
+        // Attemmpt to delete a review pair
+        $server->setServer('REQUEST_URI', '/api/review/remove/design2');
+        $server->setServer('REQUEST_METHOD', 'POST');
+        $server->setPost('reviewer', array("id" => 16));
+        $server->setPost('reviewee', array("id" => 17));
+        $ret = $api->apiDispatch($site, $server, ['remove', 'design2'], [], $time1);
+
+        $json = json_decode($ret, true);
+        $reviewers = $json['data'][0]['attributes'];
+
+        $expected = [
+            [22, 35],
+            [22, 47],
+            [35, 49],
+            [47, 22],
+            [47, 35]
+        ];
+
+        $this->assertEquals(5, count($reviewers));
+        foreach($expected as $pair) {
+            $this->assertContains([$pair[0], $pair[1], 0], $reviewers);
+        }
+        $this->assertNotContains([35, 47, 0], $reviewers);
+
+
+        // Attempt to delete a review pair that is not in the database (previously deleted pairing)
+        $ret = $api->apiDispatch($site, $server, ['remove', 'design2'], [], $time1);
+
+        $json = json_decode($ret, true);
+        $this->assertEquals($json["errors"][0]["status"], 400);
+
+
+        // Attempt to delete a review pair where users do not exist
+        $server->setPost('reviewer', array("id" => 300));
+
+        $ret = $api->apiDispatch($site, $server, ['remove', 'design2'], [], $time1);
+
+        $json = json_decode($ret, true);
+        $this->assertEquals($json["errors"][0]["status"], 400);
+
+
+        // Attempt to add a review pair
+        $server->setServer('REQUEST_URI', '/api/review/reassign/design2');
+        $server->setPost('reviewer', array("id" => 16));
+        $server->setPost('reviewee', array("id" => 17));
+        $ret = $api->apiDispatch($site, $server, ['reassign', 'design2'], [], $time1);
+
+        $json = json_decode($ret, true);
+        $reviewers = $json['data'][0]['attributes'];
+
+        $expected = [
+            [22, 35],
+            [22, 47],
+            [35, 47],
+            [35, 49],
+            [47, 22],
+            [47, 35]
+        ];
+
+        $this->assertEquals(6, count($reviewers));
+        foreach($expected as $pair) {
+            $this->assertContains([$pair[0], $pair[1], 0], $reviewers);
+        }
+    }
+
 }
 
 /// @endcond

@@ -110,6 +110,21 @@ class ReviewAssignmentsTest extends ReviewDatabaseTestBase {
         $this->assertCount(0, $reviewers);
     }
 
+    public function test_remove_reviewing() {
+        $this->dataSets(['db/user.xml', 'db/member.xml']);
+
+        $reviewAssignments = new ReviewAssignments($this->site->db);
+        $this->assertTrue($reviewAssignments->assignReviewing(22, 35, 'step1'));
+
+        $assigns = $reviewAssignments->getMemberReviewers(35, "step1");
+        $this->assertCount(1, $assigns);
+
+        $this->assertTrue($reviewAssignments->removeReviewing(22, 35, 'step1'));
+
+        $assigns = $reviewAssignments->getMemberReviewers(35, "step1");
+        $this->assertCount(0, $assigns);
+    }
+
 }
 
 /// @endcond

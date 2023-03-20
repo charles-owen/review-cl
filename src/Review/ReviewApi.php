@@ -382,7 +382,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
         ],JSON_UNESCAPED_UNICODE);
         //start
         $review = new ReviewAssignments($site->db);
-        if ($review->saveContent($time,$metadata,$reviewerid,$revieweeid)){
+        if (!$review->saveContent($time,$metadata,$reviewerid,$revieweeid)){
             echo "<script>alert('Submit successfully!');location.href='".$_SERVER["HTTP_REFERER"]."';</script>";
         }else{
             return false;
@@ -578,11 +578,15 @@ class ReviewApi extends \CL\Users\Api\Resource {
         if($server->requestMethod === 'POST') {
             $post = $server->post;
             $this->ensure($post, ['reviewer', 'reviewee']);  // Check that all required params are present
-            //get the reviewer and reviewee passed into the params from reassign dialog box
+            //get the reviewer and reviewee passed into the params from remove dialog box
             $reviewer_post = $post['reviewer'];
             $reviewee_post = $post['reviewee'];
 
             //grab reviewer and reviewee memberid
+            if(!$members->query(['semester'=>$semester, 'section'=>$sectionId,'userId' => $reviewer_post['id'] ,'role'=>Member::STUDENT]) ||
+                !$members->query(['semester'=>$semester, 'section'=>$sectionId,'userId' => $reviewee_post['id'] ,'role'=>Member::STUDENT])) {
+                throw new APIException("Reviewer or Reviewee does not exist");
+            }
             $reviewer = $members->query(['semester'=>$semester, 'section'=>$sectionId,'userId' => $reviewer_post['id'] ,'role'=>Member::STUDENT])[0];
             $reviewee = $members->query(['semester'=>$semester, 'section'=>$sectionId,'userId' => $reviewee_post['id'] ,'role'=>Member::STUDENT])[0];
 

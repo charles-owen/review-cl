@@ -67,6 +67,7 @@ SQL;
 		} catch(\PDOException $e) {
 			return false;
 		}
+        return true;
 	}
 
     public function removeReviewing($reviewerId, $revieweeId, $assignTag) {
@@ -81,6 +82,7 @@ SQL;
         } catch(\PDOException $e) {
             return false;
         }
+        return true;
     }
 
 	/**
