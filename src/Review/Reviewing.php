@@ -201,7 +201,6 @@ class Reviewing {
          * Read from the setting data table
          */
         $settings = new \CL\Course\Settings($site->db);
-        $member = $user->member;
         $setting = $settings->read('course', $semester, $sectionId,
             'instructor-notifications', $assignTag);
 
@@ -579,7 +578,6 @@ MSG;
         $site = $this->assignment->site;
         $members = new Members($site->db);
         $users = new Users($site->db);
-
         /*
           * Create URL to assign reviewer/reviewees
           */
