@@ -7,7 +7,10 @@
         <span v-if="review.role !== undefined">Staff Review</span>
         <span v-else>Review</span> by {{review.by}}
         <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
-        <svg xmlns="http://www.w3.org/2000/svg" v-html="review.annotation" :height="review.annotation_height" :width="review.annotation_width"></svg>
+        <div class="cl-review-diagram">
+          <img ref="diagramImage" :src="previewImg(review.submissions)">
+          <svg xmlns="http://www.w3.org/2000/svg" v-html="review.annotation" :height="review.annotation_height" :width="review.annotation_width"></svg>
+        </div>
       <div class="cl-review-present">{{review.review}}</div>
     </div>
   </div>
@@ -50,7 +53,10 @@ export default {
       }
 
       return 'Submission: ' + ret;
-    }
+    },
+    previewImg(submissions) {
+      return this.$site.root + '/cl/course/submission/view/' + Object.values(submissions)[0].id;
+    },
   }
 }
 </script>
