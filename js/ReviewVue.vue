@@ -26,14 +26,13 @@
               class="slider"
             />
         </div>
-        <div class="cl-review-diagram">
-
-          <!-- <figure v-if="submission.type === 'image'" class="cl-preview"> -->
-          <img ref="diagramImage" :src="previewImg(submission)">
-          <canvas class="canvas-drawing" id="drawing"></canvas>
-          <svg ref="svgImage" id="drawing-svg" xmlns="http://www.w3.org/2000/svg"></svg>
-          <!-- </figure> -->
-        </div>
+        <figure v-if="submission.type === 'image'" class="cl-preview cl-review-diagram">
+          <div class="cl-review-diagram">
+            <img ref="diagramImage" :src="previewImg(submission)">
+            <canvas class="canvas-drawing" id="drawing"></canvas>
+            <svg ref="svgImage" id="drawing-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+        </figure>
 
         <p class="cl-preview-time">{{formatTime(submission.date)}}</p>
       </div>
