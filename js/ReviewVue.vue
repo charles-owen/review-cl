@@ -20,15 +20,21 @@
       <p class="cl-reviews-none" v-if="reviewing.length === 0">  <!-- v-if determines whether the length of the reviewing is 0-->
         *** None Yet ***
       </p>
-      <div v-for="review in reviewing" class="cl-review"> <!--   v-for loop reviewing, the return value of each loop review  -->
-        <p v-if="review.isReview"><strong>Reviewee:</strong></p >
-        <p v-else=""><strong>Me:</strong></p >
-        <div class="cl-review-present">{{review.meta.review.review}}<!--   review.meta.review.review takes the value, also inside the loop  -->
-          <p style="font-size: 10px; color: green;">{{formatTime(review.time)}}
-          </p><!--   review.time takes value of time  -->
+      <div style="width: 769px; height: 400px; border: solid 1px; overflow-x: scroll;">
+        <div v-for="review in reviewing" class="cl-review"> <!--   v-for loop reviewing, the return value of each loop review  -->
+<!--          <p style="font-size: 10px; color: green;" v-if="review.isReview"><strong>Reviewee:</strong></p >-->
+<!--          <p style="font-size: 10px; color: green; float: right;" v-else=""><strong>Me:</strong></p >-->
+          <div>
+            <p v-if="review.isReview" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px;clear: right; padding: 10px;" class="cl-review-present">
+              {{review.meta.review.review}}{{formatTime(review.time)}}</p>
+            
+            <p v-else="" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px; background-color: #0c5645;color: white;float: right; clear: right;padding: 10px;"
+               class="cl-review-present">
+              {{review.meta.review.review}}{{formatTime(review.time)}}</p><!--   review.meta.review.review takes the value, also inside the loop  -->
+<!--            <p v-if="review.time" style="font-size: 10px; color: green; ">{{formatTime(review.time)}}</p>&lt;!&ndash;   review.time takes value of time  &ndash;&gt;-->
+          </div>
         </div>
       </div>
-
       <form method="post" @submit.prevent="submit">
         <div ref="editor" class="shadow"></div>
         <input type="submit" value="Send">
