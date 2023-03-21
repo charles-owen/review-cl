@@ -19,18 +19,25 @@
               <th class="width38px"></th>
               <th>&#177Reviewee</th>
               <th>&#177Reviewer</th>
-              <th>Name</th>
+              <!--Making it so that clicking the table header for Name sets the name sort key, also make check image pop up-->
+              <th title="Sort By Name" alt= "Sort By Name" @click.prevent="setSortBy(SortKey.name)" style="cursor:pointer"><img v-if="sortKey===SortKey.name" :src="check">
+                Name</th>
               <th>User ID</th>
-              <th v-for="i in maxReviewees">reviewee</th>
-              <th v-for="i in maxReviewers">reviewer</th>
+              <!--Making it so that clicking the table header for Reviewee sets the reviewee sort key, also make check image pop up-->
+              <th title="Sort By Reviewees Needed" alt= "Sort By Reviewees Needed" @click.prevent="setSortBy(SortKey.reviewee)" style="cursor:pointer" v-for="i in maxReviewees"><img v-if="sortKey===SortKey.reviewee" :src="check">
+                reviewee</th>
+              <!--Making it so that clicking the table header for Reviewer sets the reviewer sort key, also make check image pop up-->
+              <th title="Sort By Reviewers Needed" alt= "Sort By Reviewers Needed" @click.prevent="setSortBy(SortKey.reviewer)" style="cursor:pointer" v-for="i in maxReviewers"><img v-if="sortKey===SortKey.reviewer" :src="check">
+                reviewer</th>
             </tr>
-            <tr v-for="user in fetcher.users">
+            <!--Calling sort on the users to make sure it is sorted based on the sort key-->
+            <tr v-for="user in sort(fetcher.users)">
               <td>
                 <a @click.prevent="maybeIndividualNotification(user.id, user.name)" href="javascript:;">
                   <img :src="mail" title="Email" alt="Email">
                 </a>
               </td>
-              <td>
+              <td :style="{backgroundColor: getBackgroundColor(maxReviewers - this.countReviews(fetcher.users, user, 'Reviewer'),maxReviewers)}">
                 <div class="aligncontrols">
                   <a @click.prevent="reassignDialog(user, 'Reviewee', fetcher.users)" href="javascript:;">
                     <img :src="plus" title="Add Reviewee" alt="Add Reviewee">
@@ -40,7 +47,9 @@
                   </a>
                 </div>
               </td>
-              <td>
+              <td :style="[
+                  this.countReviews(fetcher.users, user, 'Reviewee') < maxReviewees ?
+                  {backgroundColor: getBackgroundColor(maxReviewees - this.countReviews(fetcher.users, user, 'Reviewee'),maxReviewees)}:{}]">
                 <div class="aligncontrols">
                   <a @click.prevent="reassignDialog(user, 'Reviewer', fetcher.users)" href="javascript:;">
                     <img :src="plus" title="Add Reviewer" alt="Add Reviewer">
@@ -65,10 +74,7 @@
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined && i-1 < reviewers.length ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
               <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)" align="center">
-                <a v-if="!displayUser(fetcher.users, reviewees[user.member.id], i-1) && !user.atLeast(staff) && user.atLeast(student)" @click.default="reassignDialog(user, 'Reviewer', fetcher.users, i)" onmouseover="this.style.opacity=.5" onmouseout="this.style.opacity=1">
-                  <img src="../../../site/img/add-circle.png">
-                </a>
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined ? reviewees[user.member.id][i-1][1] : 0"></status-present>
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined && i-1 < reviewees.length ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
             </tr>
           </table>
@@ -88,6 +94,12 @@ import ReviewReminderVue from './ReviewReminder.vue';
 
 
 const VueDialog = Site.site.VueDialog;
+
+const SortKey = {
+  reviewer: 1,
+  reviewee: 2,
+  name: 3
+}
 
 /**
  * View for Review assignments. Indicates the assignments of students to review
@@ -117,7 +129,10 @@ export default {
       maxReviewers: 0,   // Maximum number of reviewers for any reviewee
       mail: Site.root + '/vendor/cl/site/img/mail.png', // Mail icon png
       plus: Site.root + '/vendor/cl/site/img/add-circle.png', // Plus icon png
-      remove: Site.root + '/vendor/cl/site/img/x.png' // X (delete) icon png
+      remove: Site.root + '/vendor/cl/site/img/x.png', // X (delete) icon png
+      check: Site.root + '/cl/img/check16.png', //checkmark icon png
+      sortKey: SortKey.name, // set the default sort key value to be name
+      SortKey: SortKey, //the SortKey dictionary
     }
   },
   components: {
@@ -322,6 +337,18 @@ export default {
 
 
     },
+    getBackgroundColor(missing, maxReviews) {
+      if (maxReviews === 0){
+        return `rgb(255, 255, 255)`;
+      }
+      // Calculate RGB values
+      let r = 255;
+      let g = 255 - 75 * (missing/maxReviews);
+      let b = 255 - 75 * (missing/maxReviews);
+
+      // Return RGB value as a string
+      return `rgb(${r}, ${g}, ${b})`;
+    },
     removeDialog(removeUser, type, users)
     {
       let assignedReviews = [];
@@ -491,12 +518,19 @@ export default {
 
       }];
 
-      let dialogOptions = {title: 'Reassign ' + type,
-                            content: contentString,
-                            buttons: buttons};
-      new this.$site.Dialog(dialogOptions);
-
-
+      new VueDialog(this.$site, {
+        title: 'Reassign ' + type,
+        vue: ReviewReassignVue,
+        data: function () {
+          return {
+            sortedUsers: sortedUsers,
+            reassignUser: reassignUser,
+            assignType: type
+          }
+        },
+        buttons: buttons,
+        parent: this
+      });
     },
     /**
      * Dialog pop up to confirm user wants to send individual reminder.
@@ -614,20 +648,94 @@ export default {
     countReviews(users, countUser, type) {
       let count = 0;
       if (type === "Reviewee") {
-        for (let i = 0; i < this.maxReviewees; i++) {
+        for (let i = 0; i < this.maxReviewers; i++) {
           if (this.displayUser(users, this.reviewees[countUser.member.id], i)) {
             count++;
           }
         }
       } else if (type === "Reviewer") {
-        for (let i = 0; i < this.maxReviewers; i++) {
+        for (let i = 0; i < this.maxReviewees; i++) {
           if (this.displayUser(users, this.reviewers[countUser.member.id], i)) {
             count++;
           }
         }
       }
       return count;
-    }
+    },
+
+    /**
+     * sort the unsorted user array on the desired sort key setting
+     * @param unsorted_array Array of users that is unsorted
+     * @returns sorted_result the result sorted on the desired sort key
+     */
+
+    sort(unsorted_array){
+
+      let sorter;
+
+      //keeping track of the unsorted_array of users so we can pass it to countReviews
+      let users = unsorted_array;
+
+      //function compares values that are not numbers(ex: names)
+      function compare(a, b) {
+        if (a > b) {
+          return -1;
+        }
+        if (b > a) {
+          return 1;
+        }
+        return 0;
+      }
+
+      //check what the sort key is set to
+      switch(this.sortKey) {
+        //if name, then run set sorter to run compare on the names
+        case SortKey.name:
+          sorter = (a, b) => {
+            return compare(b.name, a.name);
+          };
+          break;
+
+        //if reviewer, set sorter to get the number of reviewers assigned to each user and sort
+        case SortKey.reviewer:
+          sorter = (a, b) => {
+            const ret = this.countReviews(users,a,"Reviewee") - this.countReviews(users,b,"Reviewee")
+            if(ret !== 0) {
+              return ret;
+            }
+            //if same sort by name
+            return compare(b.name, a.name);
+          };
+          break;
+
+        //if reviewee, set the sorter to get the number of reviewees assigned to each user and sort
+        case SortKey.reviewee:
+          sorter = (a, b) => {
+            const ret =  this.countReviews(users,a,"Reviewer") - this.countReviews(users,b,"Reviewer")
+            if(ret !== 0) {
+              return ret;
+            }
+            //if the count is the same sort by name
+            return compare(b.name, a.name);
+          };
+          break;
+      }
+
+      //run the .sort() function with the sorter lambda function on the unsorted array
+      let sorted_result = unsorted_array.sort(sorter);
+      console.log(sorted_result);
+      console.log(this.maxReviewers);
+      //return the sorted result so the table can be updated accordingly
+      return sorted_result;
+    },
+
+    /**
+     * Function to set the sortKey value based on which header they click
+     * @param sorter
+     */
+    setSortBy(sorter) {
+      this.sortKey = sorter;
+    },
   }
 }
 </script>
@@ -639,7 +747,6 @@ export default {
 .width38px {
   min-width: 38px;
 }
-
 .aligncontrols {
   display: flex;
   flex-direction: row;
