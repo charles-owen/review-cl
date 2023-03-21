@@ -12,12 +12,6 @@
                   </select>
                 </p>
               </form>
-              <form method="post" @submit.prevent="maybeSendNotification()">
-                <div style=margin-left:10px>
-                  <p class="center"><button type="submit">Send Reminder</button>
-                  </p>
-                </div>
-              </form>
             </div>
           </div>
           <table class="small">
@@ -146,6 +140,10 @@ export default {
     'status-present': StatusPresentVue
   },
   mounted() {
+    this.addComponent =
+        this.$root.console.components.addNav2Link(this, 'Send Reminders', 1, () => {
+          this.maybeSendNotification();
+        });
     // Get the member object for the site user
     const member = this.$store.state.user.user.member;
 
@@ -170,6 +168,11 @@ export default {
           this.$site.toast(this, error);
         });
 
+  },
+  beforeUnmount() {
+    if(this.addComponent) {
+      this.$root.console.components.removeNav2(this, this.addComponent);
+    }
   },
   methods: {
     /**
