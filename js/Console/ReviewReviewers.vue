@@ -43,7 +43,7 @@
                   <img :src="mail" title="Email" alt="Email">
                 </a>
               </td>
-              <td>
+              <td :style="{backgroundColor: getBackgroundColor(maxReviewers - this.countReviews(fetcher.users, user, 'Reviewer'),maxReviewers)}">
                 <div class="aligncontrols">
                   <a @click.prevent="reassignDialog(user, 'Reviewee', fetcher.users)" href="javascript:;">
                     <img :src="plus" title="Add Reviewee" alt="Add Reviewee">
@@ -53,7 +53,9 @@
                   </a>
                 </div>
               </td>
-              <td>
+              <td :style="[
+                  this.countReviews(fetcher.users, user, 'Reviewee') < maxReviewees ?
+                  {backgroundColor: getBackgroundColor(maxReviewees - this.countReviews(fetcher.users, user, 'Reviewee'),maxReviewees)}:{}]">
                 <div class="aligncontrols">
                   <a @click.prevent="reassignDialog(user, 'Reviewer', fetcher.users)" href="javascript:;">
                     <img :src="plus" title="Add Reviewer" alt="Add Reviewer">
@@ -331,6 +333,18 @@ export default {
 
 
 
+    },
+    getBackgroundColor(missing, maxReviews) {
+      if (maxReviews === 0){
+        return `rgb(255, 255, 255)`;
+      }
+      // Calculate RGB values
+      let r = 255;
+      let g = 255 - 75 * (missing/maxReviews);
+      let b = 255 - 75 * (missing/maxReviews);
+
+      // Return RGB value as a string
+      return `rgb(${r}, ${g}, ${b})`;
     },
     removeDialog(removeUser, type, users)
     {
