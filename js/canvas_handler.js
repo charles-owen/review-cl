@@ -192,14 +192,32 @@ export let CanvasHandler = function() {
         }
     }
 
+    this.pointerEnter = function(event) {
+        if (event.pointerType == 'pen' || event.pointerType == 'touch') {
+            document.body.style.position = 'fixed';
+            document.body.style.overflowY = 'scroll';
+        }
+    }
+
+    this.pointerLeave = function(event) {
+        if (event.pointerType == 'pen' || event.pointerType == 'touch') {
+            document.body.style.position = 'static';
+            document.body.style.overflowY = 'auto';
+        }
+    }
+
     this.addListeners = function(obj) {
         this.pointerDown = this.pointerDown.bind(this);
         this.pointerUp = this.pointerUp.bind(this);
         this.pointerMove = this.pointerMove.bind(this);
+        this.pointerEnter = this.pointerEnter.bind(this);
+        this.pointerLeave = this.pointerLeave.bind(this);
 
         obj.addEventListener("pointerdown", this.pointerDown, false);
         obj.addEventListener("pointerup", this.pointerUp, false);
         obj.addEventListener("pointermove", this.pointerMove, false);
+        obj.addEventListener("pointerenter", this.pointerEnter, false)
+        obj.addEventListener("pointerleave", this.pointerLeave, false)
     }
 
     this.makePath = function(path_string, width, path_id) {
