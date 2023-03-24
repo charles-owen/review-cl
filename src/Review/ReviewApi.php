@@ -407,7 +407,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
         // Variable to keep track of the number of reviews sent for return.
         $notificationsSent = 0;
         // Variable to keep track of if a notification was unable to send (If users have not submitted yet)
-        $notificationUnavailable = false;
+        $notificationUnavailable = 0;
 
         // Send the notifications if the user has completed the assignment and has not done all reviews
         foreach($membersList as $user) {
@@ -437,7 +437,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
                     $notificationsSent++;
                 }
                 else {
-                    $notificationUnavailable = true;
+                    $notificationUnavailable = 1;
                 }
             }
         }
