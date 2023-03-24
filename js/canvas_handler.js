@@ -63,7 +63,7 @@ export let CanvasHandler = function() {
                 return this.line_width | 0;
             case 'pen':
             case 'touch':
-                return pressureEnabled ? this.line_width * event.pressure | 0 : this.line_width | 0;
+                return this.pressureEnabled ? this.line_width * event.pressure | 0 : this.line_width | 0;
         }
     }
 
