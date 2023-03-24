@@ -1,5 +1,9 @@
   <template>
-    <a @click.prevent="select">{{display()}}</a>
+    <a @click.prevent="select">
+      <slot>
+        {{ display() }}
+      </slot>
+    </a>
   </template>
 
   <script>
