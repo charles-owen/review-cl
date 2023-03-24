@@ -26,7 +26,11 @@
         <span v-if="review.role !== undefined">Staff Review</span>
         <span v-else>Review</span> by {{review.by}}
         <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
-      <div class="cl-review-present">{{review.review}}</div>
+      <div class="cl-review-present">
+        <review-annotation :id="index" :time="review.time" :author="review.by" :svg="review.annotation" :width="review.annotation_width" :height="review.annotation_height" :submission_id="Object.values(review.submissions)[0].id" v-on:show="show">
+          {{review.review}}
+        </review-annotation>
+      </div>
     </div>
   </div>
 </template>
