@@ -224,17 +224,38 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		if(count($params) < 2) {
 			throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
 		}
-
-		$id = $params[1];
+        // $user is the message sender
+		$id = $params[1];  // Review assignment id
 		$reviewAssignments = new ReviewAssignments($site->db);
 		$reviewAssign = $reviewAssignments->get($id);
 		if($reviewAssign === null) {
 			throw new APIException("Review assignment does not exist");
 		}
 
-		if($reviewAssign['reviewerid'] != $user->member->id) {
-			throw new APIException("Not authorized", APIException::NOT_AUTHORIZED);
-		}
+        $members = new Members($site->db);
+        $post = $server->post;
+        $this->ensure($post, ['text', 'submissions', 'context']);
+        $text = strip_tags($post['text']);
+        $context = $post['context'];
+
+        if($context === 'reviewer') {
+            $reviewee = $members->getAsUser($reviewAssign['revieweeid']);
+            $reviewer = $user;
+            if($reviewAssign['reviewerid'] != $reviewer->member->id) {
+                throw new APIException("Not authorized", APIException::NOT_AUTHORIZED);
+            }
+        }
+        else if($context === 'reviewee') {
+            $reviewee = $user;
+            $reviewer = $members->getAsUser($reviewAssign['reviewerid']);
+            if($reviewAssign['revieweeid'] != $reviewee->member->id) {
+                throw new APIException("Not authorized", APIException::NOT_AUTHORIZED);
+            }
+        }
+        else {
+            throw new APIException("Invalid context", APIEXCEPTION::INVALID_API_USAGE);
+        }
+
 
 		// Get the assignment
 		$section = $site->course->get_section_for($user);
@@ -243,16 +264,8 @@ class ReviewApi extends \CL\Users\Api\Resource {
 			throw new APIException("Review assignment does not exist");
 		}
 
-		$members = new Members($site->db);
-		$reviewee = $members->getAsUser($reviewAssign['revieweeid']);
-		if($reviewee === null) {
-			throw new APIException("Review assignment does not exist");
-		}
 
-		$post = $server->post;
-		$this->ensure($post, ['text', 'submissions']);
-		$text = strip_tags($post['text']);
-		$reviewing = $assignment->reviewing->submit($user, $reviewee, $text, $post['submissions'], $time);
+		$reviewing = $assignment->reviewing->submit($reviewer, $reviewee, $text, $post['submissions'], $context, $time);
 
 		$json = new JsonAPI();
 		$json->addData('reviewing', 0, $reviewing);

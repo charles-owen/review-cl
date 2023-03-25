@@ -630,14 +630,15 @@ MSG;
 	 * @param User $reviewee The reviewee
 	 * @param string $text Review text
 	 * @param array $submissionIds Submissions this review is for
+     * @param string $context Review context
 	 * @param int $time Time of the review
 	 * @return array of reviews
 	 */
-    public function submit(User $reviewer, User $reviewee, $text, $submissionIds, $time) {
+    public function submit(User $reviewer, User $reviewee, $text, $submissionIds, $context, $time) {
         $reviews = new Reviews($this->assignment->site->db);
 	    $review = new Review();
 	    $review->set($this->assignment->tag, $reviewer->member->id,
-		    $reviewee->member->id, $text, $time, $submissionIds);
+		    $reviewee->member->id, $text, $time, $context, $submissionIds);
 	    $reviews->add($review);
 
         $this->notify_reviewed($reviewee, $text);
