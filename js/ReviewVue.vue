@@ -128,11 +128,8 @@ export default {
       let params = {
         type: 'text/plain',
         text: text,
-        annotation: annotation,
-        annotation_width: this.annotation_width,
-        annotation_height: this.annotation_height,
         submissions: this.submissions
-      }
+      };
 
       this.$site.api.post(`/api/review/review/${this.json.id}`, params)
           .then((response) => {
@@ -149,6 +146,30 @@ export default {
           .catch((error) => {
             this.$site.toast(this, error);
           });
+
+      let annotation_params = {
+        annotation: annotation,
+        width: this.annotation_width,
+        height: this.annotation_height,
+      };
+
+      this.$site.api.post(`/api/review/annotate/${this.json.id}`, annotation_params)
+          .then((response) => {
+            if (!response.hasError()) {
+              this.editor.textarea.value = '';
+              /* this.reviewing = response.getData('reviewing').attributes; */
+
+              this.$site.toast(this, "Annotation successfully saved to the server");
+            } else {
+              this.$site.toast(this, response);
+            }
+
+          })
+          .catch((error) => {
+            this.$site.toast(this, error);
+          });
+
+
     },
     formatTime(time) {
       return this.$site.TimeFormatter.relativeUNIX(time, null);

@@ -262,6 +262,60 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		return $json;
 	}
 
+    /**
+     * Submit an annotation
+     *
+     * /api/review/annotate/:id
+     *
+     * @param Site $site The Site object
+     * @param User $user Requesting user
+     * @param Server $server The server
+     * @param array $params Parameters for the route
+     * @param int $time Current time
+     * @return JsonAPI
+     * @throws APIException
+     */
+	private function annotate(Site $site, User $user, Server $server, array $params, $time) {
+		if(count($params) < 3) {
+			throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
+		}
+
+		$id = $params[1];
+		$reviewAssignments = new ReviewAssignments($site->db);
+		$reviewAssign = $reviewAssignments->get($id);
+		if($reviewAssign === null) {
+			throw new APIException("Review assignment does not exist");
+		}
+
+		if($reviewAssign['reviewerid'] != $user->member->id) {
+			throw new APIException("Not authorized", APIException::NOT_AUTHORIZED);
+		}
+
+		// Get the assignment
+		$section = $site->course->get_section_for($user);
+		$assignment = $section->get_assignment($reviewAssign['assigntag']);
+		if($assignment === null || $assignment->reviewing === null) {
+			throw new APIException("Review assignment does not exist");
+		}
+
+		$members = new Members($site->db);
+		$reviewee = $members->getAsUser($reviewAssign['revieweeid']);
+		if($reviewee === null) {
+			throw new APIException("Review assignment does not exist");
+		}
+
+		$post = $server->post;
+		$this->ensure($post, ['annotation', 'width', 'height']);
+		$annotation = $post['annotation']; // TODO: sanitize this somehow
+		$width = $post['width'];
+		$height = $post['height'];
+		$reviewing = $assignment->reviewing->submit_annotation($user, $reviewee, $annotation, $width, $height, $time);
+
+		$json = new JsonAPI();
+		$json->addData('reviewing', 0, $reviewing);
+		return $json;
+	}
+
 	/**
 	 * Get/Post reviewing assignments for an assignment.
 	 *
