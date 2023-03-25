@@ -396,27 +396,27 @@ HTML;
 	    $data = [];
 	    $anon = [];
 
-        $all = array_merge($byfor['by'], $byfor['for']);
+        $all = array_merge(...array_values($byfor));
 
 	    foreach($all as $review) {
 		    $reviewData = [
-			    'id'=>$review->id,
-			    'time'=>$review->time,
-			    'review'=>$review->meta->get('review', 'review'),
-			    'submissions'=>$review->meta->get('review', 'submissions', []),
-                'context'=>$review->meta->get('review', 'context', ""),
+			    'id'=>$review['id'],
+			    'time'=>$review['time'],
+			    'review'=>$review['meta']['review']['review'],
+			    'submissions'=>$review['meta']['review']['submissions'],
+                'context'=>$review['meta']['review']['context'],
 		    ];
 
-		    $reviewer = $review->reviewer;
-		    if($reviewer->staff) {
-			    $reviewData['by'] = $reviewer->displayName;
-			    $reviewData['role'] = $reviewer->roleName;
+		    $reviewer = array_key_exists('reviewer', $review) ? $review['reviewer'] : null;
+		    if($reviewer !== null && array_key_exists('staff', $reviewer)) {
+			    $reviewData['by'] = $reviewer['displayName'];
+			    $reviewData['role'] = $reviewer['roleName'];
 		    } else {
-			    if(!isset($anon[$reviewer->id])) {
-				    $anon[$reviewer->id] = count($anon);
+			    if(!isset($anon['reviewer']['id'])) {
+				    $anon['reviewer']['id'] = count($anon);
 			    }
 
-			    $reviewData['by'] = 'Student ' . chr(ord('A') + $anon[$reviewer->id]);
+			    $reviewData['by'] = 'Student ' . chr(ord('A') + $anon['reviewer']['id']);
 		    }
 
 		    $data[] = $reviewData;
