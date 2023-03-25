@@ -8,7 +8,7 @@ namespace CL\Review;
 use CL\Site\MetaData;
 use CL\Tables\Table;
 use CL\Course\Members;
-
+use CL\Site\Site;
 
 /**
  * Manage the review table
