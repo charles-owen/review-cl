@@ -177,34 +177,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
      */
 	private function getByFor(Site $site, $assignTag, $memberId) {
 		$reviews = new Reviews($site->db);
-		$by = $reviews->get_reviews_by($memberId, $assignTag);
-		$for = $reviews->get_reviews($memberId, $assignTag);
-
-		$forData = [];
-		foreach($for as $review) {
-			$forData[] = [
-				'id'=>$review->id,
-				'time'=>$review->time,
-				'meta'=>$review->meta->data,
-				'reviewer'=>$review->reviewer->data()
-			];
-		}
-
-
-		$byData = [];
-		foreach($by as $review) {
-			$byData[] = [
-				'id'=>$review->id,
-				'time'=>$review->time,
-				'meta'=>$review->meta->data,
-				'reviewee'=>$review->reviewee->data()
-			];
-		}
-
-		return [
-			'for'=>$forData,
-			'by'=>$byData
-		];
+		return $reviews->getByFor($site, $assignTag, $memberId);
 	}
 
     /**

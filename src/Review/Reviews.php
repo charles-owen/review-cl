@@ -226,6 +226,45 @@ SQL;
 		}
 	}
 
+    /**
+     * Get all reviews by and for a given user.
+     * @param Site $site The Site object
+     * @param string $assignTag Assignment tag
+     * @param int $memberId Member ID we are fetching for
+     * @return array[] with keys 'for' and 'by', each an array
+     */
+    public function getByFor(Site $site, $assignTag, $memberId) {
+        $reviews = new Reviews($site->db);
+        $by = $reviews->get_reviews_by($memberId, $assignTag);
+        $for = $reviews->get_reviews($memberId, $assignTag);
+
+        $forData = [];
+        foreach($for as $review) {
+            $forData[] = [
+                'id'=>$review->id,
+                'time'=>$review->time,
+                'meta'=>$review->meta->data,
+                'reviewer'=>$review->reviewer->data()
+            ];
+        }
+
+
+        $byData = [];
+        foreach($by as $review) {
+            $byData[] = [
+                'id'=>$review->id,
+                'time'=>$review->time,
+                'meta'=>$review->meta->data,
+                'reviewee'=>$review->reviewee->data()
+            ];
+        }
+
+        return [
+            'for'=>$forData,
+            'by'=>$byData
+        ];
+    }
+
 	/**
 	 * Get all reviews by a given user.
      *

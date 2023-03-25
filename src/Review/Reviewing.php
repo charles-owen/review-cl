@@ -391,16 +391,20 @@ HTML;
     public function reviewsData(User $user) {
     	$site = $this->assignment->site;
 	    $reviews = new Reviews($site->db);
-	    $all = $reviews->get_reviews($user->member->id, $this->assignment->tag);
+	    $byfor = $reviews->getByFor($site, $this->assignment->tag, $user->member->id);
 
 	    $data = [];
 	    $anon = [];
+
+        $all = array_merge($byfor['by'], $byfor['for']);
+
 	    foreach($all as $review) {
 		    $reviewData = [
 			    'id'=>$review->id,
 			    'time'=>$review->time,
 			    'review'=>$review->meta->get('review', 'review'),
-			    'submissions'=>$review->meta->get('review', 'submissions', [])
+			    'submissions'=>$review->meta->get('review', 'submissions', []),
+                'context'=>$review->meta->get('review', 'context', ""),
 		    ];
 
 		    $reviewer = $review->reviewer;
