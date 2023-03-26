@@ -1,18 +1,18 @@
 <template>
   <div class="cl-reviewChat">
-    <div style="width: 769px; height: 400px; border: solid 1px; overflow-x: scroll;" v-if="reviewing.length!==0">
+    <div style="width: 769px; height: 400px; border: solid 1px; overflow-x: scroll;" v-if="chat.length!==0">
       <div v-for="review in chat.slice().reverse()" class="cl-review">
         <div>
-          <p v-if="review.context === context && review.by == chat_id" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px; background-color: #0c5645;color: white;float: right; clear: right;padding: 10px;"
-             class="cl-review-present">
-            {{review.review}}  <br>{{formatTime(review.time)}}</p>
+          <p v-if="review.context === context && review.by == chat_id"
+             class="cl-review-present cl_chat_outgoing">
+            {{review.review}}<br>{{formatTime(review.time)}}</p>
 
-          <p v-else-if="review.by == chat_id" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px;clear: right; padding: 10px;" class="cl-review-present">
-            {{review.review}}  <br>{{formatTime(review.time)}}</p>
+          <p v-else-if="review.by == chat_id" class="cl-review-present cl_chat_incoming">
+            {{review.review}}<br>{{formatTime(review.time)}}</p>
         </div>
       </div>
     </div>
-    <form method="post" @submit.prevent="submit">
+    <form method="post" @submit.prevent="submit" v-show="!(chat.length === 0 && context === 'reviewee')">
       <div ref="editor" class="shadow"></div>
       <input type="submit" value="Send">
     </form>
@@ -21,8 +21,14 @@
 
 <script>
 export default {
-  props: ['reviewing', 'json', 'context', 'chat_id'],
+  props: ['json', 'context', 'chat_id'],
   inheritAttrs: false,
+  data: function () {
+    return {
+      chat: this.json.reviewing.filter(this.filterChatId)
+
+    }
+  },
   mounted() {
     const element = this.$refs['editor'];
     this.editor = new this.$site.Editor(element, {
@@ -38,7 +44,6 @@ export default {
     }
 
     this.submissions = submissions;
-    this.chat = this.json.reviewing;
   },
   methods: {
     submit() {
@@ -77,11 +82,36 @@ export default {
     },
     formatTime(time) {
       return this.$site.TimeFormatter.relativeUNIX(time, null);
+    },
+    filterChatId(review){
+      return this.chat_id == review.by;
     }
+
   }
 }
 </script>
 
 <style scoped>
+  .cl_chat_incoming {
+    width: 300px;
+    border: solid 1px;
+    border-radius: 10px;
+    padding: 5px;
+    font-size: 12px;
+    clear: right;
+    padding: 10px;
+  }
 
+  .cl_chat_outgoing{
+    width: 300px;
+    border: solid 1px;
+    border-radius: 10px;
+    padding: 5px;
+    font-size: 12px;
+    background-color: #0c5645;
+    color: white;
+    float: right;
+    clear: right;
+    padding: 10px;
+  }
 </style>
