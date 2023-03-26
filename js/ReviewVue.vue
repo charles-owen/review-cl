@@ -11,7 +11,7 @@
       <p class="cl-reviews-none" v-if="reviewing.length === 0">
         *** None Yet ***
       </p>
-      <review-chat :reviewing="reviewing" :json="json" :context="context" :chat_id="chat_id"></review-chat>
+      <review-chat :json="json" :context="context" :chat_id="chat_id"></review-chat>
     </div>
   </div>
 </template>
