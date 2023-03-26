@@ -11,7 +11,7 @@
       <p class="cl-reviews-none" v-if="reviewing.length === 0">
         *** None Yet ***
       </p>
-      <review-chat :reviewing="reviewing" :json="json"></review-chat>
+      <review-chat :reviewing="reviewing" :json="json" :context="context" :chat_id="chat_id"></review-chat>
     </div>
   </div>
 </template>
@@ -31,7 +31,9 @@ export default {
   data: function () {
     return {
       reviewing: [],
-      submissions: {}
+      submissions: {},
+      chat_id: this.json.id,
+      context: "reviewer", // context of the current file
     }
   },
   components: {
