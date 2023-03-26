@@ -1,7 +1,7 @@
 <template>
   <div class="cl-reviewChat">
     <div style="width: 769px; height: 400px; border: solid 1px; overflow-x: scroll;" v-if="reviewing.length!==0">
-      <div v-for="review in chat" class="cl-review">
+      <div v-for="review in chat.slice().reverse()" class="cl-review">
         <div>
           <p v-if="review.isReview" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px;clear: right; padding: 10px;" class="cl-review-present">
             {{review.meta.review.review}}{{formatTime(review.time)}}</p>
@@ -58,9 +58,13 @@ export default {
           .then((response) => {
             if (!response.hasError()) {
               this.editor.textarea.value = '';
-              this.chat.push(response.getData('reviewing').attributes.slice(-1)[0]);
-
-              this.$site.toast(this, "Review successfully saved to the server");
+              var latestMessage = response.getData('reviewing').attributes[0];
+              this.chat.unshift({
+                by: this.chat_id,
+                review: latestMessage.meta.review.review,
+                time: latestMessage.time,
+                context: latestMessage.meta.review.context,
+              });
             } else {
               this.$site.toast(this, response);
             }
