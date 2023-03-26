@@ -370,10 +370,15 @@ class Reviewing {
 	 * @param User $user User we are presenting for
 	 * @return string HTML
 	 */
-    public function presentReviews(User $user) {
+    public function presentReviews(User $user, array $submissionsData) {
+		$reviewAssignments = new ReviewAssignments($this->assignment->site->db);
+		$reviewAssignIDs = $reviewAssignments->getByReviewee($user->member->id, $this->assignment->tag);
+
     	$data = [
+            'ids'=>$reviewAssignIDs,
     		'assigntag'=>$this->assignment->tag,
-    		'reviews'=>$this->reviewsData($user)
+            'reviewing'=>$this->reviewsData($user),
+            'submissions'=>$submissionsData,
 	    ];
 
 	    $json = htmlspecialchars(json_encode($data), ENT_NOQUOTES);
@@ -388,6 +393,7 @@ HTML;
 	 * @param User $user Reviewee
 	 * @return array Data
 	 */
+
     public function reviewsData(User $user) {
     	$site = $this->assignment->site;
 	    $reviews = new Reviews($site->db);
