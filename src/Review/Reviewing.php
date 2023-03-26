@@ -370,10 +370,15 @@ class Reviewing {
 	 * @param User $user User we are presenting for
 	 * @return string HTML
 	 */
-    public function presentReviews(User $user) {
+    public function presentReviews(User $user, array $submissionsData) {
+		$reviewAssignments = new ReviewAssignments($this->assignment->site->db);
+		$reviewAssignIDs = $reviewAssignments->getByReviewee($user->member->id, $this->assignment->tag);
+
     	$data = [
+            'ids'=>$reviewAssignIDs,
     		'assigntag'=>$this->assignment->tag,
-    		'reviews'=>$this->reviewsData($user)
+            'reviewing'=>$this->reviewsData($user),
+            'submissions'=>$submissionsData,
 	    ];
 
 	    $json = htmlspecialchars(json_encode($data), ENT_NOQUOTES);
@@ -388,32 +393,43 @@ HTML;
 	 * @param User $user Reviewee
 	 * @return array Data
 	 */
+
     public function reviewsData(User $user) {
     	$site = $this->assignment->site;
 	    $reviews = new Reviews($site->db);
-	    $all = $reviews->get_reviews($user->member->id, $this->assignment->tag);
+	    $byfor = $reviews->getByFor($site, $this->assignment->tag, $user->member->id);
 
 	    $data = [];
 	    $anon = [];
+
+        $all = array_merge(...array_values($byfor));
+
 	    foreach($all as $review) {
 		    $reviewData = [
-			    'id'=>$review->id,
-			    'time'=>$review->time,
-			    'review'=>$review->meta->get('review', 'review'),
-			    'submissions'=>$review->meta->get('review', 'submissions', [])
+			    'id'=>$review['id'],
+			    'time'=>$review['time'],
+			    'review'=>$review['meta']['review']['review'],
+			    'submissions'=>$review['meta']['review']['submissions'],
+                'context'=>$review['meta']['review']['context'],
 		    ];
 
-		    $reviewer = $review->reviewer;
-		    if($reviewer->staff) {
-			    $reviewData['by'] = $reviewer->displayName;
-			    $reviewData['role'] = $reviewer->roleName;
-		    } else {
-			    if(!isset($anon[$reviewer->id])) {
-				    $anon[$reviewer->id] = count($anon);
-			    }
+		    $reviewer = array_key_exists('reviewer', $review) ? $review['reviewer'] : null;
+            if($reviewer !== null) {
+                if(array_key_exists('staff', $reviewer)) {
+                    $reviewData['by'] = $reviewer['displayName'];
+                    $reviewData['role'] = $reviewer['roleName'];
+                } else {
+                    if(!isset($anon['reviewer']['id'])) {
+                        $anon['reviewer']['id'] = count($anon);
+                    }
 
-			    $reviewData['by'] = 'Student ' . chr(ord('A') + $anon[$reviewer->id]);
-		    }
+                    $reviewAssignments = new ReviewAssignments($this->assignment->site->db);
+
+                    $reviewAssignID = $reviewAssignments->getTagByValues($user->member->id, $review['reviewer']['member']['id'], $this->assignment->tag);
+                    // TODO: change this to chat_id
+                    $reviewData['by'] = $reviewAssignID;
+                }
+            }
 
 		    $data[] = $reviewData;
 	    }
@@ -630,17 +646,21 @@ MSG;
 	 * @param User $reviewee The reviewee
 	 * @param string $text Review text
 	 * @param array $submissionIds Submissions this review is for
+     * @param string $context Review context
 	 * @param int $time Time of the review
 	 * @return array of reviews
 	 */
-    public function submit(User $reviewer, User $reviewee, $text, $submissionIds, $time) {
+    public function submit(User $reviewer, User $reviewee, $text, $submissionIds, $context, $time) {
         $reviews = new Reviews($this->assignment->site->db);
 	    $review = new Review();
 	    $review->set($this->assignment->tag, $reviewer->member->id,
-		    $reviewee->member->id, $text, $time, $submissionIds);
+		    $reviewee->member->id, $text, $time, $context, $submissionIds);
 	    $reviews->add($review);
 
-        $this->notify_reviewed($reviewee, $text);
+        $numReviews = $reviews->get_num_reviews_by_for($reviewer->member->id, $reviewee->member->id, $this->assignment->tag);
+        if($numReviews == 1) {
+            $this->notify_reviewed($reviewee, $text);
+        }
 
 	    return $reviews->get_reviewing($this->assignment->tag, $reviewer->member->id, $reviewee->member->id);
     }
