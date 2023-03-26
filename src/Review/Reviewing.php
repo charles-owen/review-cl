@@ -414,19 +414,22 @@ HTML;
 		    ];
 
 		    $reviewer = array_key_exists('reviewer', $review) ? $review['reviewer'] : null;
-		    if($reviewer !== null && array_key_exists('staff', $reviewer)) {
-			    $reviewData['by'] = $reviewer['displayName'];
-			    $reviewData['role'] = $reviewer['roleName'];
-		    } else {
-			    if(!isset($anon['reviewer']['id'])) {
-				    $anon['reviewer']['id'] = count($anon);
-			    }
+            if($reviewer !== null) {
+                if(array_key_exists('staff', $reviewer)) {
+                    $reviewData['by'] = $reviewer['displayName'];
+                    $reviewData['role'] = $reviewer['roleName'];
+                } else {
+                    if(!isset($anon['reviewer']['id'])) {
+                        $anon['reviewer']['id'] = count($anon);
+                    }
 
-			    $reviewAssignments = new ReviewAssignments($this->assignment->site->db);
-			    $reviewAssignID = $reviewAssignments->getTagByValues($user->member->id, $review['reviewer']['member']['id'], $this->assignment->tag);
-			    // TODO: change this to chat_id
-			    $reviewData['by'] = $reviewAssignID;
-		    }
+                    $reviewAssignments = new ReviewAssignments($this->assignment->site->db);
+
+                    $reviewAssignID = $reviewAssignments->getTagByValues($user->member->id, $review['reviewer']['member']['id'], $this->assignment->tag);
+                    // TODO: change this to chat_id
+                    $reviewData['by'] = $reviewAssignID;
+                }
+            }
 
 		    $data[] = $reviewData;
 	    }

@@ -123,7 +123,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		$post = $server->post;
 		$this->ensure($post, ['text', 'submissions']);
 		$text = strip_tags($post['text']);
-		$reviewing = $assignment->reviewing->submit($user, $reviewee, $text, $post['submissions'], $time);
+		$reviewing = $assignment->reviewing->submit($user, $reviewee, $text, $post['submissions'],'staff', $time);
 
 		$data = $this->getByFor($site, $assignTag, $memberId);
 
