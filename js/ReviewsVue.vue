@@ -24,12 +24,12 @@ export default {
   data: function () {
     return {
       assignTag: '',
-      reviews: []
+      reviewing: [],
     }
   },
   mounted() {
     this.assignTag = this.json.assignTag;
-    this.reviews = this.json.reviews;
+    this.reviewing = this.json.reviewing;
   },
   methods: {
     formatTime(time) {
