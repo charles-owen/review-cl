@@ -422,7 +422,10 @@ HTML;
 				    $anon['reviewer']['id'] = count($anon);
 			    }
 
-			    $reviewData['by'] = 'Student ' . chr(ord('A') + $anon['reviewer']['id']);
+			    $reviewAssignments = new ReviewAssignments($this->assignment->site->db);
+			    $reviewAssignID = $reviewAssignments->getTagByValues($user->member->id, $review['reviewer']['member']['id'], $this->assignment->tag);
+			    // TODO: change this to chat_id
+			    $reviewData['by'] = $reviewAssignID;
 		    }
 
 		    $data[] = $reviewData;
