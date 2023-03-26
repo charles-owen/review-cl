@@ -3,12 +3,12 @@
     <div style="width: 769px; height: 400px; border: solid 1px; overflow-x: scroll;" v-if="reviewing.length!==0">
       <div v-for="review in chat.slice().reverse()" class="cl-review">
         <div>
-          <p v-if="review.isReview" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px;clear: right; padding: 10px;" class="cl-review-present">
-            {{review.meta.review.review}}{{formatTime(review.time)}}</p>
-
-          <p v-else="" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px; background-color: #0c5645;color: white;float: right; clear: right;padding: 10px;"
+          <p v-if="review.context === context && review.by == chat_id" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px; background-color: #0c5645;color: white;float: right; clear: right;padding: 10px;"
              class="cl-review-present">
-            {{review.meta.review.review}}{{formatTime(review.time)}}</p>
+            {{review.review}}{{formatTime(review.time)}}</p>
+
+          <p v-else-if="review.by == chat_id" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px;clear: right; padding: 10px;" class="cl-review-present">
+            {{review.review}}{{formatTime(review.time)}}</p>
         </div>
       </div>
     </div>
@@ -21,7 +21,7 @@
 
 <script>
 export default {
-  props: ['reviewing', 'json'],
+  props: ['reviewing', 'json', 'context', 'chat_id'],
   inheritAttrs: false,
   mounted() {
     const element = this.$refs['editor'];
@@ -51,10 +51,11 @@ export default {
       let params = {
         type: 'text/plain',
         text: text,
-        submissions: this.submissions
+        submissions: this.submissions,
+        context: this.context,
       }
       // Request backend data API
-      this.$site.api.post(`/api/review/review/${this.json.id}`, params)
+      this.$site.api.post(`/api/review/review/${this.chat_id}`, params)
           .then((response) => {
             if (!response.hasError()) {
               this.editor.textarea.value = '';
