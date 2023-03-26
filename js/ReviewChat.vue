@@ -3,16 +3,16 @@
     <div style="width: 769px; height: 400px; border: solid 1px; overflow-x: scroll;" v-if="chat.length!==0">
       <div v-for="review in chat.slice().reverse()" class="cl-review">
         <div>
-          <p v-if="review.context === context && review.by == chat_id" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px; background-color: #0c5645;color: white;float: right; clear: right;padding: 10px;"
-             class="cl-review-present">
+          <p v-if="review.context === context && review.by == chat_id"
+             class="cl-review-present cl_chat_outgoing">
             {{review.review}}{{formatTime(review.time)}}</p>
 
-          <p v-else-if="review.by == chat_id" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px;clear: right; padding: 10px;" class="cl-review-present">
+          <p v-else-if="review.by == chat_id" class="cl-review-present cl_chat_incoming">
             {{review.review}}{{formatTime(review.time)}}</p>
         </div>
       </div>
     </div>
-    <form method="post" @submit.prevent="submit" v-if="!(chat.length === 0 && context === 'reviewee')">
+    <form method="post" @submit.prevent="submit" v-show="!(chat.length === 0 && context === 'reviewee')">
       <div ref="editor" class="shadow"></div>
       <input type="submit" value="Send">
     </form>
@@ -92,5 +92,26 @@ export default {
 </script>
 
 <style scoped>
+  .cl_chat_incoming {
+    width: 300px;
+    border: solid 1px;
+    border-radius: 10px;
+    padding: 5px;
+    font-size: 12px;
+    clear: right;
+    padding: 10px;
+  }
 
+  .cl_chat_outgoing{
+    width: 300px;
+    border: solid 1px;
+    border-radius: 10px;
+    padding: 5px;
+    font-size: 12px;
+    background-color: #0c5645;
+    color: white;
+    float: right;
+    clear: right;
+    padding: 10px;
+  }
 </style>
