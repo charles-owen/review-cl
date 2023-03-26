@@ -55,35 +55,6 @@ export default {
     this.submissions = submissions;
   },
   methods: {
-    submit() {
-      const text = this.editor.textarea.value.trim();
-      if (text === '') {
-        Site.toast(this, 'You must enter some text to submit');
-        return;
-      }
-
-      let params = {
-        type: 'text/plain',
-        text: text,
-        submissions: this.submissions
-      }
-
-      this.$site.api.post(`/api/review/review/${this.json.id}`, params)
-          .then((response) => {
-            if (!response.hasError()) {
-              this.editor.textarea.value = '';
-              this.reviewing = response.getData('reviewing').attributes;
-
-              this.$site.toast(this, "Review successfully saved to the server");
-            } else {
-              this.$site.toast(this, response);
-            }
-
-          })
-          .catch((error) => {
-            this.$site.toast(this, error);
-          });
-    },
     formatTime(time) {
       return this.$site.TimeFormatter.relativeUNIX(time, null);
     },
