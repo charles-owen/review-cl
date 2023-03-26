@@ -123,7 +123,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		$post = $server->post;
 		$this->ensure($post, ['text', 'submissions']);
 		$text = strip_tags($post['text']);
-		$reviewing = $assignment->reviewing->submit($user, $reviewee, $text, $post['submissions'], $time);
+		$reviewing = $assignment->reviewing->submit($user, $reviewee, $text, $post['submissions'],'staff', $time);
 
 		$data = $this->getByFor($site, $assignTag, $memberId);
 
@@ -241,7 +241,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		$reviewing = $assignment->reviewing->submit($reviewer, $reviewee, $text, $post['submissions'], $context, $time);
 
 		$json = new JsonAPI();
-		$json->addData('reviewing', 0, $reviewing);
+		$json->addData('reviewing', 0, $reviewing[0]);
 		return $json;
 	}
 
