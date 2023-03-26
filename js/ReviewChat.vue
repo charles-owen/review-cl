@@ -5,10 +5,10 @@
         <div>
           <p v-if="review.context === context && review.by == chat_id" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px; background-color: #0c5645;color: white;float: right; clear: right;padding: 10px;"
              class="cl-review-present">
-            {{review.review}}{{formatTime(review.time)}}</p>
+            {{review.review}}  <br>{{formatTime(review.time)}}</p>
 
           <p v-else-if="review.by == chat_id" style="width: 300px; border: solid 1px; border-radius: 10px; padding: 5px; font-size: 12px;clear: right; padding: 10px;" class="cl-review-present">
-            {{review.review}}{{formatTime(review.time)}}</p>
+            {{review.review}}  <br>{{formatTime(review.time)}}</p>
         </div>
       </div>
     </div>
