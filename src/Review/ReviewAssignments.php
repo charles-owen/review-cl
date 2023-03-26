@@ -108,6 +108,34 @@ SQL;
 	}
 
 	/**
+	 * Return a ReviewAssignment id for a reviewee-reviewer pair and a given assignment tag
+	 * @param int $reviewerId
+	 * @param int $revieweeId
+	 * @param int $assignTag
+	 * @return int
+	 */
+	public function getTagByValues($revieweeId, $reviewerId, $assignTag) {
+		$sql = <<<SQL
+select *
+from $this->tablename
+where reviewerid=? and revieweeid=? and assigntag=?
+SQL;
+
+		$pdo = $this->pdo;
+		try {
+			$stmt = $pdo->prepare($sql);
+			$exec = [$reviewerId, $revieweeId, $assignTag];
+			if($stmt->execute($exec) === false) {
+				return null;
+			}
+			return $stmt->fetch(\PDO::FETCH_ASSOC)['id'];
+
+		} catch(\PDOException $e) {
+			return false;
+		}
+	}
+
+	/**
  * Get all reviewers for a given reviewee and assignment
  * @param int $revieweeId The reviewee ID
  * @param string $assignTag The assignment tag
