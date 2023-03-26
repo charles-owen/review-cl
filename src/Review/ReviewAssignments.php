@@ -266,6 +266,32 @@ SQL;
 		}
 	}
 
+	/** Get all reviewing assignments by reviewee_id and assignment tag
+	 * @param int $reviewee_id ID of rewviewee
+	 * @param string $assigntag Assignment tag
+	 * @return array Array of assignment IDs
+	 */
+	public function getByReviewee($reviewee_id, $assigntag) {
+		$sql = <<<SQL
+select * from $this->tablename
+where revieweeid=? and assigntag=?
+SQL;
+
+		$pdo = $this->pdo;
+		try {
+			$stmt = $pdo->prepare($sql);
+			$stmt->execute([$reviewee_id, $assigntag]);
+			$ret = [];
+			foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+				$ret[] = [$row['id']];
+			}
+
+			return $ret;
+		} catch(\PDOException $e) {
+			return [];
+		}
+	}
+
 
 	/**
 	 * Clear all reviewing assignments for a given semester/section/assignment
