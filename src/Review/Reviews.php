@@ -308,6 +308,40 @@ SQL;
 		}
 	}
 
+    /**
+     * Get all reviews by a given user for a given reviewee
+     *
+     * @param int $reviewerId Member ID
+     * @param int $revieweeId Member ID
+     * @param string $assignTag Assignment
+     * @return array of Review objects
+     */
+    public function get_num_reviews_by_for($reviewerId, $revieweeId, $assignTag) {
+        //TODO Make the query consider context to ensure the reviewer is the reviewer in the meta:context
+        $members = new Members($this->config);
+        $sql = $members->memberUserJoinSQL(
+            "reviewerid as review_reviewerid, revieweeid as review_revieweeid, " .
+            "review.id as review_id, review.metadata as review_metadata, " .
+            "review.time as review_time, assigntag as review_assigntag",
+            false, null, 'reviewee_');
+
+        $sql .= <<<SQL
+join $this->tablename review
+on revieweeid=member.id
+where assigntag=? and reviewerid=? and revieweeid=?
+order by review.time desc
+SQL;
+
+        $pdo = $this->pdo;
+        try {
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$assignTag, $reviewerId, $revieweeId]);
+            return $stmt->rowCount();
+        } catch(\PDOException $e) {
+            return 0;
+        }
+    }
+
 	/**
 	 * Get the reviewing counts for an assignment.
      *

@@ -657,7 +657,10 @@ MSG;
 		    $reviewee->member->id, $text, $time, $context, $submissionIds);
 	    $reviews->add($review);
 
-        $this->notify_reviewed($reviewee, $text);
+        $numReviews = $reviews->get_num_reviews_by_for($reviewer->member->id, $reviewee->member->id, $this->assignment->tag);
+        if($numReviews == 1) {
+            $this->notify_reviewed($reviewee, $text);
+        }
 
 	    return $reviews->get_reviewing($this->assignment->tag, $reviewer->member->id, $reviewee->member->id);
     }

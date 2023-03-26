@@ -5,10 +5,10 @@
         <div>
           <p v-if="review.context === context && review.by == chat_id"
              class="cl-review-present cl_chat_outgoing">
-            {{review.review}}{{formatTime(review.time)}}</p>
+            {{review.review}}<br>{{formatTime(review.time)}}</p>
 
           <p v-else-if="review.by == chat_id" class="cl-review-present cl_chat_incoming">
-            {{review.review}}{{formatTime(review.time)}}</p>
+            {{review.review}}<br>{{formatTime(review.time)}}</p>
         </div>
       </div>
     </div>
