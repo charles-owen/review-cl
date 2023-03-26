@@ -2,7 +2,7 @@
 /** @file
  * Class for the review table
  */
- 
+
 namespace CL\Review;
 
 use CL\Site\MetaData;
@@ -34,15 +34,15 @@ class Reviews  extends Table {
 	public function createSQL() {
 		$query = <<<SQL
 CREATE TABLE IF NOT EXISTS `$this->tablename` (
-  id         int(11) NOT NULL AUTO_INCREMENT, 
-  assigntag  varchar(30) NOT NULL, 
-  time       datetime NOT NULL, 
-  metadata   mediumtext NOT NULL, 
-  reviewerid int(11) NOT NULL, 
-  revieweeid int(11) NOT NULL, 
-  PRIMARY KEY (id), 
-  INDEX (assigntag), 
-  INDEX (reviewerid), 
+  id         int(11) NOT NULL AUTO_INCREMENT,
+  assigntag  varchar(30) NOT NULL,
+  time       datetime NOT NULL,
+  metadata   mediumtext NOT NULL,
+  reviewerid int(11) NOT NULL,
+  revieweeid int(11) NOT NULL,
+  PRIMARY KEY (id),
+  INDEX (assigntag),
+  INDEX (reviewerid),
   INDEX (revieweeid));
 
 SQL;
