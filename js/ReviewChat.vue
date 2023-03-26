@@ -59,7 +59,7 @@ export default {
           .then((response) => {
             if (!response.hasError()) {
               this.editor.textarea.value = '';
-              var latestMessage = response.getData('reviewing').attributes[0];
+              var latestMessage = response.getData('reviewing').attributes;
               this.chat.unshift({
                 by: this.chat_id,
                 review: latestMessage.meta.review.review,

@@ -241,7 +241,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		$reviewing = $assignment->reviewing->submit($reviewer, $reviewee, $text, $post['submissions'], $context, $time);
 
 		$json = new JsonAPI();
-		$json->addData('reviewing', 0, $reviewing);
+		$json->addData('reviewing', 0, $reviewing[0]);
 		return $json;
 	}
 
