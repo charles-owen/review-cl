@@ -3,7 +3,7 @@
  * @file
  * Class that represents the peer review system reviewassignment table.
  */
- 
+
 namespace CL\Review;
 
 use CL\Tables\Table;
@@ -35,11 +35,11 @@ class ReviewAssignments  extends Table {
 	public function createSQL() {
 		$query = <<<SQL
 CREATE TABLE IF NOT EXISTS `$this->tablename` (
-  id         int(11) NOT NULL AUTO_INCREMENT, 
-  reviewerid int(11) NOT NULL, 
-  revieweeid int(11) NOT NULL, 
-  assigntag  varchar(30) NOT NULL, 
-  PRIMARY KEY (id), 
+  id         int(11) NOT NULL AUTO_INCREMENT,
+  reviewerid int(11) NOT NULL,
+  revieweeid int(11) NOT NULL,
+  assigntag  varchar(30) NOT NULL,
+  PRIMARY KEY (id),
   INDEX (assigntag));
 
 SQL;
