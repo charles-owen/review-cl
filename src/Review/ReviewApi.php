@@ -237,6 +237,11 @@ class ReviewApi extends \CL\Users\Api\Resource {
 			throw new APIException("Review assignment does not exist");
 		}
 
+		$reviews = new Reviews($site->db);
+		$has_reviews = $reviews->has_reviewed($assignment->tag, $reviewer->member->id, $reviewee->member->id);
+		if (!$has_reviews && $context === 'reviewee') {
+			throw new APIException("Not authorized", APIException::NOT_AUTHORIZED);
+		}
 
 		$reviewing = $assignment->reviewing->submit($reviewer, $reviewee, $text, $post['submissions'], $context, $time);
 
