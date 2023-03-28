@@ -7,26 +7,18 @@
         <figure v-if="submission.type === 'image'" class="cl-preview"><img :src="previewImg(submission)"></figure>
         <p class="cl-preview-time">{{formatTime(submission.date)}}</p>
       </div>
-
-      <h2>Review</h2>
-      <form method="post" @submit.prevent="submit">
-        <div ref="editor" class="shadow"></div>
-        <p><input type="submit" value="Submit Review"></p>
-      </form>
-
-      <h2>Previous Reviews</h2>
-      <p class="cl-reviews-none" v-if="reviewing.length === 0">*** None Yet ***</p>
-      <div v-for="review in reviewing" class="cl-review">
-        <h3>{{formatTime(review.time)}} Review by Me
-          <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
-        <div class="cl-review-present">{{review.meta.review.review}}</div>
-      </div>
+      <h3 style="text-align: center;background: #00723f;color: white;">Review & Chat</h3>
+      <p class="cl-reviews-none" v-if="reviewing.length === 0">
+        *** None Yet ***
+      </p>
+      <review-chat :json="json" :context="context" :chat_id="chat_id"></review-chat>
     </div>
   </div>
 </template>
 
 <script>
 import {UserVueBase} from 'users-cl/index'
+import ReviewChatVue from './ReviewChat.vue'
 
 /**
  * This is the page for a review of an assignment by a member.
@@ -39,18 +31,18 @@ export default {
   data: function () {
     return {
       reviewing: [],
-      submissions: {}
+      submissions: {},
+      chat_id: this.json.id,
+      context: "reviewer", // context of the current file
     }
+  },
+  components: {
+    reviewChat: ReviewChatVue
   },
   mounted() {
     this.setTitle('Peer Reviewing');
     this.reviewing = this.json.reviewing;
 
-    const element = this.$refs['editor'];
-    this.editor = new this.$site.Editor(element, {
-      height: '10em',
-      classes: ['yellow-pad']
-    });
 
     let submissions = {};
     for (const submission of this.json.submissions) {
@@ -63,35 +55,6 @@ export default {
     this.submissions = submissions;
   },
   methods: {
-    submit() {
-      const text = this.editor.textarea.value.trim();
-      if (text === '') {
-        Site.toast(this, 'You must enter some text to submit');
-        return;
-      }
-
-      let params = {
-        type: 'text/plain',
-        text: text,
-        submissions: this.submissions
-      }
-
-      this.$site.api.post(`/api/review/review/${this.json.id}`, params)
-          .then((response) => {
-            if (!response.hasError()) {
-              this.editor.textarea.value = '';
-              this.reviewing = response.getData('reviewing').attributes;
-
-              this.$site.toast(this, "Review successfully saved to the server");
-            } else {
-              this.$site.toast(this, response);
-            }
-
-          })
-          .catch((error) => {
-            this.$site.toast(this, error);
-          });
-    },
     formatTime(time) {
       return this.$site.TimeFormatter.relativeUNIX(time, null);
     },

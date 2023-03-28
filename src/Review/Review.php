@@ -62,13 +62,14 @@ class Review {
 	 * @param int $time
 	 * @param array $submissions Submission ID's this review is associated with.
 	 */
-	public function set($assignTag, $reviewerId, $revieweeId, $review, $time, array $submissions=null) {
+	public function set($assignTag, $reviewerId, $revieweeId, $review, $time, $context, array $submissions=null) {
 		$this->assignTag = $assignTag;
 		$this->reviewerId = $reviewerId;
 		$this->revieweeId = $revieweeId;
 		$this->time = $time;
 
 		$this->metaData->set('review', 'review', $review);
+        $this->metaData->set('review', 'context', $context);
 		if($submissions !== null) {
 			$this->metaData->set('review', 'submissions', $submissions);
 		}

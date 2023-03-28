@@ -3,7 +3,7 @@
  * @file
  * Class that represents the peer review system reviewassignment table.
  */
- 
+
 namespace CL\Review;
 
 use CL\Tables\Table;
@@ -35,11 +35,11 @@ class ReviewAssignments  extends Table {
 	public function createSQL() {
 		$query = <<<SQL
 CREATE TABLE IF NOT EXISTS `$this->tablename` (
-  id         int(11) NOT NULL AUTO_INCREMENT, 
-  reviewerid int(11) NOT NULL, 
-  revieweeid int(11) NOT NULL, 
-  assigntag  varchar(30) NOT NULL, 
-  PRIMARY KEY (id), 
+  id         int(11) NOT NULL AUTO_INCREMENT,
+  reviewerid int(11) NOT NULL,
+  revieweeid int(11) NOT NULL,
+  assigntag  varchar(30) NOT NULL,
+  PRIMARY KEY (id),
   INDEX (assigntag));
 
 SQL;
@@ -69,6 +69,20 @@ SQL;
 		}
 	}
 
+    public function removeReviewing($reviewerId, $revieweeId, $assignTag) {
+        $sql = <<<SQL
+delete from $this->tablename where reviewerid=? AND revieweeid=? AND assigntag=?
+SQL;
+
+        $pdo = $this->pdo;
+        try {
+            $stmt = $pdo->prepare($sql);
+            return $stmt->execute([$reviewerId, $revieweeId, $assignTag]);
+        } catch(\PDOException $e) {
+            return false;
+        }
+    }
+
 	/**
 	 * Is this a valid reviewer/reviewee combination for this assignment?
 	 * @param int $reviewerId
@@ -88,6 +102,34 @@ SQL;
 			$stmt = $pdo->prepare($sql);
 			$stmt->execute([$reviewerId, $revieweeId, $assignTag]);
 			return $stmt->rowCount() > 0;
+		} catch(\PDOException $e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Return a ReviewAssignment id for a reviewee-reviewer pair and a given assignment tag
+	 * @param int $reviewerId
+	 * @param int $revieweeId
+	 * @param int $assignTag
+	 * @return int
+	 */
+	public function getTagByValues($revieweeId, $reviewerId, $assignTag) {
+		$sql = <<<SQL
+select *
+from $this->tablename
+where reviewerid=? and revieweeid=? and assigntag=?
+SQL;
+
+		$pdo = $this->pdo;
+		try {
+			$stmt = $pdo->prepare($sql);
+			$exec = [$reviewerId, $revieweeId, $assignTag];
+			if($stmt->execute($exec) === false) {
+				return null;
+			}
+			return $stmt->fetch(\PDO::FETCH_ASSOC)['id'];
+
 		} catch(\PDOException $e) {
 			return false;
 		}
@@ -221,6 +263,32 @@ SQL;
 			return $row !== false ? $row : null;
 		} catch(\PDOException $e) {
 			return null;
+		}
+	}
+
+	/** Get all reviewing assignments by reviewee_id and assignment tag
+	 * @param int $reviewee_id ID of rewviewee
+	 * @param string $assigntag Assignment tag
+	 * @return array Array of assignment IDs
+	 */
+	public function getByReviewee($reviewee_id, $assigntag) {
+		$sql = <<<SQL
+select * from $this->tablename
+where revieweeid=? and assigntag=?
+SQL;
+
+		$pdo = $this->pdo;
+		try {
+			$stmt = $pdo->prepare($sql);
+			$stmt->execute([$reviewee_id, $assigntag]);
+			$ret = [];
+			foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+				$ret[] = [$row['id']];
+			}
+
+			return $ret;
+		} catch(\PDOException $e) {
+			return [];
 		}
 	}
 
