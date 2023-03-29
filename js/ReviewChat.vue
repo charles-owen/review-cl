@@ -1,7 +1,7 @@
 <template>
   <div class="cl-reviewChat">
-    <div style="width: 769px; height: 400px; border: solid 1px; overflow-x: scroll;" v-if="chat.length!==0">
-      <div v-for="review in chat.slice().reverse()" class="cl-review">
+    <div class = "cl_chat_div" v-if="chat.length!==0">
+      <div v-for="review in chat" class="cl-review">
         <div>
           <p v-if="review.context === context && review.by == chat_id"
              class="cl-review-present cl_chat_outgoing">
@@ -92,6 +92,14 @@ export default {
 </script>
 
 <style scoped>
+  .cl_chat_div{
+    width: 769px;
+    height: 400px;
+    border: solid 1px;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+  }
   .cl_chat_incoming {
     width: 300px;
     border: solid 1px;
