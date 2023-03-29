@@ -93,25 +93,26 @@ export default {
 
 <style scoped>
   .cl_chat_div{
-    width: 769px;
-    height: 400px;
+    height: 48vh;
+    min-height: 30vh;
     border: solid 1px;
     overflow-x: hidden;
     display: flex;
     flex-direction: column-reverse;
   }
   .cl_chat_incoming {
-    width: 300px;
+    width: 200px;
     border: solid 1px;
     border-radius: 10px;
     padding: 5px;
     font-size: 12px;
     clear: right;
     padding: 10px;
+    word-wrap: break-word;
   }
 
   .cl_chat_outgoing{
-    width: 300px;
+    width: 200px;
     border: solid 1px;
     border-radius: 10px;
     padding: 5px;
@@ -121,5 +122,7 @@ export default {
     float: right;
     clear: right;
     padding: 10px;
+    word-wrap: break-word;
   }
+
 </style>
