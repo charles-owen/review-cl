@@ -4,7 +4,7 @@
       <div v-for="submission in json.submissions" class="cl-submission-view">
         <h2>{{submission.name}}</h2>
         <pre v-if="submission.type === 'text'" class="cl-preview yellow-pad">{{submission.text}}</pre>
-        <div class="hue-slider-container">
+        <div v-if="submission.type === 'image'" class="hue-slider-container">
             {{ hueValue }}%
             <input
               type="range"
@@ -15,7 +15,7 @@
               class="slider"
             />
         </div>
-        <div class="hue-slider-container">
+        <div v-if="submission.type === 'image'" class="hue-slider-container">
             Line width: {{ widthValue }}
             <input
               type="range"
