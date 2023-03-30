@@ -669,17 +669,17 @@ MSG;
 
 	/**
 	 * Handle a submission of an annotation
-     * @param string $annotation Drawing annotation
+     * @param string $svg Drawing annotation
      * @param int $width Drawing annotation width
      * @param int $height Drawing annotation height
      * @param int $review_id Review this annotation is associated with
 	 * @param int $time Time of the review
 	 * @return int ID if sucessful
 	 */
-    public function submit_annotation($annotation, $width, $height, $review_id, $time) {
+    public function submit_annotation($svg, $width, $height, $review_id, $time) {
         $annotations = new Annotations($this->assignment->site->db);
 	    $annotation = new Annotation();
-	    $annotation->set($annotation, $width, $height, $review_id, $time);
+	    $annotation->set($svg, $width, $height, $review_id, $time);
 	    return $annotations->add($annotation);
     }
 
