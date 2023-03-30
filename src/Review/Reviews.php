@@ -234,6 +234,7 @@ SQL;
      * @return array[] with keys 'for' and 'by', each an array
      */
     public function getByFor(Site $site, $assignTag, $memberId) {
+        $annotations = new Annotations($site->db);
         $reviews = new Reviews($site->db);
         $by = $reviews->get_reviews_by($memberId, $assignTag);
         $for = $reviews->get_reviews($memberId, $assignTag);
@@ -244,7 +245,8 @@ SQL;
                 'id'=>$review->id,
                 'time'=>$review->time,
                 'meta'=>$review->meta->data,
-                'reviewer'=>$review->reviewer->data()
+                'reviewer'=>$review->reviewer->data(),
+                'annotation'=>$annotations->get_annotation($review->id),
             ];
         }
 
@@ -255,7 +257,8 @@ SQL;
                 'id'=>$review->id,
                 'time'=>$review->time,
                 'meta'=>$review->meta->data,
-                'reviewee'=>$review->reviewee->data()
+                'reviewee'=>$review->reviewee->data(),
+                'annotation'=>$annotations->get_annotation($review->id),
             ];
         }
 

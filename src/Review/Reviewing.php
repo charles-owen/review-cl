@@ -411,6 +411,7 @@ HTML;
 			    'review'=>$review['meta']['review']['review'],
 			    'submissions'=>$review['meta']['review']['submissions'],
                 'context'=>$review['meta']['review']['context'],
+                'annotation'=>$review['annotation'],
 		    ];
 
 		    $reviewer = array_key_exists('reviewer', $review) ? $review['reviewer'] : null;
