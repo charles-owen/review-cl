@@ -40,7 +40,7 @@
       <p class="cl-reviews-none" v-if="reviewing.length === 0">
         *** None Yet ***
       </p>
-      <review-chat :json="json" :context="context" :chat_id="chat_id"></review-chat>
+      <review-chat :json="json" :context="context" :chat_id="chat_id" @submit="submit"></review-chat>
     </div>
   </div>
 </template>
@@ -50,9 +50,9 @@
 <script>
 import {UserVueBase} from 'users-cl/index'
 import {CanvasHandler, cssColor} from './canvas_handler'
+import ReviewChatVue from './ReviewChat.vue'
 
 var handler = new CanvasHandler();
-import ReviewChatVue from './ReviewChat.vue'
 
 /**
  * This is the page for a review of an assignment by a member.
@@ -99,54 +99,27 @@ export default {
 
     handler.init();
 
+    console.log(this.reviewing);
+
   },
   beforeUnmount() {
     this.resizeObserver.unobserve(this.$refs.diagramImage[0]);
   },
   methods: {
-    submit() {
-      const text = this.editor.textarea.value.trim();
-      if (text === '') {
-        Site.toast(this, 'You must enter some text to submit');
-        return;
-      }
-
+    submit(review_id) {
       const annotation = this.annotation.innerHTML;
-
-      let params = {
-        type: 'text/plain',
-        text: text,
-        submissions: this.submissions
-      };
-
-      this.$site.api.post(`/api/review/review/${this.json.id}`, params)
-          .then((response) => {
-            if (!response.hasError()) {
-              this.editor.textarea.value = '';
-              this.reviewing = response.getData('reviewing').attributes;
-
-              this.$site.toast(this, "Review successfully saved to the server");
-            } else {
-              this.$site.toast(this, response);
-            }
-
-          })
-          .catch((error) => {
-            this.$site.toast(this, error);
-          });
 
       let annotation_params = {
         annotation: annotation,
         width: this.annotation_width,
         height: this.annotation_height,
+        review_id: review_id,
       };
 
       this.$site.api.post(`/api/review/annotate/${this.json.id}`, annotation_params)
           .then((response) => {
             if (!response.hasError()) {
               this.editor.textarea.value = '';
-              /* this.reviewing = response.getData('reviewing').attributes; */
-
               this.$site.toast(this, "Annotation successfully saved to the server");
             } else {
               this.$site.toast(this, response);
