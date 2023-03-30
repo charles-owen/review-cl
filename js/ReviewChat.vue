@@ -19,18 +19,25 @@
       <div ref="editor" class="shadow"></div>
       <input type="submit" value="Send">
     </form>
-  </div>
+    <review-annotation :chat="chat" :review="selected_review" v-show="chat.length!==0"></review-annotation>
+</div>
 </template>
 
 <script>
+
+import ReviewAnnotationVue from './ReviewAnnotation.vue'
+
 export default {
   props: ['json', 'context', 'chat_id'],
   inheritAttrs: false,
   data: function () {
     return {
-      chat: this.json.reviewing.filter(this.filterChatId)
-
+      chat: this.json.reviewing.filter(this.filterChatId),
+      selected_review: null,
     }
+  },
+  components: {
+    reviewAnnotation: ReviewAnnotationVue,
   },
   mounted() {
     const element = this.$refs['editor'];
