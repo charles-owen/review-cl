@@ -22,5 +22,6 @@ class ReviewTables extends \CL\Tables\TableMaker {
 
 		$this->add(new ReviewAssignments($config));
 		$this->add(new Reviews($config));
+		$this->add(new Annotations($config));
 	}
 }
