@@ -54,6 +54,11 @@
         <!-- <img ref="diagramImage" class="diagram" :src="previewImg(submission)"> -->
 
       </div>
+      <h3 style="text-align: center;background: #00723f;color: white;">Review & Chat</h3>
+      <p class="cl-reviews-none" v-if="reviewing.length === 0">
+        *** None Yet ***
+      </p>
+      <review-chat :json="json" :context="context" :chat_id="chat_id"></review-chat>
     </div>
   </div>
 </template>
@@ -65,6 +70,7 @@ import {UserVueBase} from 'users-cl/index'
 import {CanvasHandler, cssColor} from './canvas_handler'
 
 var handler = new CanvasHandler();
+import ReviewChatVue from './ReviewChat.vue'
 
 /**
  * This is the page for a review of an assignment by a member.
@@ -81,17 +87,17 @@ export default {
       resizeObserver: null,
       hueValue: 50,
       widthValue: 5,
+      chat_id: this.json.id,
+      context: "reviewer", // context of the current file
     }
+  },
+  components: {
+    reviewChat: ReviewChatVue
   },
   mounted() {
     this.setTitle('Peer Reviewing');
     this.reviewing = this.json.reviewing;
 
-    const element = this.$refs['editor'];
-    this.editor = new this.$site.Editor(element, {
-      height: '10em',
-      classes: ['yellow-pad']
-    });
 
     let submissions = {};
     for (const submission of this.json.submissions) {
