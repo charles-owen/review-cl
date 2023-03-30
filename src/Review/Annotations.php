@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `$this->tablename` (
   annotation  mediumtext NOT NULL,
   width int(11) NOT NULL,
   height int(11) NOT NULL,
-  annotation_id int(11) NOT NULL,
+  review_id int(11) NOT NULL,
   time       datetime NOT NULL,
   PRIMARY KEY (id));
 
