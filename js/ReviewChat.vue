@@ -1,6 +1,6 @@
 <template>
   <div class="cl-reviewChat">
-    <div style="width: 769px; height: 400px; border: solid 1px; overflow-x: scroll;" v-if="chat.length!==0">
+    <div style="width: 769px; height: 400px; border: solid 1px; overflow-x: scroll;" v-show="chat.length!==0">
       <div v-for="review in chat.slice().reverse()" class="cl-review">
         <div>
           <p v-if="review.context === context && review.by == chat_id"
