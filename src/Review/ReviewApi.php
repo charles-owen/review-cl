@@ -61,6 +61,10 @@ class ReviewApi extends \CL\Users\Api\Resource {
             case 'review':
                 return $this->review($site, $user, $server, $params, $time);
 
+            // /api/review/annotate/:id
+            case 'annotate':
+                return $this->annotate($site, $user, $server, $params, $time);
+
             // /api/review/tables
             case 'tables':
                 return $this->tables($site, $server, new ReviewTables($site->db));
@@ -586,6 +590,57 @@ class ReviewApi extends \CL\Users\Api\Resource {
 
         $json = new JsonAPI();
         $json->addData('reviewers', 0, $data);
+        return $json;
+    }
+
+
+    /**
+     * Submit an annotation
+     *
+     * /api/review/annotate/:id
+     *
+     * @param Site $site The Site object
+     * @param User $user Requesting user
+     * @param Server $server The server
+     * @param array $params Parameters for the route
+     * @param int $time Current time
+     * @return JsonAPI
+     * @throws APIException
+     */
+    private function annotate(Site $site, User $user, Server $server, array $params, $time) {
+        if(count($params) < 2) {
+            throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
+        }
+        // $user is the one making the annotation
+        $id = $params[1];  // Review assignment id
+        $reviewAssignments = new ReviewAssignments($site->db);
+        $reviewAssign = $reviewAssignments->get($id);
+        if($reviewAssign === null) {
+            throw new APIException("Review assignment does not exist");
+        }
+
+        if($reviewAssign['reviewerid'] != $user->member->id) {
+            throw new APIException("Not authorized", APIException::NOT_AUTHORIZED);
+        }
+
+        // Get the assignment
+        $section = $site->course->get_section_for($user);
+        $assignment = $section->get_assignment($reviewAssign['assigntag']);
+        if($assignment === null || $assignment->reviewing === null) {
+            throw new APIException("Review assignment does not exist");
+        }
+
+        $post = $server->post;
+        $this->ensure($post, ['annotation', 'width', 'height', 'review_id']);
+        $annotation = $post['annotation'];
+        $width = $post['width'];
+        $height = $post['height'];
+        $review_id = $post['review_id'];
+
+        $annotation_id = $assignment->reviewing->submit_annotation($annotation, $width, $height, $review_id, $time);
+
+        $json = new JsonAPI();
+        $json->addData('annotation_id', 0, $annotation_id);
         return $json;
     }
 
