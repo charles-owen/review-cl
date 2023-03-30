@@ -36,7 +36,7 @@
         <p class="cl-preview-time">{{formatTime(submission.date)}}</p>
       </div>
 
-      <h3 style="text-align: center;background: #00723f;color: white;">Review & Chat</h3>
+      <h3 style="text-align: center;background: #00723f;color: white;">Review &amp; Chat</h3>
       <p class="cl-reviews-none" v-if="reviewing.length === 0">
         *** None Yet ***
       </p>
