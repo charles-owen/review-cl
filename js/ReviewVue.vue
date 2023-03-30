@@ -33,27 +33,9 @@
             <svg ref="svgImage" id="drawing-svg" xmlns="http://www.w3.org/2000/svg"></svg>
           </div>
         </figure>
-
         <p class="cl-preview-time">{{formatTime(submission.date)}}</p>
       </div>
 
-      <h2>Review</h2>
-      <form method="post" @submit.prevent="submit">
-        <div ref="editor" class="shadow"></div>
-        <p><input type="submit" value="Submit Review"></p>
-      </form>
-
-      <h2>Previous Reviews</h2>
-      <p class="cl-reviews-none" v-if="reviewing.length === 0">*** None Yet ***</p>
-      <div v-for="review in reviewing" class="cl-review">
-        <h3>{{formatTime(review.time)}} Review by Me
-          <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
-        <div class="cl-review-present">{{review.meta.review.review}}</div>
-        <svg xmlns="http://www.w3.org/2000/svg" v-html="review.meta.annotation.annotation" :height="review.meta.annotation_height.annotation_height" :width="review.meta.annotation_width.annotation_width"></svg>
-        <!-- TODO: save submission ID as metadata somehow and use it here -->
-        <!-- <img ref="diagramImage" class="diagram" :src="previewImg(submission)"> -->
-
-      </div>
       <h3 style="text-align: center;background: #00723f;color: white;">Review & Chat</h3>
       <p class="cl-reviews-none" v-if="reviewing.length === 0">
         *** None Yet ***
