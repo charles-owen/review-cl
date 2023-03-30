@@ -7,6 +7,9 @@
              class="cl-review-present cl_chat_outgoing">
             {{review.review}}<br>{{formatTime(review.time)}}</p>
 
+          <p v-else-if="review.by == chat_id && review.annotation !== null" class="cl-review-present cl_chat_incoming cl_chat_annotation">
+            <a href="#" @click.prevent="selected_review = review;">{{review.review}}</a><br>{{formatTime(review.time)}}</p>
+
           <p v-else-if="review.by == chat_id" class="cl-review-present cl_chat_incoming">
             {{review.review}}<br>{{formatTime(review.time)}}</p>
         </div>
