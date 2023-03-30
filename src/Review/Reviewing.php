@@ -428,12 +428,20 @@ HTML;
                     $reviewAssignID = $reviewAssignments->getTagByValues($user->member->id, $review['reviewer']['member']['id'], $this->assignment->tag);
                     // TODO: change this to chat_id
                     $reviewData['by'] = $reviewAssignID;
+
+
+                    //if we want to keep it anonymous using the reviewer/reviewee id
+//                    $reviewData['reviewer'] = $review['reviewer']['member']['id'];
+//                    $reviewData['reviewee'] = $user->member->id;
+
+                    //if we want names store the names of reviewer/reviewee
+                    $reviewData['reviewer'] = $review['reviewer']['name'];
+                    $reviewData['reviewee'] = $user->name;
                 }
             }
 
 		    $data[] = $reviewData;
 	    }
-
 	    return $data;
     }
 

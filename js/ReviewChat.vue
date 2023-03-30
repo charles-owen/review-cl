@@ -1,13 +1,14 @@
 <template>
   <div class="cl-reviewChat">
-    <div class = "cl_chat_div" v-if="chat.length!==0">
-      <div v-for="review in chat" class="cl-review">
+    <div class = "cl-chat-div" v-if="chat.length!==0">
+      <div v-for="review in chat" class="cl-review message-div">
+        <p class = "incoming-id" v-if="review.context === incoming && review.by == chat_id">R{{incoming.slice(1,)}}: {{review[incoming]}}</p>
         <div>
           <p v-if="review.context === context && review.by == chat_id"
-             class="cl-review-present cl_chat_outgoing">
+             class="cl-review-present cl-chat-outgoing">
             {{review.review}}<br>{{formatTime(review.time)}}</p>
 
-          <p v-else-if="review.by == chat_id" class="cl-review-present cl_chat_incoming">
+          <p v-else-if="review.by == chat_id" class="cl-review-present cl-chat-incoming">
             {{review.review}}<br>{{formatTime(review.time)}}</p>
         </div>
       </div>
@@ -25,7 +26,10 @@ export default {
   inheritAttrs: false,
   data: function () {
     return {
-      chat: this.json.reviewing.filter(this.filterChatId)
+      chat: this.json.reviewing.filter(this.filterChatId),
+
+      //the other side of context(ex: context = reviewer incoming = reviewee)
+      incoming: this.context === 'reviewer' ? 'reviewee' : 'reviewer'
 
     }
   },
@@ -44,6 +48,7 @@ export default {
     }
 
     this.submissions = submissions;
+
   },
   methods: {
     submit() {
@@ -92,7 +97,7 @@ export default {
 </script>
 
 <style scoped>
-  .cl_chat_div{
+  .cl-chat-div{
     height: 48vh;
     min-height: 30vh;
     border: solid 1px;
@@ -100,22 +105,20 @@ export default {
     display: flex;
     flex-direction: column-reverse;
   }
-  .cl_chat_incoming {
+  .cl-chat-incoming {
     width: 200px;
     border: solid 1px;
     border-radius: 10px;
-    padding: 5px;
     font-size: 12px;
     clear: right;
     padding: 10px;
     word-wrap: break-word;
   }
 
-  .cl_chat_outgoing{
+  .cl-chat-outgoing{
     width: 200px;
     border: solid 1px;
     border-radius: 10px;
-    padding: 5px;
     font-size: 12px;
     background-color: #0c5645;
     color: white;
@@ -123,6 +126,17 @@ export default {
     clear: right;
     padding: 10px;
     word-wrap: break-word;
+  }
+
+  .incoming-id{
+    margin:0;
+    color: #204c42;
+    font-weight: bold;
+    font-size: small;
+  }
+
+  .message-div{
+    padding: 5px;
   }
 
 </style>
