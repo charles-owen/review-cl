@@ -29,6 +29,7 @@ import ReviewAnnotationVue from './ReviewAnnotation.vue'
 
 export default {
   props: ['json', 'context', 'chat_id'],
+  emit: ['submit'],
   inheritAttrs: false,
   data: function () {
     return {
@@ -81,6 +82,7 @@ export default {
                 time: latestMessage.time,
                 context: latestMessage.meta.review.context,
               });
+              this.$emit('submit', latestMessage.id);
             } else {
               this.$site.toast(this, response);
             }
