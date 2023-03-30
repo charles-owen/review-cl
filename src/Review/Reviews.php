@@ -174,6 +174,7 @@ SQL;
 		$ret = [];
 		foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
 			$ret[] = [
+				'id'=>$row['id'],
 				'time'=>strtotime($row['time']),
 				'meta'=>(new MetaData(null, $row['metadata']))->data
 			];
