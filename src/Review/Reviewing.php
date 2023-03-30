@@ -666,6 +666,22 @@ MSG;
 	    return $reviews->get_reviewing($this->assignment->tag, $reviewer->member->id, $reviewee->member->id);
     }
 
+	/**
+	 * Handle a submission of an annotation
+     * @param string $annotation Drawing annotation
+     * @param int $width Drawing annotation width
+     * @param int $height Drawing annotation height
+     * @param int $review_id Review this annotation is associated with
+	 * @param int $time Time of the review
+	 * @return int ID if sucessful
+	 */
+    public function submit_annotation($annotation, $width, $height, $review_id, $time) {
+        $annotations = new Annotations($this->assignment->site->db);
+	    $annotation = new Annotation();
+	    $annotation->set($annotation, $width, $height, $review_id, $time);
+	    return $annotations->add($annotation);
+    }
+
     private function notify_reviewed(User $reviewee, $review) {
         $site = $this->assignment->site;
         $coursename = $site->siteName;
