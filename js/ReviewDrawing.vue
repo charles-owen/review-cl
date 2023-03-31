@@ -79,16 +79,14 @@ export default {
 
         this.$site.api.post(`/api/review/annotate/${this.chat_id}`, annotation_params)
           .then((response) => {
-            if (!response.hasError()) {
-              this.$site.toast(this, "Annotation successfully saved to the server");
-            } else {
+            if (response.hasError()) {
               this.$site.toast(this, response);
             }
-
           })
           .catch((error) => {
             this.$site.toast(this, error);
           });
+      }
     },
     onMutate() {
       handler.setSize(this.$refs['diagramImage']);
