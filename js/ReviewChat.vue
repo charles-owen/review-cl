@@ -37,6 +37,7 @@ export default {
       selected_review: null,
       incoming: this.context === 'reviewer' ? 'reviewee' : 'reviewer',
       recipient: "",
+      timer: null,
     }
   },
   components: {
@@ -60,6 +61,13 @@ export default {
 
     this.recipient = this.chat[0][this.incoming];
 
+    this.timer = setInterval(() => {
+      this.refreshChat()
+    }, 1000)
+
+  },
+  beforeDestroy() {
+    clearInterval(this.timer)
   },
   methods: {
     submit() {
@@ -102,6 +110,20 @@ export default {
     },
     filterChatId(review){
       return this.chat_id == review.by;
+    },
+    refreshChat() {
+      this.$site.api.post(`/api/review/reviews_chat/${this.chat_id}`)
+        .then((response) => {
+          if (!response.hasError()) {
+            console.log(response.getData('reviewing'));
+            this.chat = response.getData('reviewing').attributes.filter(this.filterChatId);
+          } else {
+            this.$site.toast(this, response);
+          }
+        })
+        .catch((error) => {
+          this.$site.toast(this, error);
+        });
     }
 
   }
