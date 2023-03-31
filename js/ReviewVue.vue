@@ -4,35 +4,8 @@
       <div v-for="submission in json.submissions" class="cl-submission-view">
         <h2>{{submission.name}}</h2>
         <pre v-if="submission.type === 'text'" class="cl-preview yellow-pad">{{submission.text}}</pre>
-        <div v-if="submission.type === 'image'" class="hue-slider-container">
-            {{ hueValue }}%
-            <input
-              type="range"
-              min="1"
-              max="100"
-              id="hueSlider"
-              v-model="hueValue"
-              class="slider"
-            />
-        </div>
-        <div v-if="submission.type === 'image'" class="hue-slider-container">
-            Line width: {{ widthValue }}
-            <input
-              type="range"
-              min="1"
-              max="50"
-              id="widthSlider"
-              v-model="widthValue"
-              class="slider"
-            />
-        </div>
-        <figure v-if="submission.type === 'image'" class="cl-preview cl-review-diagram">
-          <div class="cl-review-diagram">
-            <img ref="diagramImage" :src="previewImg(submission)">
-            <canvas class="canvas-drawing" id="drawing"></canvas>
-            <svg ref="svgImage" id="drawing-svg" xmlns="http://www.w3.org/2000/svg"></svg>
-          </div>
-        </figure>
+        <review-drawing v-if="submission.type === 'image'" :chat_id="chat_id" :submission="submission" :image="previewImg(submission)" ref="reviewDrawing"></review-drawing>
+
         <p class="cl-preview-time">{{formatTime(submission.date)}}</p>
       </div>
 
@@ -49,10 +22,8 @@
 
 <script>
 import {UserVueBase} from 'users-cl/index'
-import {CanvasHandler, cssColor} from './canvas_handler'
 import ReviewChatVue from './ReviewChat.vue'
-
-var handler = new CanvasHandler();
+import ReviewDrawing from './ReviewDrawing.vue';
 
 /**
  * This is the page for a review of an assignment by a member.
@@ -66,15 +37,13 @@ export default {
     return {
       reviewing: [],
       submissions: {},
-      resizeObserver: null,
-      hueValue: 50,
-      widthValue: 5,
       chat_id: this.json.id,
       context: "reviewer", // context of the current file
     }
   },
   components: {
-    reviewChat: ReviewChatVue
+    reviewChat: ReviewChatVue,
+    reviewDrawing: ReviewDrawing,
   },
   mounted() {
     this.setTitle('Peer Reviewing');
@@ -91,46 +60,10 @@ export default {
 
     this.submissions = submissions;
 
-    this.annotation = this.$refs['svgImage'][0];
-
-    this.resizeObserver = new ResizeObserver(this.onResize);
-    this.resizeObserver.observe(this.$refs.diagramImage[0]);
-    this.onResize();
-
-    handler.init();
-
-    console.log(this.reviewing);
-
-  },
-  beforeUnmount() {
-    this.resizeObserver.unobserve(this.$refs.diagramImage[0]);
   },
   methods: {
     submit(review_id) {
-      const annotation = this.annotation.innerHTML;
-
-      let annotation_params = {
-        annotation: annotation,
-        width: this.annotation_width,
-        height: this.annotation_height,
-        review_id: review_id,
-      };
-
-      this.$site.api.post(`/api/review/annotate/${this.json.id}`, annotation_params)
-          .then((response) => {
-            if (!response.hasError()) {
-              this.editor.textarea.value = '';
-              this.$site.toast(this, "Annotation successfully saved to the server");
-            } else {
-              this.$site.toast(this, response);
-            }
-
-          })
-          .catch((error) => {
-            this.$site.toast(this, error);
-          });
-
-
+      this.$refs.reviewDrawing[0].submit(review_id);
     },
     formatTime(time) {
       return this.$site.TimeFormatter.relativeUNIX(time, null);
@@ -153,21 +86,6 @@ export default {
     previewImg(submission) {
       return this.$site.root + '/cl/review/img/' + submission.id;
     },
-    onResize() {
-      handler.setSize(this.$refs.diagramImage[0]);
-      this.annotation_width = this.$refs.diagramImage[0].clientWidth;
-      this.annotation_height = this.$refs.diagramImage[0].clientHeight;
-    },
   },
-  watch: {
-    hueValue(newVal, oldVal){
-      handler.hue = newVal;
-      var slider = document.getElementById('hueSlider');
-      slider.style.accentColor = cssColor(handler.hue, handler.saturation, handler.lightness);
-    },
-    widthValue(newVal, oldVal){
-      handler.line_width = newVal;
-    }
-  }
 }
 </script>
