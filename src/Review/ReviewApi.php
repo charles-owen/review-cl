@@ -680,41 +680,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
 		$members = new Members($site->db);
 		$reviewee = $members->getAsUser($reviewAssign['revieweeid']);
 
-        $submissions = new Submissions($site->db);
-        $submissionsData = [];
-		foreach($assignment->submissions->submissions as $submission) {
-			$submitted = $submissions->get_submissions($reviewee->member->id, $assignment->tag,
-				$submission->tag, true);
-			if(count($submitted) === 0) {
-				$server->redirect($site->root . '/');
-			}
-
-			$data = $submission->data();
-			$data['id'] = $submitted[0]['id'];
-			$data['date'] = $submitted[0]['date'];
-			$data['type'] = $submission->type;
-
-			switch($submission->type) {
-				case 'text':
-					$text = $submissions->get_text($submitted[0]['id']);
-					$data['text'] = $text['text'];
-					break;
-			}
-
-			$submissionsData[] = $data;
-		}
-
-        $reviewAssignments = new ReviewAssignments($site->db);
-		$reviewAssignIDs = $reviewAssignments->getByReviewee($reviewee->member->id, $reviewAssign['assigntag']);
-
-        // print_r($reviewAssignIDs);
-        // echo $reviewAssign['assigntag'];
-        // print_r($submissionsData);
-        // print_r($assignment->reviewing->reviewsData($reviewee));
-
         $json = new JsonAPI();
-        $json->addData('ids', 0, $reviewAssignIDs);
-        $json->addData('assigntag', 0, $reviewAssign['assigntag']);
         $json->addData('reviewing', 0, $assignment->reviewing->reviewsData($reviewee));
         return $json;
     }
