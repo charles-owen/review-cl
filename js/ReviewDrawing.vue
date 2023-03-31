@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import {CanvasHandler, cssColor} from './canvas_handler'
+import {CanvasHandler} from './canvas_handler'
 
 var handler = new CanvasHandler();
 

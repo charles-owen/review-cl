@@ -11,9 +11,7 @@ export let CanvasHandler = function() {
     this.points = [];
     this.averaged_points = [];
 
-    this.hue = 0;
-    this.saturation = 100;
-    this.lightness = 50;
+    this.color = 'red';
 
     this.width = 0;
     this.height = 0;
@@ -70,7 +68,7 @@ export let CanvasHandler = function() {
     this.drawPoint = function(ctx, point) {
         ctx.beginPath();
         ctx.arc(point.x, point.y, point.w, 0, 2 * Math.PI, false);
-        ctx.fillStyle = cssColor(this.hue, this.saturation, this.lightness);
+        ctx.fillStyle = this.color;
         ctx.fill();
     }
 
@@ -83,7 +81,7 @@ export let CanvasHandler = function() {
         ctx.arc(from.x, from.y, from.w / 2, angle + Math.PI, angle);
         ctx.closePath()
 
-        ctx.fillStyle = cssColor(this.hue, this.saturation, this.lightness);
+        ctx.fillStyle = this.color;
         ctx.fill();
     }
 
@@ -223,7 +221,7 @@ export let CanvasHandler = function() {
     this.makePath = function(path_string, width, path_id) {
         var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         path.setAttributeNS(null, "d", path_string);
-        path.setAttributeNS(null, "stroke", cssColor(this.hue, this.saturation, this.lightness));
+        path.setAttributeNS(null, "stroke", this.color);
         path.setAttributeNS(null, "stroke-linecap", 'round');
         path.setAttributeNS(null, "stroke-width", width);
         path.setAttributeNS(null, "fill", "transparent");
@@ -258,16 +256,6 @@ function initSlider(slider_id, func) {
     // set input function and immediately call it
     slider.oninput = func;
     slider.oninput();
-}
-
-
-
-// adapted from https://stackoverflow.com/a/62862049
-export function cssColor(h, s, l) {
-    return 'hsl(H, S%, L%)'
-        .replace(/H/, h)
-        .replace(/S/, s)
-        .replace(/L/, l);
 }
 
 
