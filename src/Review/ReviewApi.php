@@ -80,6 +80,9 @@ class ReviewApi extends \CL\Users\Api\Resource {
             case 'remove':
                 return $this->remove($site, $server, $params, $time);
 
+            case 'reviews_chat':
+                return $this->reviews_chat($site, $user, $server, $params, $time);
+
         }
 
         throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
@@ -643,5 +646,78 @@ class ReviewApi extends \CL\Users\Api\Resource {
         $json->addData('annotation_id', 0, $annotation_id);
         return $json;
     }
+
+
+    /**
+     * Get all assignment chat messages for requesting user
+     *
+     * /api/review/reviews_chat/:assigntag/
+     * This is used on the assignment grading page
+     *
+     * @param Site $site The Site object
+     * @param Server $server The server
+     * @param array $params Parameters for the route
+     * @param int $time Current time
+     * @return JsonAPI
+     * @throws APIException
+     */
+    private function reviews_chat(Site $site, User $user, Server $server, array $params, $time) {
+        if(count($params) < 1) {
+            throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
+        }
+
+        $id = $params[1];
+        $reviewAssignments = new ReviewAssignments($site->db);
+        $reviewAssign = $reviewAssignments->get($id);
+
+        // Get the assignment
+        $section = $site->course->get_section_for($user);
+        $assignment = $section->get_assignment($reviewAssign['assigntag']);
+        if($assignment === null || $assignment->reviewing === null) {
+            throw new APIException("Review assignment does not exist");
+        }
+
+		$members = new Members($site->db);
+		$reviewee = $members->getAsUser($reviewAssign['revieweeid']);
+
+        $submissions = new Submissions($site->db);
+        $submissionsData = [];
+		foreach($assignment->submissions->submissions as $submission) {
+			$submitted = $submissions->get_submissions($reviewee->member->id, $assignment->tag,
+				$submission->tag, true);
+			if(count($submitted) === 0) {
+				$server->redirect($site->root . '/');
+			}
+
+			$data = $submission->data();
+			$data['id'] = $submitted[0]['id'];
+			$data['date'] = $submitted[0]['date'];
+			$data['type'] = $submission->type;
+
+			switch($submission->type) {
+				case 'text':
+					$text = $submissions->get_text($submitted[0]['id']);
+					$data['text'] = $text['text'];
+					break;
+			}
+
+			$submissionsData[] = $data;
+		}
+
+        $reviewAssignments = new ReviewAssignments($site->db);
+		$reviewAssignIDs = $reviewAssignments->getByReviewee($reviewee->member->id, $reviewAssign['assigntag']);
+
+        // print_r($reviewAssignIDs);
+        // echo $reviewAssign['assigntag'];
+        // print_r($submissionsData);
+        // print_r($assignment->reviewing->reviewsData($reviewee));
+
+        $json = new JsonAPI();
+        $json->addData('ids', 0, $reviewAssignIDs);
+        $json->addData('assigntag', 0, $reviewAssign['assigntag']);
+        $json->addData('reviewing', 0, $assignment->reviewing->reviewsData($reviewee));
+        return $json;
+    }
+
 
 }
