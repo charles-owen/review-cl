@@ -1,6 +1,6 @@
 <template>
   <div class="cl-reviewChat">
-    <p class="incoming-id">R{{incoming.slice(1,)}}: {{recipient}}</p>
+    <p class="incoming-id" v-show="chat.length!==0">R{{incoming.slice(1,)}}: {{recipient}}</p>
     <div class="cl-chat-div" v-show="chat.length!==0">
       <div v-for="review in chat" class="message-div">
         <div>
@@ -19,8 +19,8 @@
       <div ref="editor" class="shadow"></div>
       <input type="submit" value="Send">
     </form>
-    <review-annotation :chat="chat" :review="selected_review" v-show="chat.length!==0"></review-annotation>
-</div>
+    <review-annotation :chat="chat" :review="selected_review"></review-annotation>
+  </div>
 </template>
 
 <script>
@@ -59,12 +59,13 @@ export default {
 
     this.submissions = submissions;
 
-    this.recipient = this.chat[0][this.incoming];
-
     this.timer = setInterval(() => {
       this.refreshChat()
     }, 1000)
 
+  },
+  updated() {
+    if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
   },
   beforeDestroy() {
     clearInterval(this.timer)
