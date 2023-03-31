@@ -70,7 +70,7 @@ export default {
     this.setName();
   },
   beforeDestroy() {
-    clearInterval(this.timer)
+    clearInterval(this.timer);
   },
   methods: {
     submit() {
