@@ -4,15 +4,14 @@
     <div class="cl-chat-div" v-show="chat.length!==0">
       <div v-for="review in chat" class="message-div">
         <div>
-          <p v-if="review.context === context && review.by == chat_id"
-             class="cl-review-present cl-chat-outgoing">
-            {{review.review}}<br>{{formatTime(review.time)}}</p>
+          <div v-if="review.context === context" class="cl-review-present cl-chat-bubble cl-chat-outgoing">
+            {{review.review}}<br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
 
-          <p v-else-if="review.by == chat_id && review.annotation !== null" class="cl-review-present cl-chat-incoming cl_chat_annotation">
-            <a href="#" @click.prevent="selected_review = review;">{{review.review}}</a><br>{{formatTime(review.time)}}</p>
+          <div v-else-if="review.annotation !== null" class="cl-review-present cl-chat-bubble cl-chat-incoming cl_chat_annotation">
+            <a href="#" @click.prevent="selected_review = review;">{{review.review}}</a><br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
 
-          <p v-else-if="review.by == chat_id" class="cl-review-presentcl-chat-incoming">
-            {{review.review}}<br>{{formatTime(review.time)}}</p>
+          <div v-else="" class="cl-review-present cl-chat-bubble cl-chat-incoming">
+            {{review.review}}<br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
         </div>
       </div>
     </div>
@@ -117,28 +116,26 @@ export default {
     overflow-x: hidden;
     display: flex;
     flex-direction: column-reverse;
+    margin: 0;
+  }
+  .cl-chat-bubble {
+    min-width: 40%;
+    max-width: 60%;
+    border: solid 1px;
+    border-radius: 13px;
+    font-size: 12px;
+    padding: 9px 12px;
+    word-wrap: break-word;
   }
   .cl-chat-incoming {
-    width: 200px;
-    border: solid 1px;
-    border-radius: 10px;
-    font-size: 12px;
-    clear: right;
-    padding: 10px;
-    word-wrap: break-word;
+    float: left;
   }
 
   .cl-chat-outgoing{
-    width: 200px;
-    border: solid 1px;
-    border-radius: 10px;
-    font-size: 12px;
     background-color: #0c5645;
     color: white;
     float: right;
-    clear: right;
-    padding: 10px;
-    word-wrap: break-word;
+    text-align: left;
   }
 
   .incoming-id{
@@ -148,8 +145,17 @@ export default {
     font-size: small;
   }
 
-  .message-div{
-    padding: 5px;
+  .cl-chat-time {
+    opacity: 0.5;
+    text-align: right;
+  }
+
+  .message-div {
+    padding: 5px 10px;
+  }
+
+  .message-div:first-child {
+    padding: 5px 10px 10px;
   }
 
 </style>
