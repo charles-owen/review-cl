@@ -28,7 +28,6 @@ export default {
   },
   watch: {
     review: function(val) {
-      console.log(val);
       this.annotation = val.annotation.annotation;
       this.width = val.annotation.width;
       this.height = val.annotation.height;
