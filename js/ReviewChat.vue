@@ -59,13 +59,15 @@ export default {
 
     this.submissions = submissions;
 
+    this.setName();
+
     this.timer = setInterval(() => {
       this.refreshChat()
     }, 1000)
 
   },
   updated() {
-    if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
+    this.setName();
   },
   beforeDestroy() {
     clearInterval(this.timer)
@@ -125,6 +127,9 @@ export default {
         .catch((error) => {
           this.$site.toast(this, error);
         });
+    },
+    setName() {
+      if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
     }
 
   }
