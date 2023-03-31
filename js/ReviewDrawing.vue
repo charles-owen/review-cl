@@ -124,6 +124,7 @@ export default {
   border-radius: 50%;
   width: 30px;
   height: 30px;
+  cursor: pointer;
 }
 
 .red { background-color: red; }
