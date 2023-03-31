@@ -1,16 +1,17 @@
 <template>
   <div class="cl-reviewChat">
-    <div style="width: 769px; height: 400px; border: solid 1px; overflow-x: scroll;" v-show="chat.length!==0">
-      <div v-for="review in chat.slice().reverse()" class="cl-review">
+    <div class = "cl-chat-div" v-show="chat.length!==0">
+      <div v-for="review in chat" class="cl-review message-div">
+        <p class = "incoming-id" v-if="review.context === incoming && review.by == chat_id">R{{incoming.slice(1,)}}: {{review[incoming]}}</p>
         <div>
           <p v-if="review.context === context && review.by == chat_id"
-             class="cl-review-present cl_chat_outgoing">
+             class="cl-review-present cl-chat-outgoing">
             {{review.review}}<br>{{formatTime(review.time)}}</p>
 
-          <p v-else-if="review.by == chat_id && review.annotation !== null" class="cl-review-present cl_chat_incoming cl_chat_annotation">
+          <p v-else-if="review.by == chat_id && review.annotation !== null" class="cl-review-present cl-chat-incoming cl_chat_annotation">
             <a href="#" @click.prevent="selected_review = review;">{{review.review}}</a><br>{{formatTime(review.time)}}</p>
 
-          <p v-else-if="review.by == chat_id" class="cl-review-present cl_chat_incoming">
+          <p v-else-if="review.by == chat_id" class="cl-review-presentcl-chat-incoming">
             {{review.review}}<br>{{formatTime(review.time)}}</p>
         </div>
       </div>
@@ -35,6 +36,10 @@ export default {
     return {
       chat: this.json.reviewing.filter(this.filterChatId),
       selected_review: null,
+
+      //the other side of context(ex: context = reviewer incoming = reviewee)
+      incoming: this.context === 'reviewer' ? 'reviewee' : 'reviewer'
+
     }
   },
   components: {
@@ -55,6 +60,7 @@ export default {
     }
 
     this.submissions = submissions;
+
   },
   methods: {
     submit() {
@@ -104,26 +110,46 @@ export default {
 </script>
 
 <style scoped>
-  .cl_chat_incoming {
-    width: 300px;
+  .cl-chat-div{
+    height: 48vh;
+    min-height: 30vh;
+    border: solid 1px;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .cl-chat-incoming {
+    width: 200px;
     border: solid 1px;
     border-radius: 10px;
-    padding: 5px;
     font-size: 12px;
     clear: right;
     padding: 10px;
+    word-wrap: break-word;
   }
 
-  .cl_chat_outgoing{
-    width: 300px;
+  .cl-chat-outgoing{
+    width: 200px;
     border: solid 1px;
     border-radius: 10px;
-    padding: 5px;
     font-size: 12px;
     background-color: #0c5645;
     color: white;
     float: right;
     clear: right;
     padding: 10px;
+    word-wrap: break-word;
   }
+
+  .incoming-id{
+    margin:0;
+    color: #204c42;
+    font-weight: bold;
+    font-size: small;
+  }
+
+  .message-div{
+    padding: 5px;
+  }
+
 </style>
