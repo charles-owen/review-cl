@@ -69,14 +69,15 @@ export default {
     submit(review_id) {
       const annotation = this.annotation.innerHTML;
 
-      let annotation_params = {
-        annotation: annotation,
-        width: this.annotation_width,
-        height: this.annotation_height,
-        review_id: review_id,
-      };
+      if (annotation !== "") {
+        let annotation_params = {
+          annotation: annotation,
+          width: this.annotation_width,
+          height: this.annotation_height,
+          review_id: review_id,
+        };
 
-      this.$site.api.post(`/api/review/annotate/${this.chat_id}`, annotation_params)
+        this.$site.api.post(`/api/review/annotate/${this.chat_id}`, annotation_params)
           .then((response) => {
             if (!response.hasError()) {
               this.$site.toast(this, "Annotation successfully saved to the server");
