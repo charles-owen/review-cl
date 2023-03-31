@@ -1,8 +1,8 @@
 <template>
   <div class="cl-reviewChat">
-    <div class = "cl-chat-div" v-show="chat.length!==0">
-      <div v-for="review in chat" class="cl-review message-div">
-        <p class = "incoming-id" v-if="review.context === incoming && review.by == chat_id">R{{incoming.slice(1,)}}: {{review[incoming]}}</p>
+    <p class="incoming-id">R{{incoming.slice(1,)}}: {{recipient}}</p>
+    <div class="cl-chat-div" v-show="chat.length!==0">
+      <div v-for="review in chat" class="message-div">
         <div>
           <p v-if="review.context === context && review.by == chat_id"
              class="cl-review-present cl-chat-outgoing">
@@ -36,10 +36,8 @@ export default {
     return {
       chat: this.json.reviewing.filter(this.filterChatId),
       selected_review: null,
-
-      //the other side of context(ex: context = reviewer incoming = reviewee)
-      incoming: this.context === 'reviewer' ? 'reviewee' : 'reviewer'
-
+      incoming: this.context === 'reviewer' ? 'reviewee' : 'reviewer',
+      recipient: "",
     }
   },
   components: {
@@ -60,6 +58,8 @@ export default {
     }
 
     this.submissions = submissions;
+
+    this.recipient = this.chat[0][this.incoming];
 
   },
   methods: {
