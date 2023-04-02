@@ -201,7 +201,6 @@ class Reviewing {
          * Read from the setting data table
          */
         $settings = new \CL\Course\Settings($site->db);
-        $member = $user->member;
         $setting = $settings->read('course', $semester, $sectionId,
             'instructor-notifications', $assignTag);
 
