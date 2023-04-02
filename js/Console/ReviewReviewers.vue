@@ -37,7 +37,7 @@
                   <img :src="mail" title="Email" alt="Email">
                 </a>
               </td>
-              <td :style="{backgroundColor: getBackgroundColor(maxReviewers - this.countReviews(fetcher.users, user, 'Reviewer'),maxReviewers)}">
+              <td :style="{backgroundColor: getBackgroundColor(adjustedMaxValue(fetcher.users, maxReviewers, 'Reviewer') - this.countReviews(fetcher.users, user, 'Reviewer'),adjustedMaxValue(fetcher.users, maxReviewers, 'Reviewer'))}">
                 <div class="aligncontrols">
                   <a @click.prevent="reassignDialog(user, 'Reviewee', fetcher.users)" href="javascript:;">
                     <img :src="plus" title="Add Reviewee" alt="Add Reviewee">
@@ -48,8 +48,8 @@
                 </div>
               </td>
               <td :style="[
-                  this.countReviews(fetcher.users, user, 'Reviewee') < maxReviewees ?
-                  {backgroundColor: getBackgroundColor(maxReviewees - this.countReviews(fetcher.users, user, 'Reviewee'),maxReviewees)}:{}]">
+                  this.countReviews(fetcher.users, user, 'Reviewee') < adjustedMaxValue(fetcher.users, maxReviewees, 'Reviewee') ?
+                  {backgroundColor: getBackgroundColor(adjustedMaxValue(fetcher.users, maxReviewees, 'Reviewee') - this.countReviews(fetcher.users, user, 'Reviewee'),adjustedMaxValue(fetcher.users, maxReviewees, 'Reviewee'))}:{}]">
                 <div class="aligncontrols">
                   <a @click.prevent="reassignDialog(user, 'Reviewer', fetcher.users)" href="javascript:;">
                     <img :src="plus" title="Add Reviewer" alt="Add Reviewer">
@@ -114,7 +114,7 @@ export default {
   // This is a standard console comoponent
   'extends': ConsoleComponentBase,
   props: [
-      'assigntag'     // The assignment the reviewing is for
+    'assigntag'     // The assignment the reviewing is for
   ],
   data: function () {
     return {
@@ -336,6 +336,21 @@ export default {
 
 
 
+    },
+    adjustedMaxValue(users, max, role) {
+      let countLessThanMax = 0;
+
+      users.forEach(user => {
+        const reviewsCount = this.countReviews(users, user, role);
+        if (reviewsCount < max) {
+          countLessThanMax++;
+        }
+      });
+      if (countLessThanMax < users.length / 2) {
+        return max;
+      } else {
+        return max - 1;
+      }
     },
     getBackgroundColor(missing, maxReviews) {
       if (maxReviews === 0){
@@ -689,14 +704,14 @@ export default {
 
       //check what the sort key is set to
       switch(this.sortKey) {
-        //if name, then run set sorter to run compare on the names
+          //if name, then run set sorter to run compare on the names
         case SortKey.name:
           sorter = (a, b) => {
             return compare(b.name, a.name);
           };
           break;
 
-        //if reviewer, set sorter to get the number of reviewers assigned to each user and sort
+          //if reviewer, set sorter to get the number of reviewers assigned to each user and sort
         case SortKey.reviewer:
           sorter = (a, b) => {
             const ret = this.countReviews(users,a,"Reviewee") - this.countReviews(users,b,"Reviewee")
@@ -708,7 +723,7 @@ export default {
           };
           break;
 
-        //if reviewee, set the sorter to get the number of reviewees assigned to each user and sort
+          //if reviewee, set the sorter to get the number of reviewees assigned to each user and sort
         case SortKey.reviewee:
           sorter = (a, b) => {
             const ret =  this.countReviews(users,a,"Reviewer") - this.countReviews(users,b,"Reviewer")
@@ -736,7 +751,21 @@ export default {
     setSortBy(sorter) {
       this.sortKey = sorter;
     },
-  }
+  },
+  computed: {
+    adjustedMaxReviewers() {
+      const adjustedMax = this.adjustedMaxValue(this.fetcher.users, this.maxReviewers, 'Reviewer');
+      console.log('Adjusted Max Reviewers:', adjustedMax);
+      return adjustedMax;
+    },
+
+    adjustedMaxReviewees() {
+      const adjustedMax = this.adjustedMaxValue(this.fetcher.users, this.maxReviewees, 'Reviewee');
+      console.log('Adjusted Max Reviewees:', adjustedMax);
+      return adjustedMax;
+    },
+  },
+
 }
 </script>
 
