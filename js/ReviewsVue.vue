@@ -9,6 +9,7 @@
 </template>
 
 <script>
+
 import ReviewChatVue from './ReviewChat.vue'
 
 /**
@@ -22,12 +23,13 @@ export default {
   data: function () {
     return {
       assignTag: '',
+      shownAnnotation: null,
       reviewing: [],
       context: "reviewee", // context of the current file
     }
   },
   components: {
-    reviewChat: ReviewChatVue
+    reviewChat: ReviewChatVue,
   },
   mounted() {
     this.assignTag = this.json.assignTag;
@@ -51,6 +53,14 @@ export default {
       }
 
       return 'Submission: ' + ret;
+    },
+    show(svg, width, height, image_src) {
+      this.shownAnnotation = {
+        svg: svg,
+        width: width,
+        height: height,
+        image_src: image_src
+      };
     }
   }
 }

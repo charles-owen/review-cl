@@ -4,21 +4,26 @@
       <div v-for="submission in json.submissions" class="cl-submission-view">
         <h2>{{submission.name}}</h2>
         <pre v-if="submission.type === 'text'" class="cl-preview yellow-pad">{{submission.text}}</pre>
-        <figure v-if="submission.type === 'image'" class="cl-preview"><img :src="previewImg(submission)"></figure>
+        <review-drawing v-if="submission.type === 'image'" :chat_id="chat_id" :submission="submission" :image="previewImg(submission)" ref="reviewDrawing"></review-drawing>
+
         <p class="cl-preview-time">{{formatTime(submission.date)}}</p>
       </div>
-      <h3 style="text-align: center;background: #00723f;color: white;">Review & Chat</h3>
+
+      <h3 style="text-align: center;background: #00723f;color: white;">Review &amp; Chat</h3>
       <p class="cl-reviews-none" v-if="reviewing.length === 0">
         *** None Yet ***
       </p>
-      <review-chat :json="json" :context="context" :chat_id="chat_id"></review-chat>
+      <review-chat :json="json" :context="context" :chat_id="chat_id" @submit="submit"></review-chat>
     </div>
   </div>
 </template>
 
+<style scoped> @import "./styles.css" </style>
+
 <script>
 import {UserVueBase} from 'users-cl/index'
 import ReviewChatVue from './ReviewChat.vue'
+import ReviewDrawing from './ReviewDrawing.vue';
 
 /**
  * This is the page for a review of an assignment by a member.
@@ -37,7 +42,8 @@ export default {
     }
   },
   components: {
-    reviewChat: ReviewChatVue
+    reviewChat: ReviewChatVue,
+    reviewDrawing: ReviewDrawing,
   },
   mounted() {
     this.setTitle('Peer Reviewing');
@@ -53,8 +59,12 @@ export default {
     }
 
     this.submissions = submissions;
+
   },
   methods: {
+    submit(review_id) {
+      this.$refs.reviewDrawing[0].submit(review_id);
+    },
     formatTime(time) {
       return this.$site.TimeFormatter.relativeUNIX(time, null);
     },
@@ -75,7 +85,7 @@ export default {
     },
     previewImg(submission) {
       return this.$site.root + '/cl/review/img/' + submission.id;
-    }
-  }
+    },
+  },
 }
 </script>
