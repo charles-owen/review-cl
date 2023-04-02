@@ -402,7 +402,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
         // Variable to keep track of the number of reviews sent for return.
         $notificationsSent = 0;
         // Variable to keep track of if a notification was unable to send (If users have not submitted yet)
-        $notificationUnavailable = 0;
+        $notificationUnavailable = !$reviewing->has_submitted($members->getAsUser($userId));
 
         // Send the notifications if the user has completed the assignment and has not done all reviews
         foreach($membersList as $user) {
