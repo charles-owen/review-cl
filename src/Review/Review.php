@@ -60,6 +60,7 @@ class Review {
 	 * @param int $revieweeId
 	 * @param string $review
 	 * @param int $time
+	 * @param string $context
 	 * @param array $submissions Submission ID's this review is associated with.
 	 */
 	public function set($assignTag, $reviewerId, $revieweeId, $review, $time, $context, array $submissions=null) {

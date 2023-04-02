@@ -201,7 +201,6 @@ class Reviewing {
          * Read from the setting data table
          */
         $settings = new \CL\Course\Settings($site->db);
-        $member = $user->member;
         $setting = $settings->read('course', $semester, $sectionId,
             'instructor-notifications', $assignTag);
 
@@ -411,6 +410,7 @@ HTML;
 			    'review'=>$review['meta']['review']['review'],
 			    'submissions'=>$review['meta']['review']['submissions'],
                 'context'=>$review['meta']['review']['context'],
+                'annotation'=>$review['annotation'],
 		    ];
 
 		    $reviewer = array_key_exists('reviewer', $review) ? $review['reviewer'] : null;
@@ -428,12 +428,20 @@ HTML;
                     $reviewAssignID = $reviewAssignments->getTagByValues($user->member->id, $review['reviewer']['member']['id'], $this->assignment->tag);
                     // TODO: change this to chat_id
                     $reviewData['by'] = $reviewAssignID;
+
+
+                    //if we want to keep it anonymous using the reviewer/reviewee id
+//                    $reviewData['reviewer'] = $review['reviewer']['member']['id'];
+//                    $reviewData['reviewee'] = $user->member->id;
+
+                    //if we want names store the names of reviewer/reviewee
+                    $reviewData['reviewer'] = $review['reviewer']['name'];
+                    $reviewData['reviewee'] = $user->name;
                 }
             }
 
 		    $data[] = $reviewData;
 	    }
-
 	    return $data;
     }
 
@@ -645,6 +653,7 @@ MSG;
 	 * @param User $reviewer The reviewer
 	 * @param User $reviewee The reviewee
 	 * @param string $text Review text
+     * @param string $annotation Drawing annotation, if any
 	 * @param array $submissionIds Submissions this review is for
      * @param string $context Review context
 	 * @param int $time Time of the review
@@ -663,6 +672,22 @@ MSG;
         }
 
 	    return $reviews->get_reviewing($this->assignment->tag, $reviewer->member->id, $reviewee->member->id);
+    }
+
+	/**
+	 * Handle a submission of an annotation
+     * @param string $svg Drawing annotation
+     * @param int $width Drawing annotation width
+     * @param int $height Drawing annotation height
+     * @param int $review_id Review this annotation is associated with
+	 * @param int $time Time of the review
+	 * @return int ID if sucessful
+	 */
+    public function submit_annotation($svg, $width, $height, $review_id, $time) {
+        $annotations = new Annotations($this->assignment->site->db);
+	    $annotation = new Annotation();
+	    $annotation->set($svg, $width, $height, $review_id, $time);
+	    return $annotations->add($annotation);
     }
 
     private function notify_reviewed(User $reviewee, $review) {
