@@ -59,7 +59,7 @@ export default {
     this.annotation = this.$refs['svgImage'];
 
     this.resizeObserver = new ResizeObserver(this.onMutate);
-    this.resizeObserver.observe(this.$refs['diagramImage']);
+    this.resizeObserver.observe(document.body);
     window.addEventListener('scroll', this.onMutate);
 
     handler.init();
@@ -69,7 +69,7 @@ export default {
 
   },
   beforeUnmount() {
-    this.resizeObserver.unobserve(this.$refs.diagramImage[0]);
+    this.resizeObserver.unobserve(document.body);
     window.removeEventListener('scroll', this.onMutate);
   },
   methods: {
