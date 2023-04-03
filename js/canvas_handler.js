@@ -140,11 +140,11 @@ export let CanvasHandler = function() {
                     this.penMove(ctx, x, y, this.getLineWidth(event));
                     break;
                 case "eraser":
-                    deletePath(pathIdFromPoint(x, y));
+                    this.deletePath(this.pathIdFromPoint(x, y));
                     break;
-                case "segment_eraser":
-                    deleteSegment(x, y);
-                    break;
+                // case "segment_eraser":
+                //     deleteSegment(x, y);
+                //     break;
             }
 
         }
@@ -162,11 +162,11 @@ export let CanvasHandler = function() {
 
         switch(this.tool) {
             case "eraser":
-                deletePath(pathIdFromPoint(x, y));
+                this.deletePath(this.pathIdFromPoint(x, y));
                 break;
-            case "segment_eraser":
-                deleteSegment(x, y);
-                break;
+            // case "segment_eraser":
+            //     deleteSegment(x, y);
+            //     break;
         }
     }
 
@@ -228,6 +228,18 @@ export let CanvasHandler = function() {
         path.setAttributeNS(null, "fill", "transparent");
         path.setAttributeNS(null, "data-id", path_id);
         document.getElementById("drawing-svg").appendChild(path);
+    }
+
+    this.deletePath = function(path_id) {
+        // delete all elements with path id
+        if (path_id !== null) document.querySelectorAll(`path[data-id="${path_id}"]`)
+            .forEach(e => e.remove());
+    }
+
+    this.pathIdFromPoint = function(x, y) {
+        var topmost_path = document.elementsFromPoint(x + this.x_pos, y + this.y_pos).find(el => el.tagName == "path");
+        if (topmost_path === undefined) return null;
+        return topmost_path.getAttribute("data-id");
     }
 
 }
