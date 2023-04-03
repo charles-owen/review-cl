@@ -47,9 +47,12 @@ export default {
       resizeObserver: null,
       color: 0,
       customColor: false,
+      tool: 'pen',
       widthValue: 0,
       annotation_width: 0,
       annotation_height: 0,
+      pencil_url: "url(" + this.$site.root + "/vendor/cl/site/img/pencil.svg)",
+      eraser_url: "url(" + this.$site.root + "/vendor/cl/site/img/eraser.svg)",
     }
   },
   mounted() {
@@ -103,6 +106,9 @@ export default {
       this.customColor = newVal.includes('#');
       handler.color = newVal;
     },
+    tool(newVal){
+      handler.tool = newVal;
+    },
     widthValue(newVal){
       handler.line_width = newVal;
     }
@@ -125,11 +131,22 @@ export default {
   background-color: gainsboro   ;
 }
 
-.hue-selector {
-  border-radius: 50%;
+.button {
   width: 30px;
   height: 30px;
   cursor: pointer;
+}
+
+.hue-selector {
+  border-radius: 50%;
+}
+
+.pencil::before {
+  content: v-bind('pencil_url');
+}
+
+.eraser::before {
+  content: v-bind('eraser_url');
 }
 
 .active {
