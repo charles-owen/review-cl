@@ -73,6 +73,7 @@ export let CanvasHandler = function() {
     }
 
     this.drawLine = function(ctx, from, to) {
+        if (from === undefined) from = to;
         var dir = new Point(to.x - from.x, to.y - from.y);
         var angle = Math.atan2(dir.y, dir.x) - Math.PI / 2;
 
