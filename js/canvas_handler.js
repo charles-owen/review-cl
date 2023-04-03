@@ -19,10 +19,11 @@ export let CanvasHandler = function() {
     this.y_pos = 0;
 
     this.setSize = function(image_div) {
-        this.width = image_div.clientWidth;
-        this.height = image_div.clientHeight;
-        this.x_pos = image_div.x;
-        this.y_pos = image_div.y;
+        var rect = image_div.getBoundingClientRect();
+        this.width = rect.width;
+        this.height = rect.height;
+        this.x_pos = rect.x;
+        this.y_pos = rect.y;
 
         // find canvas
         var canvas = document.getElementById("drawing");
