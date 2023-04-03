@@ -366,7 +366,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
     {
         $user = $this->isUser($site, Member::STAFF);
         $post = $server->post;
-        $this->ensure($post, ['userId', 'isClass']);  // Check that all required params are present
+        $this->ensure($post, ['memberId', 'isClass']);  // Check that all required params are present
         $isClass = $post['isClass'];
         $assignTag = $params[1];
 
@@ -389,6 +389,8 @@ class ReviewApi extends \CL\Users\Api\Resource {
         // Members of the class
         $members = new Members($site->db);
 
+        $notificationUnavailable = false;  // Turn true if individual notification and user has not submitted
+
         // If it is a class notification then the member list to notify is the list of all members
         if ($isClass) {
             $membersList = $members->query(['semester'=>$semester,
@@ -396,13 +398,13 @@ class ReviewApi extends \CL\Users\Api\Resource {
         }
         // If it is not a class reminder send to the certain individual provided
         else {
-            $userId = $post['userId'];
-            $membersList = $members->query(['semester'=>$semester, 'section'=>$sectionId,'userId' => $userId ,'role'=>Member::STUDENT]);
+            $memberId = $post['memberId'];
+            $membersList = $members->query(['semester'=>$semester, 'section'=>$sectionId,'id' => $memberId ,'role'=>Member::STUDENT]);
+            // Variable to keep track of if a notification was unable to send (If users have not submitted yet)
+            $notificationUnavailable = !$reviewing->has_submitted($members->getAsUser($memberId));
         }
         // Variable to keep track of the number of reviews sent for return.
         $notificationsSent = 0;
-        // Variable to keep track of if a notification was unable to send (If users have not submitted yet)
-        $notificationUnavailable = !$reviewing->has_submitted($members->getAsUser($userId));
 
         // Send the notifications if the user has completed the assignment and has not done all reviews
         foreach($membersList as $user) {

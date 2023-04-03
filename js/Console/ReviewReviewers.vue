@@ -33,7 +33,7 @@
             <!--Calling sort on the users to make sure it is sorted based on the sort key-->
             <tr v-for="user in sort(fetcher.users)">
               <td>
-                <a @click.prevent="maybeIndividualNotification(user.id, user.name)" href="javascript:;">
+                <a @click.prevent="maybeIndividualNotification(user.member.id, user.name)" href="javascript:;">
                   <img :src="mail" title="Email" alt="Email">
                 </a>
               </td>
@@ -319,7 +319,7 @@ export default {
       let assignTag = this.assigntag;
 
       let params = {
-        userId: 'null',
+        memberId: 'null',
         isClass: true
       }
       // Send post request and check for errors, this routes to ReviewApi.php
@@ -550,10 +550,10 @@ export default {
     /**
      * Dialog pop up to confirm user wants to send individual reminder.
      */
-    maybeIndividualNotification(userId, name) {
+    maybeIndividualNotification(memberId, name) {
       new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to send a reminder to ' + name + '?',
           this.$site.Dialog.MessageBox.OKCANCEL, () => {
-            this.individualNotification(userId);
+            this.individualNotification(memberId);
           });
     },
     /**
@@ -561,12 +561,12 @@ export default {
      * @param name of person receiving reminder
      * @param email to send reminder to
      */
-    individualNotification(userId){
+    individualNotification(memberId){
       let site = this.$site;
       //variable for the assignment tag
       let assignTag = this.assigntag;
       let params = {
-        userId: userId,
+        memberId: memberId,
         isClass: false
       }
       // Send post request and check for errors, this routes to ReviewApi.php
