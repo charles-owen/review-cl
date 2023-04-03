@@ -14,14 +14,16 @@
         </div>
         <figure class="cl-preview cl-review-diagram">
             <div class="top-bar">
-              <div class="hue-selector red" @click="color='red'"></div>
-              <div class="hue-selector orange" @click="color='orange'"></div>
-              <div class="hue-selector yellow" @click="color='yellow'"></div>
-              <div class="hue-selector green" @click="color='green'"></div>
-              <div class="hue-selector blue" @click="color='blue'"></div>
-              <div class="hue-selector purple" @click="color='purple'"></div>
-              <div class="hue-selector violet" @click="color='violet'"></div>
-              <div class="hue-selector custom"><input type="color" @input="color = $event.target.value"></div>
+              <div :class="{ active: color == 'red' }" class="button hue-selector red" @click="color='red'"></div>
+              <div :class="{ active: color == 'orange' }" class="button hue-selector orange" @click="color='orange'"></div>
+              <div :class="{ active: color == 'yellow' }" class="button hue-selector yellow" @click="color='yellow'"></div>
+              <div :class="{ active: color == 'green' }" class="button hue-selector green" @click="color='green'"></div>
+              <div :class="{ active: color == 'blue' }" class="button hue-selector blue" @click="color='blue'"></div>
+              <div :class="{ active: color == 'purple' }" class="button hue-selector purple" @click="color='purple'"></div>
+              <div :class="{ active: color == 'violet' }" class="button hue-selector violet" @click="color='violet'"></div>
+              <div :class="{ active: customColor }" class="button hue-selector custom"><input type="color" @input="color = $event.target.value"></div>
+              <div :class="{ active: tool == 'pen' }" class="button pencil" @click="tool='pen'"></div>
+              <div :class="{ active: tool == 'eraser' }" class="button eraser" @click="tool='eraser'"></div>
             </div>
             <div class="cl-review-diagram">
             <img ref="diagramImage" :src="image">
@@ -44,6 +46,7 @@ export default {
     return {
       resizeObserver: null,
       color: 0,
+      customColor: false,
       widthValue: 0,
       annotation_width: 0,
       annotation_height: 0,
@@ -97,6 +100,7 @@ export default {
   },
   watch: {
     color(newVal){
+      this.customColor = newVal.includes('#');
       handler.color = newVal;
     },
     widthValue(newVal){
@@ -126,6 +130,10 @@ export default {
   width: 30px;
   height: 30px;
   cursor: pointer;
+}
+
+.active {
+  outline:3px solid gray;
 }
 
 .red { background-color: red; }
