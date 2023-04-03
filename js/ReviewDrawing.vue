@@ -1,8 +1,8 @@
 <template>
     <div class="cl-reviewDrawing">
-        <div class="hue-slider-container">
-            Line width: {{ widthValue }}
-            <input
+        <div class="slider-container">
+          Line width
+          <input
                 type="range"
                 min="1"
                 max="50"
@@ -10,6 +10,7 @@
                 v-model="widthValue"
                 class="slider"
             />
+            {{ widthValue }}
         </div>
         <figure class="cl-preview cl-review-diagram">
             <div class="top-bar">
@@ -148,6 +149,12 @@ export default {
         rgba(251, 7, 217, 1) 90%,
         rgba(255, 0, 0, 1) 100%
     );
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .custom input {
