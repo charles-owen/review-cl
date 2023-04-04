@@ -61,6 +61,10 @@ class ReviewApi extends \CL\Users\Api\Resource {
             case 'review':
                 return $this->review($site, $user, $server, $params, $time);
 
+            // /api/review/annotate/:id
+            case 'annotate':
+                return $this->annotate($site, $user, $server, $params, $time);
+
             // /api/review/tables
             case 'tables':
                 return $this->tables($site, $server, new ReviewTables($site->db));
@@ -75,6 +79,9 @@ class ReviewApi extends \CL\Users\Api\Resource {
 
             case 'remove':
                 return $this->remove($site, $server, $params, $time);
+
+            case 'reviews_chat':
+                return $this->reviews_chat($site, $user, $server, $params, $time);
 
         }
 
@@ -359,7 +366,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
     {
         $user = $this->isUser($site, Member::STAFF);
         $post = $server->post;
-        $this->ensure($post, ['userId', 'isClass']);  // Check that all required params are present
+        $this->ensure($post, ['memberId', 'isClass']);  // Check that all required params are present
         $isClass = $post['isClass'];
         $assignTag = $params[1];
 
@@ -382,6 +389,8 @@ class ReviewApi extends \CL\Users\Api\Resource {
         // Members of the class
         $members = new Members($site->db);
 
+        $notificationUnavailable = false;  // Turn true if individual notification and user has not submitted
+
         // If it is a class notification then the member list to notify is the list of all members
         if ($isClass) {
             $membersList = $members->query(['semester'=>$semester,
@@ -389,13 +398,13 @@ class ReviewApi extends \CL\Users\Api\Resource {
         }
         // If it is not a class reminder send to the certain individual provided
         else {
-            $userId = $post['userId'];
-            $membersList = $members->query(['semester'=>$semester, 'section'=>$sectionId,'userId' => $userId ,'role'=>Member::STUDENT]);
+            $memberId = $post['memberId'];
+            $membersList = $members->query(['semester'=>$semester, 'section'=>$sectionId,'id' => $memberId ,'role'=>Member::STUDENT]);
+            // Variable to keep track of if a notification was unable to send (If users have not submitted yet)
+            $notificationUnavailable = !$reviewing->has_submitted($members->getAsUser($memberId));
         }
         // Variable to keep track of the number of reviews sent for return.
         $notificationsSent = 0;
-        // Variable to keep track of if a notification was unable to send (If users have not submitted yet)
-        $notificationUnavailable = 0;
 
         // Send the notifications if the user has completed the assignment and has not done all reviews
         foreach($membersList as $user) {
@@ -588,5 +597,95 @@ class ReviewApi extends \CL\Users\Api\Resource {
         $json->addData('reviewers', 0, $data);
         return $json;
     }
+
+
+    /**
+     * Submit an annotation
+     *
+     * /api/review/annotate/:id
+     *
+     * @param Site $site The Site object
+     * @param User $user Requesting user
+     * @param Server $server The server
+     * @param array $params Parameters for the route
+     * @param int $time Current time
+     * @return JsonAPI
+     * @throws APIException
+     */
+    private function annotate(Site $site, User $user, Server $server, array $params, $time) {
+        if(count($params) < 2) {
+            throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
+        }
+        // $user is the one making the annotation
+        $id = $params[1];  // Review assignment id
+        $reviewAssignments = new ReviewAssignments($site->db);
+        $reviewAssign = $reviewAssignments->get($id);
+        if($reviewAssign === null) {
+            throw new APIException("Review assignment does not exist");
+        }
+
+        if($reviewAssign['reviewerid'] != $user->member->id) {
+            throw new APIException("Not authorized", APIException::NOT_AUTHORIZED);
+        }
+
+        // Get the assignment
+        $section = $site->course->get_section_for($user);
+        $assignment = $section->get_assignment($reviewAssign['assigntag']);
+        if($assignment === null || $assignment->reviewing === null) {
+            throw new APIException("Review assignment does not exist");
+        }
+
+        $post = $server->post;
+        $this->ensure($post, ['annotation', 'width', 'height', 'review_id']);
+        $annotation = $post['annotation'];
+        $width = $post['width'];
+        $height = $post['height'];
+        $review_id = $post['review_id'];
+
+        $annotation_id = $assignment->reviewing->submit_annotation($annotation, $width, $height, $review_id, $time);
+
+        $json = new JsonAPI();
+        $json->addData('annotation_id', 0, $annotation_id);
+        return $json;
+    }
+
+
+    /**
+     * Get all assignment chat messages for requesting user
+     *
+     * /api/review/reviews_chat/:assigntag/
+     * This is used on the assignment grading page
+     *
+     * @param Site $site The Site object
+     * @param Server $server The server
+     * @param array $params Parameters for the route
+     * @param int $time Current time
+     * @return JsonAPI
+     * @throws APIException
+     */
+    private function reviews_chat(Site $site, User $user, Server $server, array $params, $time) {
+        if(count($params) < 1) {
+            throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
+        }
+
+        $id = $params[1];
+        $reviewAssignments = new ReviewAssignments($site->db);
+        $reviewAssign = $reviewAssignments->get($id);
+
+        // Get the assignment
+        $section = $site->course->get_section_for($user);
+        $assignment = $section->get_assignment($reviewAssign['assigntag']);
+        if($assignment === null || $assignment->reviewing === null) {
+            throw new APIException("Review assignment does not exist");
+        }
+
+		$members = new Members($site->db);
+		$reviewee = $members->getAsUser($reviewAssign['revieweeid']);
+
+        $json = new JsonAPI();
+        $json->addData('reviewing', 0, $assignment->reviewing->reviewsData($reviewee));
+        return $json;
+    }
+
 
 }

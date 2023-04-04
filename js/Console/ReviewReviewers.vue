@@ -33,11 +33,11 @@
             <!--Calling sort on the users to make sure it is sorted based on the sort key-->
             <tr v-for="user in sort(fetcher.users)">
               <td>
-                <a @click.prevent="maybeIndividualNotification(user.id, user.name)" href="javascript:;">
+                <a @click.prevent="maybeIndividualNotification(user.member.id, user.name)" href="javascript:;">
                   <img :src="mail" title="Email" alt="Email">
                 </a>
               </td>
-              <td :style="{backgroundColor: getBackgroundColor(maxReviewers - this.countReviews(fetcher.users, user, 'Reviewer'),maxReviewers)}">
+              <td :style="{backgroundColor: getBackgroundColor(adjustedMaxValue(fetcher.users, maxReviewers, 'Reviewer') - this.countReviews(fetcher.users, user, 'Reviewer'),adjustedMaxValue(fetcher.users, maxReviewers, 'Reviewer'))}">
                 <div class="aligncontrols">
                   <a @click.prevent="reassignDialog(user, 'Reviewee', fetcher.users)" href="javascript:;">
                     <img :src="plus" title="Add Reviewee" alt="Add Reviewee">
@@ -48,8 +48,8 @@
                 </div>
               </td>
               <td :style="[
-                  this.countReviews(fetcher.users, user, 'Reviewee') < maxReviewees ?
-                  {backgroundColor: getBackgroundColor(maxReviewees - this.countReviews(fetcher.users, user, 'Reviewee'),maxReviewees)}:{}]">
+                  this.countReviews(fetcher.users, user, 'Reviewee') < adjustedMaxValue(fetcher.users, maxReviewees, 'Reviewee') ?
+                  {backgroundColor: getBackgroundColor(adjustedMaxValue(fetcher.users, maxReviewees, 'Reviewee') - this.countReviews(fetcher.users, user, 'Reviewee'),adjustedMaxValue(fetcher.users, maxReviewees, 'Reviewee'))}:{}]">
                 <div class="aligncontrols">
                   <a @click.prevent="reassignDialog(user, 'Reviewer', fetcher.users)" href="javascript:;">
                     <img :src="plus" title="Add Reviewer" alt="Add Reviewer">
@@ -73,7 +73,7 @@
                 <!--Changed ternary operator for count to check if reviewer array has enough entries                -->
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined && i-1 < reviewers.length ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
-              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)" align="center">
+              <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)">
                 <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined && i-1 < reviewees.length ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
             </tr>
@@ -114,7 +114,7 @@ export default {
   // This is a standard console comoponent
   'extends': ConsoleComponentBase,
   props: [
-      'assigntag'     // The assignment the reviewing is for
+    'assigntag'     // The assignment the reviewing is for
   ],
   data: function () {
     return {
@@ -319,7 +319,7 @@ export default {
       let assignTag = this.assigntag;
 
       let params = {
-        userId: 'null',
+        memberId: 'null',
         isClass: true
       }
       // Send post request and check for errors, this routes to ReviewApi.php
@@ -336,6 +336,21 @@ export default {
 
 
 
+    },
+    adjustedMaxValue(users, max, role) {
+      let countLessThanMax = 0;
+
+      users.forEach(user => {
+        const reviewsCount = this.countReviews(users, user, role);
+        if (reviewsCount < max) {
+          countLessThanMax++;
+        }
+      });
+      if (countLessThanMax < users.length / 2) {
+        return max;
+      } else {
+        return max - 1;
+      }
     },
     getBackgroundColor(missing, maxReviews) {
       if (maxReviews === 0){
@@ -535,10 +550,10 @@ export default {
     /**
      * Dialog pop up to confirm user wants to send individual reminder.
      */
-    maybeIndividualNotification(userId, name) {
+    maybeIndividualNotification(memberId, name) {
       new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to send a reminder to ' + name + '?',
           this.$site.Dialog.MessageBox.OKCANCEL, () => {
-            this.individualNotification(userId);
+            this.individualNotification(memberId);
           });
     },
     /**
@@ -546,12 +561,12 @@ export default {
      * @param name of person receiving reminder
      * @param email to send reminder to
      */
-    individualNotification(userId){
+    individualNotification(memberId){
       let site = this.$site;
       //variable for the assignment tag
       let assignTag = this.assigntag;
       let params = {
-        userId: userId,
+        memberId: memberId,
         isClass: false
       }
       // Send post request and check for errors, this routes to ReviewApi.php
@@ -689,14 +704,14 @@ export default {
 
       //check what the sort key is set to
       switch(this.sortKey) {
-        //if name, then run set sorter to run compare on the names
+          //if name, then run set sorter to run compare on the names
         case SortKey.name:
           sorter = (a, b) => {
             return compare(b.name, a.name);
           };
           break;
 
-        //if reviewer, set sorter to get the number of reviewers assigned to each user and sort
+          //if reviewer, set sorter to get the number of reviewers assigned to each user and sort
         case SortKey.reviewer:
           sorter = (a, b) => {
             const ret = this.countReviews(users,a,"Reviewee") - this.countReviews(users,b,"Reviewee")
@@ -708,7 +723,7 @@ export default {
           };
           break;
 
-        //if reviewee, set the sorter to get the number of reviewees assigned to each user and sort
+          //if reviewee, set the sorter to get the number of reviewees assigned to each user and sort
         case SortKey.reviewee:
           sorter = (a, b) => {
             const ret =  this.countReviews(users,a,"Reviewer") - this.countReviews(users,b,"Reviewer")
@@ -736,7 +751,21 @@ export default {
     setSortBy(sorter) {
       this.sortKey = sorter;
     },
-  }
+  },
+  computed: {
+    adjustedMaxReviewers() {
+      const adjustedMax = this.adjustedMaxValue(this.fetcher.users, this.maxReviewers, 'Reviewer');
+      console.log('Adjusted Max Reviewers:', adjustedMax);
+      return adjustedMax;
+    },
+
+    adjustedMaxReviewees() {
+      const adjustedMax = this.adjustedMaxValue(this.fetcher.users, this.maxReviewees, 'Reviewee');
+      console.log('Adjusted Max Reviewees:', adjustedMax);
+      return adjustedMax;
+    },
+  },
+
 }
 </script>
 

@@ -9,19 +9,21 @@
         <p >How to use the chat feature</p>
       </div>
     </div>
-    <div style="width: 769px; height: 400px; border: solid 1px; overflow-x: hidden;
-    cursor: pointer; margin-bottom: 20px; text-align: center;" v-if="chat.length!==0">
-      <div v-for="review in chat.slice().reverse()" class="cl-review">
+    <p class="incoming-id" v-show="chat.length!==0">R{{incoming.slice(1,)}}: {{recipient}}</p>
+    <div class="cl-chat-div" v-show="chat.length!==0">
+      <div v-for="review in chat" class="message-div">
         <div>
-          <p @click.stop v-if="review.context === context && review.by == chat_id" class="cl-review-present cl_chat_outgoing">
-            {{review.review}}<br>{{formatTime(review.time)}}</p>
+          <div v-if="review.context === context" class="cl-review-present cl-chat-bubble cl-chat-outgoing">
+            {{review.review}}<br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
 
-          <p @click.stop v-else-if="review.by == chat_id" class="cl-review-present cl_chat_incoming">
-            {{review.review}}<br>{{formatTime(review.time)}}</p>
+          <div v-else-if="review.annotation !== null" class="cl-review-present cl-chat-bubble cl-chat-incoming cl_chat_annotation">
+            <a href="#" @click.prevent="selected_review = review;">{{review.review}}</a><br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
+
+          <div v-else="" class="cl-review-present cl-chat-bubble cl-chat-incoming">
+            {{review.review}}<br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
         </div>
       </div>
     </div>
-
     <form id="form" method="post" @submit.prevent="submit"
           v-show="context === 'reviewee' ? showForm : true"
           class="form-container" @click.stop>
@@ -31,20 +33,30 @@
 
       <input type="submit" value="Send" class="sendbutton">
     </form>
+    <review-annotation :chat="chat" :review="selected_review"></review-annotation>
   </div>
 </template>
 
 <script>
+import ReviewAnnotationVue from './ReviewAnnotation.vue'
 export default {
   props: ['json', 'context', 'chat_id'],
+  emit: ['submit'],
   inheritAttrs: false,
   data: function () {
     return {
       chat: this.json.reviewing.filter(this.filterChatId),
+      selected_review: null,
+      incoming: this.context === 'reviewer' ? 'reviewee' : 'reviewer',
+      recipient: "",
+      timer: null,
       showForm: false,
       showInstructions: false,
       clickCount: 0
     }
+  },
+  components: {
+    reviewAnnotation: ReviewAnnotationVue,
   },
   mounted() {
 
@@ -55,9 +67,11 @@ export default {
         'date': submission.date
       };
     }
-
-
     this.submissions = submissions;
+    this.setName();
+    this.timer = setInterval(() => {
+      this.refreshChat()
+    }, 1000)
 
     const textArea = this.$refs.textArea;
 
@@ -74,6 +88,14 @@ export default {
       }
     });
   },
+
+  updated() {
+    this.setName();
+  },
+  beforeDestroy() {
+    clearInterval(this.timer);
+  },
+
   methods: {
     submit() {
       const text = this.$el.querySelector('textarea').value.trim();
@@ -81,7 +103,6 @@ export default {
         Site.toast(this, 'You must enter some text to submit');
         return;
       }
-
       let params = {
         type: 'text/plain',
         text: text,
@@ -100,10 +121,10 @@ export default {
                 time: latestMessage.time,
                 context: latestMessage.meta.review.context,
               });
+              this.$emit('submit', latestMessage.id);
             } else {
               this.$site.toast(this, response);
             }
-
           })
           .catch((error) => {
             this.$site.toast(this, error);
@@ -114,6 +135,23 @@ export default {
     },
     filterChatId(review){
       return this.chat_id == review.by;
+    },
+    refreshChat() {
+      this.$site.api.post(`/api/review/reviews_chat/${this.chat_id}`)
+          .then((response) => {
+            if (!response.hasError()) {
+              console.log(response.getData('reviewing'));
+              this.chat = response.getData('reviewing').attributes.filter(this.filterChatId);
+            } else {
+              this.$site.toast(this, response);
+            }
+          })
+          .catch((error) => {
+            this.$site.toast(this, error);
+          });
+    },
+    setName() {
+      if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
     },
     formvisable() {
       if (this.clickCount === 0) {
@@ -134,30 +172,50 @@ export default {
 </script>
 
 <style scoped>
-.cl_chat_incoming {
-  width: 300px;
+.cl-chat-div{
+  height: 48vh;
+  min-height: 30vh;
   border: solid 1px;
-  border-radius: 10px;
-  padding: 5px;
-  font-size: 12px;
-  clear: right;
-  padding: 10px;
-  cursor: text;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column-reverse;
+  margin: 0;
 }
-
-.cl_chat_outgoing{
-  width: 300px;
+.cl-chat-bubble {
+  min-width: 40%;
+  max-width: 60%;
   border: solid 1px;
-  border-radius: 10px;
-  padding: 5px;
+  border-radius: 13px;
   font-size: 12px;
+  padding: 9px 12px;
+  word-wrap: break-word;
+}
+.cl-chat-incoming {
+  float: left;
+}
+.cl-chat-outgoing{
   background-color: #0c5645;
   color: white;
   float: right;
-  clear: right;
-  padding: 10px;
-  cursor: text;
+  text-align: left;
 }
+.incoming-id{
+  margin:0;
+  color: #204c42;
+  font-weight: bold;
+  font-size: small;
+}
+.cl-chat-time {
+  opacity: 0.5;
+  text-align: right;
+}
+.message-div {
+  padding: 5px 10px;
+}
+.message-div:first-child {
+  padding: 5px 10px 10px;
+}
+
 .form-container {
   display: flex;
   justify-content: space-between;
@@ -235,6 +293,3 @@ textarea {
   cursor: pointer;
 }
 </style>
-
-
-
