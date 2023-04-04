@@ -13,13 +13,13 @@
     <div class="cl-chat-div" v-show="chat.length!==0">
       <div v-for="review in chat" class="message-div">
         <div>
-          <div v-if="review.context === context" class="cl-review-present cl-chat-bubble cl-chat-outgoing">
+          <div @click.stop v-if="review.context === context" class="cl-review-present cl-chat-bubble cl-chat-outgoing">
             {{review.review}}<br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
 
-          <div v-else-if="review.annotation !== null" class="cl-review-present cl-chat-bubble cl-chat-incoming cl_chat_annotation">
+          <div @click.stop v-else-if="review.annotation !== null" class="cl-review-present cl-chat-bubble cl-chat-incoming cl_chat_annotation">
             <a href="#" @click.prevent="selected_review = review;">{{review.review}}</a><br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
 
-          <div v-else="" class="cl-review-present cl-chat-bubble cl-chat-incoming">
+          <div @click.stop v-else="" class="cl-review-present cl-chat-bubble cl-chat-incoming">
             {{review.review}}<br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
         </div>
       </div>
@@ -180,6 +180,7 @@ export default {
   display: flex;
   flex-direction: column-reverse;
   margin: 0;
+  cursor: pointer;
 }
 .cl-chat-bubble {
   min-width: 40%;
@@ -192,12 +193,14 @@ export default {
 }
 .cl-chat-incoming {
   float: left;
+  cursor: text;
 }
 .cl-chat-outgoing{
   background-color: #0c5645;
   color: white;
   float: right;
   text-align: left;
+  cursor: text;
 }
 .incoming-id{
   margin:0;
