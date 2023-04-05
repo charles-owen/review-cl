@@ -19,10 +19,11 @@ export let CanvasHandler = function() {
     this.y_pos = 0;
 
     this.setSize = function(image_div) {
-        this.width = image_div.clientWidth;
-        this.height = image_div.clientHeight;
-        this.x_pos = image_div.x;
-        this.y_pos = image_div.y;
+        var rect = image_div.getBoundingClientRect();
+        this.width = rect.width;
+        this.height = rect.height;
+        this.x_pos = rect.x;
+        this.y_pos = rect.y;
 
         // find canvas
         var canvas = document.getElementById("drawing");
@@ -73,6 +74,7 @@ export let CanvasHandler = function() {
     }
 
     this.drawLine = function(ctx, from, to) {
+        if (from === undefined) from = to;
         var dir = new Point(to.x - from.x, to.y - from.y);
         var angle = Math.atan2(dir.y, dir.x) - Math.PI / 2;
 
@@ -139,11 +141,11 @@ export let CanvasHandler = function() {
                     this.penMove(ctx, x, y, this.getLineWidth(event));
                     break;
                 case "eraser":
-                    deletePath(pathIdFromPoint(x, y));
+                    this.deletePath(this.pathIdFromPoint(x, y));
                     break;
-                case "segment_eraser":
-                    deleteSegment(x, y);
-                    break;
+                // case "segment_eraser":
+                //     deleteSegment(x, y);
+                //     break;
             }
 
         }
@@ -161,11 +163,11 @@ export let CanvasHandler = function() {
 
         switch(this.tool) {
             case "eraser":
-                deletePath(pathIdFromPoint(x, y));
+                this.deletePath(this.pathIdFromPoint(x, y));
                 break;
-            case "segment_eraser":
-                deleteSegment(x, y);
-                break;
+            // case "segment_eraser":
+            //     deleteSegment(x, y);
+            //     break;
         }
     }
 
@@ -229,6 +231,18 @@ export let CanvasHandler = function() {
         document.getElementById("drawing-svg").appendChild(path);
     }
 
+    this.deletePath = function(path_id) {
+        // delete all elements with path id
+        if (path_id !== null) document.querySelectorAll(`path[data-id="${path_id}"]`)
+            .forEach(e => e.remove());
+    }
+
+    this.pathIdFromPoint = function(x, y) {
+        var topmost_path = document.elementsFromPoint(x + this.x_pos, y + this.y_pos).find(el => el.tagName == "path");
+        if (topmost_path === undefined) return null;
+        return topmost_path.getAttribute("data-id");
+    }
+
 }
 
 function Point(x, y, w) {
@@ -268,73 +282,6 @@ function mean(arr) {
     return new Point(sum.x / arr.length, sum.y / arr.length, sum.w / arr.length);
 }
 
-
-function pathIdFromPoint(x, y) {
-    var topmost_path = document.elementsFromPoint(x, y).find(el => el.tagName == "path");
-    return topmost_path.getAttribute("data-id");
-}
-
-
-
-function deletePath(path_id) {
-    // delete all elements with path id
-    document.querySelectorAll(`path[data-id="${path_id}"]`)
-        .forEach(e => e.remove());
-}
-
 function deleteSegment(x, y) {
     document.elementsFromPoint(x, y).find(el => el.tagName == "path").remove();
-}
-
-
-
-
-// adapted from https://stackoverflow.com/a/44487883
-function saveCanvas() {
-    // get canvas
-    var canvas = document.getElementById("drawing");
-
-    // get download link
-    var link = document.getElementById("download_link");
-    // set download name
-    link.setAttribute('download', 'canvas.png');
-    // set download content
-    link.setAttribute(
-        'href',
-        canvas.toDataURL("image/png")
-            .replace("image/png", "image/octet-stream")
-    );
-    // click download link
-    link.click();
-}
-
-// adapted from https://stackoverflow.com/a/46403589
-function saveSVG() {
-    // get svg
-    var svg = document.getElementById("drawing-svg");
-
-    // generate content
-    var blob = new Blob(
-        [
-            '<?xml version="1.0" standalone="no"?>\n',
-            svg.outerHTML,
-        ],
-        { type: "image/svg+xml;charset=utf-8" }
-    );
-
-    // create download link
-    var link = document.createElement("a");
-    // set download name
-    link.setAttribute('download', 'canvas.svg');
-    // set download content
-    link.setAttribute(
-        'href',
-        URL.createObjectURL(blob)
-    );
-    // add download link to body
-    document.body.appendChild(link);
-    // click it
-    link.click();
-    // delete it
-    document.body.removeChild(link);
 }

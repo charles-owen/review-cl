@@ -1,8 +1,8 @@
 <template>
     <div class="cl-reviewDrawing">
-        <div class="hue-slider-container">
-            Line width: {{ widthValue }}
-            <input
+        <div class="slider-container">
+          Line width
+          <input
                 type="range"
                 min="1"
                 max="50"
@@ -10,17 +10,20 @@
                 v-model="widthValue"
                 class="slider"
             />
+            {{ widthValue }}
         </div>
         <figure class="cl-preview cl-review-diagram">
             <div class="top-bar">
-              <div class="hue-selector red" @click="color='red'"></div>
-              <div class="hue-selector orange" @click="color='orange'"></div>
-              <div class="hue-selector yellow" @click="color='yellow'"></div>
-              <div class="hue-selector green" @click="color='green'"></div>
-              <div class="hue-selector blue" @click="color='blue'"></div>
-              <div class="hue-selector purple" @click="color='purple'"></div>
-              <div class="hue-selector violet" @click="color='violet'"></div>
-              <div class="hue-selector custom"><input type="color" @input="color = $event.target.value"></div>
+              <div :class="{ active: color == 'red' }" class="button hue-selector red" @click="color='red'"></div>
+              <div :class="{ active: color == 'orange' }" class="button hue-selector orange" @click="color='orange'"></div>
+              <div :class="{ active: color == 'yellow' }" class="button hue-selector yellow" @click="color='yellow'"></div>
+              <div :class="{ active: color == 'green' }" class="button hue-selector green" @click="color='green'"></div>
+              <div :class="{ active: color == 'blue' }" class="button hue-selector blue" @click="color='blue'"></div>
+              <div :class="{ active: color == 'purple' }" class="button hue-selector purple" @click="color='purple'"></div>
+              <div :class="{ active: color == 'violet' }" class="button hue-selector violet" @click="color='violet'"></div>
+              <div :class="{ active: customColor }" class="button hue-selector custom"><input type="color" @input="color = $event.target.value"></div>
+              <div :class="{ active: tool == 'pen' }" class="button pencil" @click="tool='pen'"></div>
+              <div :class="{ active: tool == 'eraser' }" class="button eraser" @click="tool='eraser'"></div>
             </div>
             <div class="cl-review-diagram">
             <img ref="diagramImage" :src="image">
@@ -43,16 +46,20 @@ export default {
     return {
       resizeObserver: null,
       color: 0,
+      customColor: false,
+      tool: 'pen',
       widthValue: 0,
       annotation_width: 0,
       annotation_height: 0,
+      pencil_url: "url(" + this.$site.root + "/vendor/cl/site/img/pencil.svg)",
+      eraser_url: "url(" + this.$site.root + "/vendor/cl/site/img/eraser.svg)",
     }
   },
   mounted() {
     this.annotation = this.$refs['svgImage'];
 
     this.resizeObserver = new ResizeObserver(this.onMutate);
-    this.resizeObserver.observe(this.$refs['diagramImage']);
+    this.resizeObserver.observe(document.body);
     window.addEventListener('scroll', this.onMutate);
 
     handler.init();
@@ -62,7 +69,7 @@ export default {
 
   },
   beforeUnmount() {
-    this.resizeObserver.unobserve(this.$refs.diagramImage[0]);
+    this.resizeObserver.unobserve(document.body);
     window.removeEventListener('scroll', this.onMutate);
   },
   methods: {
@@ -96,7 +103,11 @@ export default {
   },
   watch: {
     color(newVal){
+      this.customColor = newVal.includes('#');
       handler.color = newVal;
+    },
+    tool(newVal){
+      handler.tool = newVal;
     },
     widthValue(newVal){
       handler.line_width = newVal;
@@ -120,11 +131,26 @@ export default {
   background-color: gainsboro   ;
 }
 
-.hue-selector {
-  border-radius: 50%;
+.button {
   width: 30px;
   height: 30px;
   cursor: pointer;
+}
+
+.hue-selector {
+  border-radius: 50%;
+}
+
+.pencil::before {
+  content: v-bind('pencil_url');
+}
+
+.eraser::before {
+  content: v-bind('eraser_url');
+}
+
+.active {
+  outline:3px solid gray;
 }
 
 .red { background-color: red; }
@@ -148,6 +174,12 @@ export default {
         rgba(251, 7, 217, 1) 90%,
         rgba(255, 0, 0, 1) 100%
     );
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .custom input {
