@@ -1,5 +1,5 @@
 <template>
-  <div class="cl-reviewChat" @click="formvisable">
+  <div class="cl-reviewChat" @click="formVisible">
     <div v-if="chat.length!==0 && context === 'reviewee'" @click="showInstructions = true"  @click.stop>
       <button class="Instruction_button"  title="How to use the chat feature">Instruction</button>
     </div>
@@ -153,13 +153,13 @@ export default {
     setName() {
       if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
     },
-    formvisable() {
+    formVisible() {
       if (this.clickCount === 0) {
         this.showForm = true;
       }
       this.clickCount++;
 
-      if (this.clickCount >= 3) {
+      if (this.clickCount >= 2) {
         this.showForm = false;
         this.clickCount = 0;
       }
