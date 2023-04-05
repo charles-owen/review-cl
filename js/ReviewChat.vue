@@ -118,14 +118,13 @@ export default {
       this.$site.api.post(`/api/review/reviews_chat/${this.chat_id}`)
         .then((response) => {
           if (!response.hasError()) {
-            console.log(response.getData('reviewing'));
             this.chat = response.getData('reviewing').attributes.filter(this.filterChatId);
           } else {
-            this.$site.toast(this, response);
+            console.log(response);
           }
         })
         .catch((error) => {
-          this.$site.toast(this, error);
+          console.log(error);
         });
     },
     setName() {
