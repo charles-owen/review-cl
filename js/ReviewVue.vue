@@ -13,26 +13,16 @@
       <p class="cl-reviews-none" v-if="reviewing.length === 0">
         *** None Yet ***
       </p>
-      <review-chat :json="json" :context="context" :chat_id="chat_id" @submit="submit"></review-chat>
+      <review-chat :json="json" :context="context" :chat_id="chat_id" :showInstructions="true" @submit="submit"></review-chat>
     </div>
-    <button class="instruction_button" v-if="reviewing.length !== 0" @click="instructionvisiable">
-      <img v-if="!showInstruction" src="../../site/img/expand.png">
-      <img v-if="showInstruction" src="../../site/img/retract.png">
-    </button>
-    <span class="span" v-if="reviewing.length !== 0" @click="instructionvisiable">How to use the chat feature</span>
-
-
-    <p v-show="showInstruction" class="Instruction_content">How to use the chat feature</p>
   </div>
 </template>
 
 <style scoped> @import "./styles.css" </style>
-
 <script>
 import {UserVueBase} from 'users-cl/index'
 import ReviewChatVue from './ReviewChat.vue'
 import ReviewDrawing from './ReviewDrawing.vue';
-
 /**
  * This is the page for a review of an assignment by a member.
  * /cl/review/:id
@@ -47,9 +37,6 @@ export default {
       submissions: {},
       chat_id: this.json.id,
       context: "reviewer", // context of the current file
-      showInstruction: false,
-      clickCount: 0
-
     }
   },
   components: {
@@ -59,8 +46,6 @@ export default {
   mounted() {
     this.setTitle('Peer Reviewing');
     this.reviewing = this.json.reviewing;
-
-
     let submissions = {};
     for (const submission of this.json.submissions) {
       submissions[submission.tag] = {
@@ -68,9 +53,7 @@ export default {
         'date': submission.date
       };
     }
-
     this.submissions = submissions;
-
   },
   methods: {
     submit(review_id) {
@@ -87,63 +70,14 @@ export default {
           past = true;
         }
       }
-
       if (past) {
         return 'For a past submission';
       }
-
       return '';
     },
     previewImg(submission) {
       return this.$site.root + '/cl/review/img/' + submission.id;
     },
-    instructionvisiable() {
-      if (this.clickCount === 0) {
-        this.showInstruction = true;
-      }
-      this.clickCount++;
-      if (this.clickCount >= 2) {
-        this.showInstruction = false;
-        this.clickCount = 0;
-      }
-    }
   },
 }
 </script>
-
-<style>
-.Instruction_content{
-  border: 1pt gray solid;
-  word-wrap: normal;
-  background: #f0f0f0;
-  color: #000;
-  padding: 5px;
-  cursor: text;
-  text-align: justify;
-  display: block;
-}
-
-.span{
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-  font-family: Verdana,Geneva,sans-serif;
-  padding-left: 2px;
-
-}
-
-.instruction_button{
-  background-color: transparent;
-  border: none;
-  padding: 0;
-  background-repeat: no-repeat;
-
-}
-
-.instruction-button img {
-  display: block;
-  object-fit: contain;
-  hight: 80%;
-  width:80%;
-}
-</style>

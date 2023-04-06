@@ -26,14 +26,21 @@
 
       <input type="submit" value="Send" class="sendbutton">
     </form>
-    <review-annotation :chat="chat" :review="selected_review"></review-annotation>
+    <div class="instruction_container"  v-show="showInstructions && chat.length!==0">
+      <button class="instruction_button" @click.stop="instructionvisiable">
+        <img v-if="!showInstruction" src="../../site/img/expand.png">
+        <img v-if="showInstruction" src="../../site/img/retract.png">
+      </button>
+      <span class="span" @click.stop="instructionvisiable">How to use the chat feature</span>
+      <p v-show="showInstruction" class="Instruction_content">How to use the chat feature</p>
+    </div>
   </div>
 </template>
 
 <script>
 import ReviewAnnotationVue from './ReviewAnnotation.vue'
 export default {
-  props: ['json', 'context', 'chat_id'],
+  props: ['json', 'context', 'chat_id','showInstructions'],
   emit: ['submit'],
   inheritAttrs: false,
   data: function () {
@@ -44,7 +51,10 @@ export default {
       recipient: "",
       timer: null,
       showForm: false,
-      clickCount: 0
+      showInstruction: false,
+      clickCount: 0,
+      ClickCount: 0
+
     }
   },
   components: {
@@ -98,7 +108,7 @@ export default {
       this.$site.api.post(`/api/review/review/${this.chat_id}`, params)
           .then((response) => {
             if (!response.hasError()) {
-              this.editor.textarea.value = '';
+              this.$el.querySelector('textarea').value = '';
               var latestMessage = response.getData('reviewing').attributes;
               this.chat.unshift({
                 by: this.chat_id,
@@ -125,14 +135,13 @@ export default {
       this.$site.api.post(`/api/review/reviews_chat/${this.chat_id}`)
           .then((response) => {
             if (!response.hasError()) {
-              console.log(response.getData('reviewing'));
               this.chat = response.getData('reviewing').attributes.filter(this.filterChatId);
             } else {
-              this.$site.toast(this, response);
+              console.log(response);
             }
           })
           .catch((error) => {
-            this.$site.toast(this, error);
+            console.log(error);
           });
     },
     setName() {
@@ -146,6 +155,16 @@ export default {
       if (this.clickCount >= 2) {
         this.showForm = false;
         this.clickCount = 0;
+      }
+    },
+    instructionvisiable() {
+      if (this.ClickCount === 0) {
+        this.showInstruction = true;
+      }
+      this.ClickCount++;
+      if (this.ClickCount >= 2) {
+        this.showInstruction = false;
+        this.ClickCount = 0;
       }
     }
   }
@@ -217,5 +236,39 @@ textarea {
 .sendbutton{
   margin-left: 10px;
   border-radius: 3px;
+}
+
+.instruction_container{
+  padding-bottom: 10px;
+}
+
+.Instruction_content{
+  position: relative;
+  border: 1pt gray solid;
+  word-wrap: normal;
+  background: #f0f0f0;
+  color: #000;
+  padding: 5px;
+  cursor: text;
+}
+
+.span{
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  font-family: Verdana,Geneva,sans-serif;
+  padding-left: 2px;
+}
+
+.instruction_button{
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  background-repeat: no-repeat;
+}
+
+.instruction-button img {
+  display: block;
+  object-fit: contain;
 }
 </style>
