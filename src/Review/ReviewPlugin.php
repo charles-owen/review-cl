@@ -15,6 +15,8 @@ use CL\Course\Assignment;
 use CL\Site\Router;
 use CL\Course\Section;
 use CL\Site\Extendible;
+use CL\Site\Api\JsonAPI;
+use CL\Users\User;
 
 /**
  * Plugin class for the Peer Review Subsystem

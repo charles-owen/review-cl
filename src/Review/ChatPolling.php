@@ -7,6 +7,9 @@ use CL\Site\Api\JsonAPI;
 use CL\Site\Site;
 use CL\Site\System\Server;
 use CL\Course\Member;
+use CL\Users\User;
+use CL\Course\Submission\Submissions;
+use CL\Course\Members;
 
 /*
  * Handle polling requests to the review chat system

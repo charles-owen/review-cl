@@ -26,6 +26,7 @@
 <script>
 
 import ReviewAnnotationVue from './ReviewAnnotation.vue'
+import {Chat} from './Chat.js'
 
 export default {
   props: ['json', 'context', 'chat_id'],
@@ -37,7 +38,7 @@ export default {
       selected_review: null,
       incoming: this.context === 'reviewer' ? 'reviewee' : 'reviewer',
       recipient: "",
-      timer: null,
+      polling: null,
     }
   },
   components: {
@@ -59,21 +60,21 @@ export default {
 
     this.submissions = submissions;
 
-    this.chat = new Chat(this.chat_id);
+    this.polling = new Chat(this.$site, this.chat_id, this);
 
-    this.setName();
+    //this.setName();
 
-    this.chat.startPolling();
+    this.polling.startPolling();
 
     // this.timer = setInterval(() => {
     //   this.refreshChat()
     // }, 1000)
   },
   updated() {
-    this.setName();
+    //this.setName();
   },
   beforeDestroy() {
-    this.$chat.endPolling();
+    this.polling.endPolling();
     //clearInterval(this.timer);
   },
   methods: {
@@ -91,42 +92,33 @@ export default {
         context: this.context,
       }
 
-      // Request backend data API
-      // this.$site.api.post(`/api/review/review/${this.chat_id}`, params)
-      //     .then((response) => {
-      //       if (!response.hasError()) {
-      //         this.editor.textarea.value = '';
-      //         var latestMessage = response.getData('reviewing').attributes;
-      //         this.chat.unshift({
-      //           by: this.chat_id,
-      //           review: latestMessage.meta.review.review,
-      //           time: latestMessage.time,
-      //           context: latestMessage.meta.review.context,
-      //         });
-      //         this.$emit('submit', latestMessage.id);
-      //       } else {
-      //         this.$site.toast(this, response);
-      //       }
-      //
-      //     })
-      //     .catch((error) => {
-      //       this.$site.toast(this, error);
-      //     });
+      //Request backend data API
+      this.$site.api.post(`/api/review/review/${this.chat_id}`, params)
+          .then((response) => {
+            if (!response.hasError()) {
+              this.editor.textarea.value = '';
+              var latestMessage = response.getData('reviewing').attributes;
+              this.chat.unshift({
+                by: this.chat_id,
+                review: latestMessage.meta.review.review,
+                time: latestMessage.time,
+                context: latestMessage.meta.review.context,
+              });
+              this.$emit('submit', latestMessage.id);
+            } else {
+              this.$site.toast(this, response);
+            }
+
+          })
+          .catch((error) => {
+            this.$site.toast(this, error);
+          });
     },
     formatTime(time) {
       return this.$site.TimeFormatter.relativeUNIX(time, null);
-    },    refreshChat() {
-      this.$site.api.post(`/api/review/reviews_chat/${this.chat_id}`)
-        .then((response) => {
-          if (!response.hasError()) {
-            this.chat = response.getData('reviewing').attributes.filter(this.filterChatId);
-          } else {
-            console.log(response);
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+    },
+    filterChatId(review){
+      return this.chat_id == review.by;
     },
     setName() {
       if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
