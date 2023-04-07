@@ -59,9 +59,11 @@ export default {
 
     this.submissions = submissions;
 
+    this.chat = new Chat(this.chat_id);
+
     this.setName();
 
-    this.$chat.startPolling();
+    this.chat.startPolling();
 
     // this.timer = setInterval(() => {
     //   this.refreshChat()
@@ -113,11 +115,7 @@ export default {
     },
     formatTime(time) {
       return this.$site.TimeFormatter.relativeUNIX(time, null);
-    },
-    filterChatId(review){
-      return this.chat_id == review.by;
-    },
-    refreshChat() {
+    },    refreshChat() {
       this.$site.api.post(`/api/review/reviews_chat/${this.chat_id}`)
         .then((response) => {
           if (!response.hasError()) {

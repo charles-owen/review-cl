@@ -5,7 +5,6 @@
 import './_review.scss';
 import ReviewVue from './js/ReviewVue.vue';
 import ReviewsVue from './js/ReviewsVue.vue';
-import {ChatFactory} from './js/ChatFactory.js'
 
 if(!Site.Review) {
 	//
@@ -19,7 +18,4 @@ if(!Site.Review) {
 	Site.Review = true
 }
 
-if(!Site.Chat) {
-  let Chat = ChatFactory(Site);
-  Site.Chat = Chat;
-}
+
