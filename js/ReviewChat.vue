@@ -61,16 +61,18 @@ export default {
 
     this.setName();
 
-    this.timer = setInterval(() => {
-      this.refreshChat()
-    }, 1000)
+    this.$chat.startPolling();
 
+    // this.timer = setInterval(() => {
+    //   this.refreshChat()
+    // }, 1000)
   },
   updated() {
     this.setName();
   },
   beforeDestroy() {
-    clearInterval(this.timer);
+    this.$chat.endPolling();
+    //clearInterval(this.timer);
   },
   methods: {
     submit() {
@@ -86,27 +88,28 @@ export default {
         submissions: this.submissions,
         context: this.context,
       }
-      // Request backend data API
-      this.$site.api.post(`/api/review/review/${this.chat_id}`, params)
-          .then((response) => {
-            if (!response.hasError()) {
-              this.editor.textarea.value = '';
-              var latestMessage = response.getData('reviewing').attributes;
-              this.chat.unshift({
-                by: this.chat_id,
-                review: latestMessage.meta.review.review,
-                time: latestMessage.time,
-                context: latestMessage.meta.review.context,
-              });
-              this.$emit('submit', latestMessage.id);
-            } else {
-              this.$site.toast(this, response);
-            }
 
-          })
-          .catch((error) => {
-            this.$site.toast(this, error);
-          });
+      // Request backend data API
+      // this.$site.api.post(`/api/review/review/${this.chat_id}`, params)
+      //     .then((response) => {
+      //       if (!response.hasError()) {
+      //         this.editor.textarea.value = '';
+      //         var latestMessage = response.getData('reviewing').attributes;
+      //         this.chat.unshift({
+      //           by: this.chat_id,
+      //           review: latestMessage.meta.review.review,
+      //           time: latestMessage.time,
+      //           context: latestMessage.meta.review.context,
+      //         });
+      //         this.$emit('submit', latestMessage.id);
+      //       } else {
+      //         this.$site.toast(this, response);
+      //       }
+      //
+      //     })
+      //     .catch((error) => {
+      //       this.$site.toast(this, error);
+      //     });
     },
     formatTime(time) {
       return this.$site.TimeFormatter.relativeUNIX(time, null);
