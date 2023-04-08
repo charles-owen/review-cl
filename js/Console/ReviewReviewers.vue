@@ -148,7 +148,7 @@ export default {
       check: Site.root + '/cl/img/check16.png', //checkmark icon png
       sortKey: SortKey.name, // set the default sort key value to be name
       SortKey: SortKey, //the SortKey dictionary
-      anon: true, //Anonymous Flag
+      anon: false, //Anonymous Flag
     }
   },
   components: {
@@ -240,8 +240,8 @@ export default {
 
       new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to disable Anonymous Reviewing? This will make reviewer and reviewee names visible during peer-reviewing.',
           this.$site.Dialog.MessageBox.OKCANCEL, () => {
-            // this.assignReviewsActual();
-            this.anon = false;
+            //when they click okay proceed to set the anonymous flag
+            this.setAnonymous();
           });
 
     },
@@ -254,12 +254,41 @@ export default {
 
       new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to enable Anonymous Reviewing? This will make reviewer and reviewee names hidden during peer-reviewing.',
           this.$site.Dialog.MessageBox.OKCANCEL, () => {
-            // this.assignReviewsActual();
-            this.anon = true;
+            //when they click okay proceed to set the anonymous flag
+            this.setAnonymous();
           });
 
     },
 
+    /**
+     * Actually Updating and presisting the anonymous flag in the database and making sure the toggle updates accordingly
+     */
+
+    setAnonymous(){
+      // Ask the server to set and return the anonymous status for the review assignment
+      this.$site.api.get('/api/review/set_anon_status/' + this.assigntag, {})
+          .then((response) => {
+            if (!response.hasError()) {
+              this.updateAnon(response);
+              //if anon is true then toast letting them know it is now enabled
+              if(this.anon === true){
+                this.$site.toast(this, "Anonymous Reviews Enabled!");
+              }
+              //otherwise it is disabled
+              else{
+                this.$site.toast(this, "Anonymous Reviews Disabled!");
+              }
+
+
+            } else {
+              this.$site.toast(this, response);
+            }
+
+          })
+          .catch((error) => {
+            this.$site.toast(this, error);
+          });
+    },
 
     /**
      * Take a new supplied server response.
@@ -310,6 +339,16 @@ export default {
 
 
     },
+
+    /**
+     * Update the anonymous flag of the page based on the response given by the server
+     * @param response
+     */
+    updateAnon(response){
+      const data = response.getData('anonymous').attributes
+      this.anon = data;
+    },
+
     /**
      * Display a user based on the reviewer or reviewee assignments for a user.
      * @param users Collection of all users as fetched from the server
