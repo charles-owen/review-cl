@@ -12,6 +12,21 @@
                   </select>
                 </p>
               </form>
+
+              <form v-if = "anon === true" method="post" @submit.prevent="disableAnonymousReviewing">
+                <div style=margin-left:10px>
+                  <p class="center"><button type="submit">Disable Anonymous Reviewing</button>
+                  </p>
+                </div>
+              </form>
+
+              <form v-if = "anon === false" method="post" @submit.prevent="enableAnonymousReviewing">
+                <div style=margin-left:10px>
+                  <p class="center"><button type="submit">Enable Anonymous Reviewing</button>
+                  </p>
+                </div>
+              </form>
+
             </div>
           </div>
           <table class="small">
@@ -133,6 +148,7 @@ export default {
       check: Site.root + '/cl/img/check16.png', //checkmark icon png
       sortKey: SortKey.name, // set the default sort key value to be name
       SortKey: SortKey, //the SortKey dictionary
+      anon: true, //Anonymous Flag
     }
   },
   components: {
@@ -215,6 +231,36 @@ export default {
           });
 
     },
+
+    /**
+     * Disable Anonymous Reviewing. This uses a message box to ensure we
+     * really want to do this!
+     */
+    disableAnonymousReviewing() {
+
+      new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to disable Anonymous Reviewing? This will make reviewer and reviewee names visible during peer-reviewing.',
+          this.$site.Dialog.MessageBox.OKCANCEL, () => {
+            // this.assignReviewsActual();
+            this.anon = false;
+          });
+
+    },
+
+    /**
+     * Enable Anonymous Reviewing. This uses a message box to ensure we
+     * really want to do this!
+     */
+    enableAnonymousReviewing() {
+
+      new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to enable Anonymous Reviewing? This will make reviewer and reviewee names hidden during peer-reviewing.',
+          this.$site.Dialog.MessageBox.OKCANCEL, () => {
+            // this.assignReviewsActual();
+            this.anon = true;
+          });
+
+    },
+
+
     /**
      * Take a new supplied server response.
      * @param response Response with all reviewers in it.
