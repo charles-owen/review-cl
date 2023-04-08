@@ -733,7 +733,12 @@ class ReviewApi extends \CL\Users\Api\Resource {
 
 
         $json = new JsonAPI();
-        $json->addData('anonymous', 0, $setting->get("anon"));
+        if($setting->get("anon") === true) {
+            $json->addData('anonymous', 0, true);
+        }
+        else{
+            $json->addData('anonymous', 0, false);
+        }
         return $json;
 
     }

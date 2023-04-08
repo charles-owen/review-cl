@@ -398,6 +398,13 @@ HTML;
 	    $reviews = new Reviews($site->db);
 	    $byfor = $reviews->getByFor($site, $this->assignment->tag, $user->member->id);
 
+        /*
+         * Get the setting data table for this assignment for anon reviewing
+        */
+        $settings = new \CL\Course\Settings($site->db);
+        $setting = $settings->read('course', $this->assignment->semester, $this->assignment->section->id,
+            'reviewing-type', $this->assignment->tag);
+
 	    $data = [];
 	    $anon = [];
 
@@ -430,13 +437,16 @@ HTML;
                     $reviewData['by'] = $reviewAssignID;
 
 
-                    //if we want to keep it anonymous using the reviewer/reviewee id
-//                    $reviewData['reviewer'] = $review['reviewer']['member']['id'];
-//                    $reviewData['reviewee'] = $user->member->id;
-
-                    //if we want names store the names of reviewer/reviewee
-                    $reviewData['reviewer'] = $review['reviewer']['name'];
-                    $reviewData['reviewee'] = $user->name;
+                    if($setting->get("anon") === true) {
+                        //if we want to keep it anonymous using the reviewer/reviewee id
+                        $reviewData['reviewer'] = $review['reviewer']['member']['id'];
+                        $reviewData['reviewee'] = $user->member->id;
+                    }
+                    else {
+                        //if we want names store the names of reviewer/reviewee
+                        $reviewData['reviewer'] = $review['reviewer']['name'];
+                        $reviewData['reviewee'] = $user->name;
+                    }
                 }
             }
 
