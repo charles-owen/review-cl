@@ -83,9 +83,10 @@ class ReviewApi extends \CL\Users\Api\Resource {
             case 'reviews_chat':
                 return $this->reviews_chat($site, $user, $server, $params, $time);
 
-            // /api/review/set_anon_status/:assigntag
-            case 'set_anon_status':
-                return $this->set_anon_status($site,$server, $params, $time);
+            // /api/review/anon_status/:assigntag
+            case 'anon_status':
+                return $this->anon_status($site,$server, $params, $time);
+
 
         }
 
@@ -692,9 +693,9 @@ class ReviewApi extends \CL\Users\Api\Resource {
     }
 
     /**
-     * Set the anonymous flag for the assignment
+     * Set and get the anonymous flag for the assignment if post, just get if not
      *
-     * /api/review/set_anon_status/:assigntag/
+     * /api/review/anon_status/:assigntag/
      * @param Site $site The Site object
      * @param Server $server The server
      * @param array $params Parameters for the route
@@ -702,7 +703,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
      * @return JsonAPI
      * @throws APIException
      */
-    private function set_anon_status($site,$server, $params, $time){
+    private function anon_status($site,$server, $params, $time){
 
         $user = $this->isUser($site, Member::STAFF);
         //getting the settings table
@@ -718,17 +719,17 @@ class ReviewApi extends \CL\Users\Api\Resource {
         $setting = $settings->read('course', $semester, $sectionId,
             'reviewing-type', $assignTag);
 
-        //if the anonymous flag is set to true then set it false and write it to the database
-        if($setting->get("anon") === true) {
-            $setting->set("anon", false);
-            $settings->write($setting);
+        if($server->requestMethod === 'POST') {
+            //if the anonymous flag is set to true then set it false and write it to the database
+            if ($setting->get("anon") === true) {
+                $setting->set("anon", false);
+                $settings->write($setting);
+            } //otherwise set it true and write it to the database
+            else {
+                $setting->set("anon", true);
+                $settings->write($setting);
+            }
         }
-        //otherwise set it true and write it to the database
-        else{
-            $setting->set("anon", true);
-            $settings->write($setting);
-        }
-
 
 
         $json = new JsonAPI();
@@ -736,6 +737,5 @@ class ReviewApi extends \CL\Users\Api\Resource {
         return $json;
 
     }
-
 
 }

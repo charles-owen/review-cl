@@ -170,6 +170,20 @@ export default {
     // Set the console page title
     this.setTitle(': ' + this.assignment.shortname + ' Reviewing');
 
+    // Ask the server for the anonymous status for the assignment (if any)
+    this.$site.api.get('/api/review/anon_status/' + this.assigntag, {})
+        .then((response) => {
+          if (!response.hasError()) {
+            this.updateAnon(response);
+          } else {
+            this.$site.toast(this, response);
+          }
+
+        })
+        .catch((error) => {
+          this.$site.toast(this, error);
+        });
+
     // Ask the server for the review assignments (if any)
     this.$site.api.get('/api/review/reviewers/' + this.assigntag, {})
         .then((response) => {
@@ -266,7 +280,7 @@ export default {
 
     setAnonymous(){
       // Ask the server to set and return the anonymous status for the review assignment
-      this.$site.api.get('/api/review/set_anon_status/' + this.assigntag, {})
+      this.$site.api.post('/api/review/anon_status/' + this.assigntag, {})
           .then((response) => {
             if (!response.hasError()) {
               this.updateAnon(response);
