@@ -439,8 +439,13 @@ HTML;
 
                     if($setting->get("anon") === true) {
                         //if we want to keep it anonymous using the reviewer/reviewee id
-                        $reviewData['reviewer'] = $review['reviewer']['member']['id'];
-                        $reviewData['reviewee'] = $user->member->id;
+//                        $reviewData['reviewer'] = $review['reviewer']['member']['id'];
+//                        $reviewData['reviewee'] = $user->member->id;
+
+                        //if anon is true set the fields to empty so that they can be populated via reviewChat
+                        //with student A, B, etc.
+                        $reviewData['reviewer'] = '';
+                        $reviewData['reviewee'] = '';
                     }
                     else {
                         //if we want names store the names of reviewer/reviewee

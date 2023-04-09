@@ -13,7 +13,7 @@
       <p class="cl-reviews-none" v-if="reviewing.length === 0">
         *** None Yet ***
       </p>
-      <review-chat :json="json" :context="context" :chat_id="chat_id" @submit="submit"></review-chat>
+      <review-chat :json="json" :context="context" :chat_id="chat_id" :anon_index = "0" @submit="submit"></review-chat>
     </div>
   </div>
 </template>
