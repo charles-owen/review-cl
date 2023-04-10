@@ -1,3 +1,31 @@
+class Tool {
+    constructor(name, description, owner) {
+        this.name = name;
+        this.description = description;
+        owner.tools.push(this);
+    }
+}
+
+class Pen extends Tool {
+    constructor(name, description, owner) {
+        super(name, description, owner);
+        this.mouse_down = false;
+    }
+
+    doDown(event) {
+        this.mouse_down = true;
+    }
+
+    doUp(event) {
+
+    }
+
+    doMove(event) {
+
+    }
+}
+
+
 export let CanvasHandler = function() {
     this.ispointerDown = false;
     this.line_width = 1;
@@ -17,6 +45,8 @@ export let CanvasHandler = function() {
     this.height = 0;
     this.x_pos = 0;
     this.y_pos = 0;
+
+    this.tools = [];
 
     this.setSize = function(image_div) {
         var rect = image_div.getBoundingClientRect();
@@ -49,11 +79,6 @@ export let CanvasHandler = function() {
         // attach event listeners
         this.addListeners(canvas);
         this.addListeners(svg);
-
-        // initialize sliders
-        // initSlider("line_width", function() { line_width = this.value; });
-        // initSlider("hue", function() { hue = this.value; this.style.accentColor = cssColor(hue, saturation, lightness); });
-        // initSlider("smoothing", function() { n = this.value; });
     }
 
     this.getLineWidth = function(event) {
@@ -250,29 +275,6 @@ function Point(x, y, w) {
     this.y = y;
     this.w = w;
 }
-
-// function togglePressure() {
-//     pressureEnabled = !pressureEnabled;
-// }
-
-// function changeTool(radio) {
-//     tool = radio.value;
-// }
-
-/**
- * Initialize a slider.
- * @param {string} slider_id HTML ID of slider
- * @param {Function} func Function to run on each slider update
- */
-function initSlider(slider_id, func) {
-    // get slider by id
-    var slider = document.getElementById(slider_id);
-    // set input function and immediately call it
-    slider.oninput = func;
-    slider.oninput();
-}
-
-
 
 // find mean of an array of points
 function mean(arr) {
