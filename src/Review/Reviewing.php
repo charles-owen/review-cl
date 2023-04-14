@@ -397,6 +397,7 @@ HTML;
     	$site = $this->assignment->site;
 	    $reviews = new Reviews($site->db);
 	    $byfor = $reviews->getByFor($site, $this->assignment->tag, $user->member->id);
+        $members = new Members($site->db);
 
         /*
          * Get the setting data table for this assignment for anon reviewing
@@ -438,10 +439,6 @@ HTML;
 
 
                     if($setting->get("anon") === true) {
-                        //if we want to keep it anonymous using the reviewer/reviewee id
-//                        $reviewData['reviewer'] = $review['reviewer']['member']['id'];
-//                        $reviewData['reviewee'] = $user->member->id;
-
                         //if anon is true set the fields to empty so that they can be populated via reviewChat
                         //with student A, B, etc.
                         $reviewData['reviewer'] = '';
@@ -449,8 +446,8 @@ HTML;
                     }
                     else {
                         //if we want names store the names of reviewer/reviewee
-                        $reviewData['reviewer'] = $review['reviewer']['name'];
-                        $reviewData['reviewee'] = $user->name;
+                        $reviewData['reviewer'] = $members->getAsUser($review['reviewer']['member']['id'])->getDisplayName();
+                        $reviewData['reviewee'] = $user->getDisplayName();
                     }
                 }
             }
