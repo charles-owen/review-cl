@@ -13,16 +13,10 @@
                 </p>
               </form>
 
-              <form v-if = "anon === true" method="post" @submit.prevent="disableAnonymousReviewing">
+              <form method="post" @click.prevent="anonymousReviewing">
                 <div style=margin-left:10px>
-                  <p class="center"><button type="submit">Disable Anonymous Reviewing</button>
-                  </p>
-                </div>
-              </form>
-
-              <form v-if = "anon === false" method="post" @submit.prevent="enableAnonymousReviewing">
-                <div style=margin-left:10px>
-                  <p class="center"><button type="submit">Enable Anonymous Reviewing</button>
+                  <p class="center" style = padding-top:3.5px><label for="anon_checkbox"> Anonymous Reviewing</label>
+                    <input type="checkbox" id="anon_checkbox" name="anon_checkbox" style = margin-left:3px v-model="anon">
                   </p>
                 </div>
               </form>
@@ -247,31 +241,23 @@ export default {
     },
 
     /**
-     * Disable Anonymous Reviewing. This uses a message box to ensure we
-     * really want to do this!
+     * Function called when clicking the anonymoys reviewing checkbox, brings up an are you sure dialog box
      */
-    disableAnonymousReviewing() {
-
-      new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to disable Anonymous Reviewing? This will make reviewer and reviewee names visible during peer-reviewing.',
-          this.$site.Dialog.MessageBox.OKCANCEL, () => {
-            //when they click okay proceed to set the anonymous flag
-            this.setAnonymous();
-          });
-
-    },
-
-    /**
-     * Enable Anonymous Reviewing. This uses a message box to ensure we
-     * really want to do this!
-     */
-    enableAnonymousReviewing() {
-
-      new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to enable Anonymous Reviewing? This will make reviewer and reviewee names hidden during peer-reviewing.',
-          this.$site.Dialog.MessageBox.OKCANCEL, () => {
-            //when they click okay proceed to set the anonymous flag
-            this.setAnonymous();
-          });
-
+    anonymousReviewing(){
+      if(this.anon === false){
+        new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to enable Anonymous Reviewing? This will make reviewer and reviewee names hidden during peer-reviewing.',
+            this.$site.Dialog.MessageBox.OKCANCEL, () => {
+              //when they click okay proceed to set the anonymous flag
+              this.setAnonymous();
+            });
+      }
+      else{
+        new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to disable Anonymous Reviewing? This will make reviewer and reviewee names visible during peer-reviewing.',
+            this.$site.Dialog.MessageBox.OKCANCEL, () => {
+              //when they click okay proceed to set the anonymous flag
+              this.setAnonymous();
+            });
+      }
     },
 
     /**
