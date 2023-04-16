@@ -83,6 +83,12 @@ class ReviewApi extends \CL\Users\Api\Resource {
             case 'reviews_chat':
                 return $this->reviews_chat($site, $user, $server, $params, $time);
 
+            case 'removeReview':
+                return $this->removeReview($site, $user, $server, $params, $time);
+
+            case 'editReview':
+                return $this->editReview($site, $user, $server, $params, $time);
+
         }
 
         throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
@@ -687,5 +693,71 @@ class ReviewApi extends \CL\Users\Api\Resource {
         return $json;
     }
 
-
+    /**
+     * Withdraw message
+     * @param Site $site
+     * @param User $user
+     * @param Server $server
+     * @param array $params
+     * @param $time
+     * @return JsonAPI
+     * @throws \CL\Tables\TableException
+     */
+    private function removeReview(Site $site, User $user, Server $server, array $params, $time)
+    {
+        $reviewId = $params[1];
+        $reviewDB = new Reviews($site->db);
+        $json = new JsonAPI();
+        $data = $reviewDB->getRows($reviewId);
+        if (empty($data)){
+            $json->addData('', 0, []);
+            return $json;
+        }
+        if ($reviewDB->remove($reviewId)){
+            //Success
+            $reviewing = $reviewDB->get_reviewing($data['assigntag'], $data['reviewerid'], $data['revieweeid']);
+            $json->addData('reviewing', 0, $reviewing[0]);
+            return $json;
+        }else{
+            //Fail
+            $json->addData('', 0, []);
+            return $json;
+        }
+    }
+    /**
+     * Edit Message
+     * @param Site $site
+     * @param User $user
+     * @param Server $server
+     * @param array $params
+     * @param $time
+     * @return JsonAPI
+     * @throws \CL\Tables\TableException
+     */
+    private function editReview(Site $site, User $user, Server $server, array $params, $time)
+    {
+        $reviewId = $params[1];
+        $review = $params[2];
+        $review = str_replace('%20',' ',$review);
+        $reviewDB = new Reviews($site->db);
+        $json = new JsonAPI();
+        $data = $reviewDB->getRows($reviewId);
+        if (empty($data)){
+            $json->addData('', 0, []);
+            return $json;
+        }
+        $res = json_decode($data['metadata'],true);
+        $res['review']['review'] = $review;
+        $con = json_encode($res);
+        if ($reviewDB->updateReview($reviewId,$con)){
+            //Success
+            $reviewing = $reviewDB->get_reviewing($data['assigntag'], $data['reviewerid'], $data['revieweeid']);
+            $json->addData('reviewing', 0, $reviewing[0]);
+            return $json;
+        }else{
+            //Fail
+            $json->addData('', 0, []);
+            return $json;
+        }
+    }
 }

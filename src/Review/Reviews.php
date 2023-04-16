@@ -196,36 +196,46 @@ SQL;
 	 * @param string $assignTag Assignment
 	 * @return array Review objects
 	 */
-	public function get_reviews($revieweeId, $assignTag) {
-		$members = new Members($this->config);
-		$sql = $members->memberUserJoinSQL(
-			"reviewerid as review_reviewerid, revieweeid as review_revieweeid, " .
+    public function get_reviews($revieweeId, $assignTag, $status=0) {
+        $members = new Members($this->config);
+        $sql = $members->memberUserJoinSQL(
+            "reviewerid as review_reviewerid, revieweeid as review_revieweeid, " .
             "review.id as review_id, review.metadata as review_metadata, review.time as review_time, " .
             "assigntag as review_assigntag",
-			false, null, 'member_');
+            false, null, 'member_');
+        if (empty($status)){
+            $sql .= <<<SQL
+                    join $this->tablename review
+                    on reviewerid=member.id
+                    where assigntag=? and revieweeid=?
+                    and status = 1
+                    order by review.time desc
+                    SQL;
+        }else{
+            $sql .= <<<SQL
+                    join $this->tablename review
+                    on reviewerid=member.id
+                    where assigntag=? and revieweeid=?
+                    order by review.time desc
+                    SQL;
+        }
 
-		$sql .= <<<SQL
-join $this->tablename review
-on reviewerid=member.id
-where assigntag=? and revieweeid=?
-order by review.time desc
-SQL;
 
-		$pdo = $this->pdo;
-		try {
-			$stmt = $pdo->prepare($sql);
-			// echo "\n" . $this->sub_sql($sql, [$assignTag]);
-			$stmt->execute([$assignTag, $revieweeId]);
-			$ret = [];
-			foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-				$ret[] = new Review($row);
-			}
+        $pdo = $this->pdo;
+        try {
+            $stmt = $pdo->prepare($sql);
+            // echo "\n" . $this->sub_sql($sql, [$assignTag]);
+            $stmt->execute([$assignTag, $revieweeId]);
+            $ret = [];
+            foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                $ret[] = new Review($row);
+            }
 
-			return $ret;
-		} catch(\PDOException $e) {
-			return [];
-		}
-	}
+            return $ret;
+        } catch(\PDOException $e) {
+            return [];
+        }
+    }
 
     /**
      * Get all reviews by and for a given user.
@@ -282,35 +292,45 @@ SQL;
 	 * @param string $assignTag Assignment
 	 * @return array of Review objects
 	 */
-	public function get_reviews_by($reviewerId, $assignTag) {
-		$members = new Members($this->config);
-		$sql = $members->memberUserJoinSQL(
-			"reviewerid as review_reviewerid, revieweeid as review_revieweeid, " .
+    public function get_reviews_by($reviewerId, $assignTag, $status=0) {
+        $members = new Members($this->config);
+        $sql = $members->memberUserJoinSQL(
+            "reviewerid as review_reviewerid, revieweeid as review_revieweeid, " .
             "review.id as review_id, review.metadata as review_metadata, " .
             "review.time as review_time, assigntag as review_assigntag",
-			false, null, 'reviewee_');
+            false, null, 'reviewee_');
+        if (empty($status)){
+            $sql .= <<<SQL
+                    join $this->tablename review
+                    on revieweeid=member.id
+                    where assigntag=? and reviewerid=?
+                    and status = 1
+                    order by review.time desc
+                    SQL;
+        }else{
+            $sql .= <<<SQL
+                    join $this->tablename review
+                    on revieweeid=member.id
+                    where assigntag=? and reviewerid=?
+                    order by review.time desc
+                    SQL;
+        }
 
-		$sql .= <<<SQL
-join $this->tablename review
-on revieweeid=member.id
-where assigntag=? and reviewerid=?
-order by review.time desc
-SQL;
 
-		$pdo = $this->pdo;
-		try {
-			$stmt = $pdo->prepare($sql);
-			$stmt->execute([$assignTag, $reviewerId]);
-			$ret = [];
-			foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-				$ret[] = new Review($row);
-			}
+        $pdo = $this->pdo;
+        try {
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$assignTag, $reviewerId]);
+            $ret = [];
+            foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                $ret[] = new Review($row);
+            }
 
-			return $ret;
-		} catch(\PDOException $e) {
-			return [];
-		}
-	}
+            return $ret;
+        } catch(\PDOException $e) {
+            return [];
+        }
+    }
 
     /**
      * Get all reviews by a given user for a given reviewee
@@ -380,4 +400,60 @@ SQL;
 		}
 	}
 
+    /**
+     * Withdraw message
+     * @param $reviewerId
+     * @return bool
+     */
+    public function remove($reviewerId)
+    {
+        $sql = <<<SQL
+                update $this->tablename set status = ? where id = ?
+                SQL;
+        $pdo = $this->pdo;
+        try {
+            $stmt = $pdo->prepare($sql);
+            return $stmt->execute([0,$reviewerId]);
+        } catch(\PDOException $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get Data
+     * @param $reviewerId
+     * @return array|false
+     * @throws \CL\Tables\TableException
+     */
+    public function getRows($reviewerId)
+    {
+        $pdo = $this->pdo();
+        $sql = <<<SQL
+                select * from $this->tablename where id=?
+                SQL;
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$reviewerId]);
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Re-edit
+     * @param $reviewerId
+     * @param $metadata
+     * @return bool
+     * @throws \CL\Tables\TableException
+     */
+    public function updateReview($reviewerId,$metadata)
+    {
+        $pdo = $this->pdo();
+        $sql = <<<SQL
+        update $this->tablename set metadata = ? where id = ?
+        SQL;
+        try {
+            $stmt = $pdo->prepare($sql);
+            return $stmt->execute([$metadata,$reviewerId]);
+        } catch(\PDOException $e) {
+            return false;
+        }
+    }
 }

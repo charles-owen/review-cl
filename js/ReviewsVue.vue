@@ -2,16 +2,14 @@
   <div class="cl-reviews">
     <h3>Reviews of this assignment appear here.</h3>
     <p class="cl-reviews-none" v-if="reviewing.length === 0">*** None Yet ***</p>
-    <div v-for="(id, index) in json.ids" class="cl-review">
-      <review-chat :json="json" :context="context" :chat_id="id" :showInstructions="index == 1 || index + 1 == json.ids.length"></review-chat>
+    <div v-for="id in json.ids" class="cl-review">
+      <review-chat :json="json" :context="context" :chat_id="id"></review-chat>
     </div>
   </div>
 </template>
 
 <script>
-
 import ReviewChatVue from './ReviewChat.vue'
-
 /**
  * This is the inline vue for reviews of an assignment used by the
  * submission and page the course console grading page.
@@ -32,11 +30,9 @@ export default {
     reviewChat: ReviewChatVue,
   },
   mounted() {
-
     this.assignTag = this.json.assignTag;
     this.reviewing = this.json.reviewing;
   },
-
   methods: {
     formatTime(time) {
       return this.$site.TimeFormatter.relativeUNIX(time, null);
@@ -49,11 +45,9 @@ export default {
         }
         ret += this.$site.TimeFormatter.absoluteUNIX(review.submissions[tag].date);
       }
-
       if (ret === '') {
         return '';
       }
-
       return 'Submission: ' + ret;
     },
     show(svg, width, height, image_src) {
@@ -63,9 +57,7 @@ export default {
         height: height,
         image_src: image_src
       };
-    },
-  },
+    }
+  }
 }
 </script>
-
-
