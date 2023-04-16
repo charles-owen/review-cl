@@ -14,14 +14,14 @@
                   @click.stop>
               <input type="hidden" name="reviewID" :value=review.id>
               <input :id="'youText'+review.id" type="text" name="review" class="edit_input" value="">
-<!--              <div contenteditable="true"></div>-->
               <div class="button-container">
                 <div class="Confirm" @click.stop="save_edit(review.id,review.review)">Save</div>
                 <div class="Confirm" @click.stop="Cancel(review.id)">Cancel</div>
               </div>
-
             </form>
+
             <br>
+
             <div class="cl-chat-time">{{formatTime(review.time)}}</div>
             <br>
             <button :id="'del'+review.id" class="showDiv" title="Delete" @click.stop="deleteContent(review.id)">

@@ -437,7 +437,7 @@ SQL;
     }
 
     /**
-     * Re-edit
+     * Edit message
      * @param $reviewerId
      * @param $metadata
      * @return bool
