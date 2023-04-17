@@ -24,7 +24,7 @@
 
             <div class="cl-chat-time">{{formatTime(review.time)}}</div>
             <br>
-            <button :id="'del'+review.id" class="showDiv" title="Delete" @click.stop="deleteContent(review.id)">
+            <button :id="'del'+review.id" class="showDiv" title="withdrawal" @click.stop="deleteContent(review.id)">
               <img src="../../site/img/delete.png" >
             </button>
             <button :id="'edit'+review.id" class="showDiv" title="Edit" @click.stop="editContent(review.id,review.review)">

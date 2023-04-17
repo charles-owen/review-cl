@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS `$this->tablename` (
   metadata   mediumtext NOT NULL,
   reviewerid int(11) NOT NULL,
   revieweeid int(11) NOT NULL,
+  status tinyint NOT NULL default 1,
   PRIMARY KEY (id),
   INDEX (assigntag),
   INDEX (reviewerid),
