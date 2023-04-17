@@ -254,7 +254,7 @@ SQL;
 		try {
 			$stmt = $pdo->prepare($sql);
 			$exec = [$id];
-			// echo "\n" . $this->sub_sql($sql, $exec);
+			echo "\n"; //. $this->sub_sql($sql, $exec);
 			if($stmt->execute($exec) === false) {
 				return null;
 			}

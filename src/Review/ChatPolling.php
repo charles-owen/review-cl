@@ -10,6 +10,7 @@ use CL\Course\Member;
 use CL\Users\User;
 use CL\Course\Submission\Submissions;
 use CL\Course\Members;
+use CL\Review\ReviewAssignments;
 
 /*
  * Handle polling requests to the review chat system
@@ -46,7 +47,6 @@ class ChatPolling
         if (count($params) < 1) {
             throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
         }
-
         $id = $params["chat_id"];
         $reviewAssignments = new ReviewAssignments($site->db);
         $reviewAssign = $reviewAssignments->get($id);

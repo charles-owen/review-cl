@@ -62,20 +62,10 @@ export default {
 
     this.polling = new Chat(this.$site, this.chat_id, this);
 
-    //this.setName();
-
     this.polling.startPolling();
-
-    // this.timer = setInterval(() => {
-    //   this.refreshChat()
-    // }, 1000)
-  },
-  updated() {
-    //this.setName();
   },
   beforeDestroy() {
     this.polling.endPolling();
-    //clearInterval(this.timer);
   },
   methods: {
     submit() {
@@ -119,11 +109,7 @@ export default {
     },
     filterChatId(review){
       return this.chat_id == review.by;
-    },
-    setName() {
-      if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
     }
-
   }
 }
 </script>
