@@ -15,6 +15,8 @@ use CL\Course\Assignment;
 use CL\Site\Router;
 use CL\Course\Section;
 use CL\Site\Extendible;
+use CL\Site\Api\JsonAPI;
+use CL\Users\User;
 
 /**
  * Plugin class for the Peer Review Subsystem
@@ -102,6 +104,13 @@ class ReviewPlugin extends \CL\Site\Plugin implements \CL\Site\IExtension {
 				$resource = new ReviewApi();
 				return $resource->apiDispatch($site, $server, $params, $properties, $time);
 			});
+
+            $router->addPolling(function(Site $site, Server $server, $post, JsonAPI $json, $time) {
+                if(isset($post['chat'])) {
+                    $polling = new ChatPolling();
+                    $polling->poll($site, $server, $post['chat'], $json, $time);
+                }
+            });
 		} else if($object instanceof Assignment) {
 			$object->addProperty('review', false, true);
 			$object->extend('set_reviews_due', $this);

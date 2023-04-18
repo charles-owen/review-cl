@@ -26,6 +26,7 @@
 <script>
 
 import ReviewAnnotationVue from './ReviewAnnotation.vue'
+import {Chat} from './Chat.js'
 
 export default {
   props: ['json', 'context', 'chat_id','anon_index'],
@@ -37,7 +38,7 @@ export default {
       selected_review: null,
       incoming: this.context === 'reviewer' ? 'reviewee' : 'reviewer',
       recipient: "",
-      timer: null,
+      polling: null,
     }
   },
   components: {
@@ -59,18 +60,14 @@ export default {
 
     this.submissions = submissions;
 
-    this.setName();
+    this.polling = new Chat(this.$site, this.chat_id, this);
 
-    this.timer = setInterval(() => {
-      this.refreshChat()
-    }, 1000)
+    this.polling.startPolling();
 
-  },
-  updated() {
     this.setName();
   },
   beforeDestroy() {
-    clearInterval(this.timer);
+    this.polling.endPolling();
   },
   methods: {
     submit() {
@@ -86,7 +83,8 @@ export default {
         submissions: this.submissions,
         context: this.context,
       }
-      // Request backend data API
+
+      //Request backend data API
       this.$site.api.post(`/api/review/review/${this.chat_id}`, params)
           .then((response) => {
             if (!response.hasError()) {
@@ -114,19 +112,6 @@ export default {
     filterChatId(review){
       return this.chat_id == review.by;
     },
-    refreshChat() {
-      this.$site.api.post(`/api/review/reviews_chat/${this.chat_id}`)
-        .then((response) => {
-          if (!response.hasError()) {
-            this.chat = response.getData('reviewing').attributes.filter(this.filterChatId);
-          } else {
-            console.log(response);
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
     setName() {
       // if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
       if(this.recipient === "" && this.chat.length !== 0){
@@ -140,7 +125,6 @@ export default {
         }
       }
     }
-
   }
 }
 </script>
