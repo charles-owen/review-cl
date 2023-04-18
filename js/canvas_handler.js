@@ -1,3 +1,11 @@
+class Point {
+    constructor(x, y, w) {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+    }
+}
+
 class Tool {
     static num_paths = 0;
     constructor(owner) {
@@ -325,12 +333,3 @@ export let CanvasHandler = function() {
     }
 
 }
-
-class Point {
-    constructor(x, y, w) {
-        this.x = x;
-        this.y = y;
-        this.w = w;
-    }
-}
-
