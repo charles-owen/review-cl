@@ -364,7 +364,7 @@ select review.reviewerid as reviewerid, review.revieweeid as revieweeid, count(d
 from $this->tablename review
 join $members->tablename member
 on review.revieweeid=member.id or review.reviewerid=member.id
-where member.semester=? and member.section=? and review.assigntag=?
+where member.semester=? and member.section=? and review.assigntag=? and JSON_VALUE(review.metadata,'$.review.context') = 'reviewer'
 group by review.reviewerid, review.revieweeid
 order by review.reviewerid, review.revieweeid
 SQL;
