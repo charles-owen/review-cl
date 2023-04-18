@@ -22,7 +22,7 @@ class Tool {
                 return this.handler.line_width | 0;
             case 'pen':
             case 'touch':
-                return this.pressureEnabled ? this.handler.line_width * event.pressure | 0 : this.handler.line_width | 0;
+                return this.handler.line_width * event.pressure;
         }
     }
 
@@ -231,7 +231,6 @@ class Rectangle extends Shape {
 export let CanvasHandler = function() {
     this.ispointerDown = false;
     this.line_width = 1;
-    this.pressureEnabled = true;
     this.n = 5;
     this.num_paths = 0;
 
