@@ -23,10 +23,10 @@
               <div :class="{ active: color == 'violet' }" class="button hue-selector violet" @click="color='violet'"></div>
               <div :class="{ active: customColor }" class="button hue-selector custom"><input type="color" @input="color = $event.target.value"></div>
               <div :class="{ active: tool == 'pen' }" class="button pencil" @click="tool='pen'"></div>
-              <div :class="{ active: tool == 'eraser' }" class="button eraser" @click="tool='eraser'"></div>
-              <div :class="{ active: tool == 'segment_eraser' }" class="button segmenteraser" @click="tool='segment_eraser'"></div>
               <div :class="{ active: tool == 'line_tool' }" class="button linetool" @click="tool='line_tool'"></div>
               <div :class="{ active: tool == 'rect_tool' }" class="button recttool" @click="tool='rect_tool'"></div>
+              <div :class="{ active: tool == 'eraser' }" class="button eraser" @click="tool='eraser'"></div>
+              <div :class="{ active: tool == 'segment_eraser' }" class="button segmenteraser" @click="tool='segment_eraser'"></div>
             </div>
             <div class="cl-review-diagram">
             <img ref="diagramImage" :src="image">
