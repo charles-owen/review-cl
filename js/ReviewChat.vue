@@ -29,7 +29,7 @@ import ReviewAnnotationVue from './ReviewAnnotation.vue'
 import {Chat} from './Chat.js'
 
 export default {
-  props: ['json', 'context', 'chat_id'],
+  props: ['json', 'context', 'chat_id','anon_index'],
   emit: ['submit'],
   inheritAttrs: false,
   data: function () {
@@ -63,6 +63,8 @@ export default {
     this.polling = new Chat(this.$site, this.chat_id, this);
 
     this.polling.startPolling();
+
+    this.setName();
   },
   beforeDestroy() {
     this.polling.endPolling();
@@ -109,6 +111,19 @@ export default {
     },
     filterChatId(review){
       return this.chat_id == review.by;
+    },
+    setName() {
+      // if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
+      if(this.recipient === "" && this.chat.length !== 0){
+        if(this.chat[0][this.incoming] === ""){
+          let letter = "A"
+          let result = letter.charCodeAt(0) + this.anon_index;
+          this.recipient = 'Student ' + String.fromCharCode(result);
+        }
+        else{
+          this.recipient = this.chat[0][this.incoming];
+        }
+      }
     }
   }
 }
