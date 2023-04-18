@@ -326,9 +326,11 @@ export let CanvasHandler = function() {
 
 }
 
-function Point(x, y, w) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
+class Point {
+    constructor(x, y, w) {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+    }
 }
 
