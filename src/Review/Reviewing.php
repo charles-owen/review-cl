@@ -397,6 +397,14 @@ HTML;
     	$site = $this->assignment->site;
 	    $reviews = new Reviews($site->db);
 	    $byfor = $reviews->getByFor($site, $this->assignment->tag, $user->member->id);
+        $members = new Members($site->db);
+
+        /*
+         * Get the setting data table for this assignment for anon reviewing
+        */
+        $settings = new \CL\Course\Settings($site->db);
+        $setting = $settings->read('course', $this->assignment->semester, $this->assignment->section->id,
+            'reviewing-type', $this->assignment->tag);
 
 	    $data = [];
 	    $anon = [];
@@ -430,13 +438,17 @@ HTML;
                     $reviewData['by'] = $reviewAssignID;
 
 
-                    //if we want to keep it anonymous using the reviewer/reviewee id
-//                    $reviewData['reviewer'] = $review['reviewer']['member']['id'];
-//                    $reviewData['reviewee'] = $user->member->id;
-
-                    //if we want names store the names of reviewer/reviewee
-                    $reviewData['reviewer'] = $review['reviewer']['name'];
-                    $reviewData['reviewee'] = $user->name;
+                    if($setting->get("anon") === true) {
+                        //if anon is true set the fields to empty so that they can be populated via reviewChat
+                        //with student A, B, etc.
+                        $reviewData['reviewer'] = '';
+                        $reviewData['reviewee'] = '';
+                    }
+                    else {
+                        //if we want names store the names of reviewer/reviewee
+                        $reviewData['reviewer'] = $members->getAsUser($review['reviewer']['member']['id'])->getDisplayName();
+                        $reviewData['reviewee'] = $user->getDisplayName();
+                    }
                 }
             }
 
