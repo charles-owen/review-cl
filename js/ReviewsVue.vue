@@ -3,7 +3,7 @@
     <h3>Reviews of this assignment appear here.</h3>
     <p class="cl-reviews-none" v-if="reviewing.length === 0">*** None Yet ***</p>
     <div v-for="(id,index) in json.ids" class="cl-review">
-      <review-chat :json="json" :context="context" :chat_id="id" :anon_index = "index"></review-chat>
+      <review-chat :json="json" :context="context" :chat_id="id[0]" :anon_index="index"></review-chat>
     </div>
   </div>
 </template>
