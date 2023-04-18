@@ -229,28 +229,27 @@ class Rectangle extends Shape {
 
 
 export let CanvasHandler = function() {
-    this.ispointerDown = false;
     this.line_width = 1;
-    this.n = 5;
-    this.num_paths = 0;
 
     this.tool = "pen";
-
-    this.points = [];
-    this.averaged_points = [];
-
-    this.color = 'red';
+    this.color = "red";
 
     this.width = 0;
     this.height = 0;
     this.x_pos = 0;
     this.y_pos = 0;
 
-    this.tools = [];
-
     this.canvas = null;
     this.ctx = null;
     this.svg = null;
+
+    this.tools = [
+        new Pen(this),
+        new PathEraser(this),
+        new SegmentEraser(this),
+        new Line(this),
+        new Rectangle(this),
+    ];
 
     this.setSize = function(image_div) {
         var rect = image_div.getBoundingClientRect();
@@ -276,15 +275,6 @@ export let CanvasHandler = function() {
         this.ctx = this.canvas.getContext("2d");
         // find svg
         this.svg = document.getElementById("drawing-svg");
-
-        this.tools = [
-            new Pen(this),
-            new PathEraser(this),
-            new SegmentEraser(this),
-            new Line(this),
-            new Rectangle(this),
-        ];
-
 
         // attach event listeners
         this.addListeners(this.canvas);
