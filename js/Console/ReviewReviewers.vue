@@ -12,6 +12,15 @@
                   </select>
                 </p>
               </form>
+
+              <form method="post" @click.prevent="anonymousReviewing">
+                <div style=margin-left:10px>
+                  <p class="center" style = padding-top:3.5px><label for="anon_checkbox"> Anonymous Reviewing</label>
+                    <input type="checkbox" id="anon_checkbox" name="anon_checkbox" style = margin-left:3px v-model="anon">
+                  </p>
+                </div>
+              </form>
+
             </div>
           </div>
           <table class="small">
@@ -71,10 +80,10 @@
               </td>
               <td v-for="i in maxReviewees" :class="cls(reviewers[user.member.id], i-1)">
                 <!--Changed ternary operator for count to check if reviewer array has enough entries                -->
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined && i-1 < reviewers.length ? reviewers[user.member.id][i-1][1] : 0"></status-present>
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewers[user.member.id], i-1)" :count="reviewers[user.member.id] !== undefined && i-1 < reviewers[user.member.id].length ? reviewers[user.member.id][i-1][1] : 0"></status-present>
               </td>
               <td v-for="i in maxReviewers" :class="cls(reviewees[user.member.id], i-1)">
-                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined && i-1 < reviewees.length ? reviewees[user.member.id][i-1][1] : 0"></status-present>
+                <status-present :assigntag="assigntag" :status-user="displayUser(fetcher.users, reviewees[user.member.id], i-1)" :count="reviewees[user.member.id] !== undefined && i-1 < reviewees[user.member.id].length ? reviewees[user.member.id][i-1][1] : 0"></status-present>
               </td>
             </tr>
           </table>
@@ -133,6 +142,7 @@ export default {
       check: Site.root + '/cl/img/check16.png', //checkmark icon png
       sortKey: SortKey.name, // set the default sort key value to be name
       SortKey: SortKey, //the SortKey dictionary
+      anon: false, //Anonymous Flag
     }
   },
   components: {
@@ -153,6 +163,20 @@ export default {
 
     // Set the console page title
     this.setTitle(': ' + this.assignment.shortname + ' Reviewing');
+
+    // Ask the server for the anonymous status for the assignment (if any)
+    this.$site.api.get('/api/review/anon_status/' + this.assigntag, {})
+        .then((response) => {
+          if (!response.hasError()) {
+            this.updateAnon(response);
+          } else {
+            this.$site.toast(this, response);
+          }
+
+        })
+        .catch((error) => {
+          this.$site.toast(this, error);
+        });
 
     // Ask the server for the review assignments (if any)
     this.$site.api.get('/api/review/reviewers/' + this.assigntag, {})
@@ -215,6 +239,57 @@ export default {
           });
 
     },
+
+    /**
+     * Function called when clicking the anonymoys reviewing checkbox, brings up an are you sure dialog box
+     */
+    anonymousReviewing(){
+      if(this.anon === false){
+        new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to enable Anonymous Reviewing? This will make reviewer and reviewee names hidden during peer-reviewing.',
+            this.$site.Dialog.MessageBox.OKCANCEL, () => {
+              //when they click okay proceed to set the anonymous flag
+              this.setAnonymous();
+            });
+      }
+      else{
+        new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to disable Anonymous Reviewing? This will make reviewer and reviewee names visible during peer-reviewing.',
+            this.$site.Dialog.MessageBox.OKCANCEL, () => {
+              //when they click okay proceed to set the anonymous flag
+              this.setAnonymous();
+            });
+      }
+    },
+
+    /**
+     * Actually Updating and presisting the anonymous flag in the database and making sure the toggle updates accordingly
+     */
+
+    setAnonymous(){
+      // Ask the server to set and return the anonymous status for the review assignment
+      this.$site.api.post('/api/review/anon_status/' + this.assigntag, {})
+          .then((response) => {
+            if (!response.hasError()) {
+              this.updateAnon(response);
+              //if anon is true then toast letting them know it is now enabled
+              if(this.anon === true){
+                this.$site.toast(this, "Anonymous Reviews Enabled!");
+              }
+              //otherwise it is disabled
+              else{
+                this.$site.toast(this, "Anonymous Reviews Disabled!");
+              }
+
+
+            } else {
+              this.$site.toast(this, response);
+            }
+
+          })
+          .catch((error) => {
+            this.$site.toast(this, error);
+          });
+    },
+
     /**
      * Take a new supplied server response.
      * @param response Response with all reviewers in it.
@@ -264,6 +339,16 @@ export default {
 
 
     },
+
+    /**
+     * Update the anonymous flag of the page based on the response given by the server
+     * @param response
+     */
+    updateAnon(response){
+      const data = response.getData('anonymous').attributes
+      this.anon = data;
+    },
+
     /**
      * Display a user based on the reviewer or reviewee assignments for a user.
      * @param users Collection of all users as fetched from the server
