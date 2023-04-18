@@ -1,7 +1,5 @@
 <template>
   <div class="cl-reviewChat" @click="formvisable">
-    <div v-if="chat.length!==0 && context === 'reviewee'" @click="showInstructions = true"  @click.stop>
-    </div>
     <p class="incoming-id" v-show="chat.length!==0">R{{incoming.slice(1,)}}: {{recipient}}</p>
     <div class="cl-chat-div" v-show="chat.length!==0">
       <div v-for="review in chat" class="message-div">
@@ -33,12 +31,8 @@
 
           </div>
 
-          <div @click.stop v-else-if="review.annotation !== null"
-               class="cl-review-present cl-chat-bubble cl-chat-incoming cl_chat_annotation">
-            <a href="#" @click.prevent="selected_review = review;">{{review.review}}</a>
-            <br>
-            <div class="cl-chat-time">{{formatTime(review.time)}}</div>
-          </div>
+          <div @click.stop v-else-if="review.annotation !== null" class="cl-review-present cl-chat-bubble cl-chat-incoming cl_chat_annotation">
+            <a href="#" @click.prevent="selected_review = review;">{{review.review}}</a><br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
 
           <div @click.stop v-else="" class="cl-review-present cl-chat-bubble cl-chat-incoming">
             {{review.review}}<br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
@@ -357,7 +351,7 @@ textarea {
   color: black;
   margin-top: 10px;
   border-radius: 5px;
-  width: 42px;
+  width: 48px;
   min-width:2vw;
   font-size:8px;
   text-align:center;
