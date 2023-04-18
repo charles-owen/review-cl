@@ -160,7 +160,7 @@ class Eraser extends Tool {
         }
     }
 
-    doErase(x, y) { /* override m */ }
+    doErase(x, y) { /* override me */ }
 }
 
 class PathEraser extends Eraser {
