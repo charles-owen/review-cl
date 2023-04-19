@@ -19,6 +19,7 @@
 </template>
 
 <style scoped> @import "./styles.css"; </style>
+
 <script>
 import {UserVueBase} from 'users-cl/index'
 import ReviewChatVue from './ReviewChat.vue'
