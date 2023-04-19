@@ -13,7 +13,7 @@
       <p class="cl-reviews-none" v-if="reviewing.length === 0">
         *** None Yet ***
       </p>
-      <review-chat :json="json" :context="context" :chat_id="chat_id" @submit="submit"></review-chat>
+      <review-chat :json="json" :context="context" :chat_id="chat_id" :anon_index = "0" @submit="submit"></review-chat>
     </div>
   </div>
 </template>
@@ -24,6 +24,7 @@
 import {UserVueBase} from 'users-cl/index'
 import ReviewChatVue from './ReviewChat.vue'
 import ReviewDrawing from './ReviewDrawing.vue';
+
 /**
  * This is the page for a review of an assignment by a member.
  * /cl/review/:id
@@ -47,6 +48,8 @@ export default {
   mounted() {
     this.setTitle('Peer Reviewing');
     this.reviewing = this.json.reviewing;
+
+
     let submissions = {};
     for (const submission of this.json.submissions) {
       submissions[submission.tag] = {
@@ -54,7 +57,9 @@ export default {
         'date': submission.date
       };
     }
+
     this.submissions = submissions;
+
   },
   methods: {
     submit(review_id) {
@@ -71,9 +76,11 @@ export default {
           past = true;
         }
       }
+
       if (past) {
         return 'For a past submission';
       }
+
       return '';
     },
     previewImg(submission) {

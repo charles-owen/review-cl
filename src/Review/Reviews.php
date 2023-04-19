@@ -221,22 +221,21 @@ SQL;
                     SQL;
         }
 
+		$pdo = $this->pdo;
+		try {
+			$stmt = $pdo->prepare($sql);
+			// echo "\n" . $this->sub_sql($sql, [$assignTag]);
+			$stmt->execute([$assignTag, $revieweeId]);
+			$ret = [];
+			foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+				$ret[] = new Review($row);
+			}
 
-        $pdo = $this->pdo;
-        try {
-            $stmt = $pdo->prepare($sql);
-            // echo "\n" . $this->sub_sql($sql, [$assignTag]);
-            $stmt->execute([$assignTag, $revieweeId]);
-            $ret = [];
-            foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-                $ret[] = new Review($row);
-            }
-
-            return $ret;
-        } catch(\PDOException $e) {
-            return [];
-        }
-    }
+			return $ret;
+		} catch(\PDOException $e) {
+			return [];
+		}
+	}
 
     /**
      * Get all reviews by and for a given user.
@@ -317,21 +316,20 @@ SQL;
                     SQL;
         }
 
+		$pdo = $this->pdo;
+		try {
+			$stmt = $pdo->prepare($sql);
+			$stmt->execute([$assignTag, $reviewerId]);
+			$ret = [];
+			foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+				$ret[] = new Review($row);
+			}
 
-        $pdo = $this->pdo;
-        try {
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$assignTag, $reviewerId]);
-            $ret = [];
-            foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-                $ret[] = new Review($row);
-            }
-
-            return $ret;
-        } catch(\PDOException $e) {
-            return [];
-        }
-    }
+			return $ret;
+		} catch(\PDOException $e) {
+			return [];
+		}
+	}
 
     /**
      * Get all reviews by a given user for a given reviewee
@@ -385,7 +383,7 @@ select review.reviewerid as reviewerid, review.revieweeid as revieweeid, count(d
 from $this->tablename review
 join $members->tablename member
 on review.revieweeid=member.id or review.reviewerid=member.id
-where member.semester=? and member.section=? and review.assigntag=?
+where member.semester=? and member.section=? and review.assigntag=? and JSON_VALUE(review.metadata,'$.review.context') = 'reviewer'
 group by review.reviewerid, review.revieweeid
 order by review.reviewerid, review.revieweeid
 SQL;
@@ -400,7 +398,6 @@ SQL;
 			return [];
 		}
 	}
-
     /**
      * Withdraw message
      * @param $reviewerId

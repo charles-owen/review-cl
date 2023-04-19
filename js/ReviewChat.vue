@@ -48,14 +48,21 @@
 
       <input type="submit" value="Send" class="sendbutton">
     </form>
-    <review-annotation :chat="chat" :review="selected_review"></review-annotation>
+
+    <div @click.stop>
+      <review-annotation :chat="chat" :review="selected_review "></review-annotation>
+    </div>
+
   </div>
 </template>
 
 <script>
+
 import ReviewAnnotationVue from './ReviewAnnotation.vue'
+import {Chat} from './Chat.js'
+
 export default {
-  props: ['json', 'context', 'chat_id'],
+  props: ['json', 'context', 'chat_id','anon_index'],
   emit: ['submit'],
   inheritAttrs: false,
   data: function () {
@@ -64,17 +71,17 @@ export default {
       selected_review: null,
       incoming: this.context === 'reviewer' ? 'reviewee' : 'reviewer',
       recipient: "",
-      timer: null,
+      polling: null,
       showForm: false,
       showEdit: false,
-      clickCount: 0
+      clickCount: 0,
     }
   },
   components: {
     reviewAnnotation: ReviewAnnotationVue,
   },
-  mounted() {
 
+  mounted() {
     let submissions = {};
     for (const submission of this.json.submissions) {
       submissions[submission.tag] = {
@@ -82,11 +89,6 @@ export default {
         'date': submission.date
       };
     }
-    this.submissions = submissions;
-    this.setName();
-    this.timer = setInterval(() => {
-      this.refreshChat()
-    }, 1000)
 
     const textArea = this.$refs.textArea;
 
@@ -94,15 +96,22 @@ export default {
       textArea.style.height = 'auto';
       textArea.style.height = `${textArea.scrollHeight}px`;
     });
-  },
 
-  updated() {
+
+    this.submissions = submissions;
+
+    this.polling = new Chat(this.$site, this.chat_id, this);
+
+    this.polling.startPolling();
+
     this.setName();
   },
-  beforeDestroy() {
-    clearInterval(this.timer);
-  },
 
+
+
+  beforeDestroy() {
+    this.polling.endPolling();
+  },
   methods: {
     submit() {
       const text = this.$el.querySelector('textarea').value.trim();
@@ -110,18 +119,19 @@ export default {
         Site.toast(this, 'You must enter some text to submit');
         return;
       }
+
       let params = {
         type: 'text/plain',
         text: text,
         submissions: this.submissions,
         context: this.context,
       }
-      // Request backend data API
+
+      //Request backend data API
       this.$site.api.post(`/api/review/review/${this.chat_id}`, params)
           .then((response) => {
             if (!response.hasError()) {
               this.$el.querySelector('textarea').value = '';
-              // mytext.value = '';
               this.$nextTick(() => {
                 this.$refs.textArea.style.height = "";
               });
@@ -136,6 +146,7 @@ export default {
             } else {
               this.$site.toast(this, response);
             }
+
           })
           .catch((error) => {
             this.$site.toast(this, error);
@@ -175,22 +186,18 @@ export default {
     filterChatId(review){
       return this.chat_id == review.by;
     },
-    refreshChat() {
-      this.$site.api.post(`/api/review/reviews_chat/${this.chat_id}`)
-          .then((response) => {
-            if (!response.hasError()) {
-              console.log(response.getData('reviewing'));
-              this.chat = response.getData('reviewing').attributes.filter(this.filterChatId);
-            } else {
-              this.$site.toast(this, response);
-            }
-          })
-          .catch((error) => {
-            this.$site.toast(this, error);
-          });
-    },
     setName() {
-      if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
+      // if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
+      if(this.recipient === "" && this.chat.length !== 0){
+        if(this.chat[0][this.incoming] === ""){
+          let letter = "A"
+          let result = letter.charCodeAt(0) + this.anon_index;
+          this.recipient = 'Student ' + String.fromCharCode(result);
+        }
+        else{
+          this.recipient = this.chat[0][this.incoming];
+        }
+      }
     },
     formvisable() {
       if (this.clickCount === 0) {
@@ -358,3 +365,4 @@ textarea {
 }
 
 </style>
+

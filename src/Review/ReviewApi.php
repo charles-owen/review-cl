@@ -83,11 +83,16 @@ class ReviewApi extends \CL\Users\Api\Resource {
             case 'reviews_chat':
                 return $this->reviews_chat($site, $user, $server, $params, $time);
 
+            // /api/review/anon_status/:assigntag
+            case 'anon_status':
+                return $this->anon_status($site,$server, $params, $time);
+
             case 'removeReview':
                 return $this->removeReview($site, $user, $server, $params, $time);
 
             case 'editReview':
                 return $this->editReview($site, $user, $server, $params, $time);
+
 
         }
 
@@ -655,13 +660,10 @@ class ReviewApi extends \CL\Users\Api\Resource {
         return $json;
     }
 
-
     /**
-     * Get all assignment chat messages for requesting user
+     * Set and get the anonymous flag for the assignment if post, just get if not
      *
-     * /api/review/reviews_chat/:assigntag/
-     * This is used on the assignment grading page
-     *
+     * /api/review/anon_status/:assigntag/
      * @param Site $site The Site object
      * @param Server $server The server
      * @param array $params Parameters for the route
@@ -669,30 +671,44 @@ class ReviewApi extends \CL\Users\Api\Resource {
      * @return JsonAPI
      * @throws APIException
      */
-    private function reviews_chat(Site $site, User $user, Server $server, array $params, $time) {
-        if(count($params) < 1) {
-            throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
+    private function anon_status($site,$server, $params, $time){
+
+        $user = $this->isUser($site, Member::STAFF);
+        //getting the settings table
+        $settings = new \CL\Course\Settings($site->db);
+        //getting the semester
+        $semester = $user->member->semester;
+        //getting the sectionId
+        $sectionId = $user->member->sectionId;
+        //getting the assignment tag
+        $assignTag = $params[1];
+
+        //checking to see what value is within the settings table for reviewing-type of this assignment
+        $setting = $settings->read('course', $semester, $sectionId,
+            'reviewing-type', $assignTag);
+
+        if($server->requestMethod === 'POST') {
+            //if the anonymous flag is set to true then set it false and write it to the database
+            if ($setting->get("anon") === true) {
+                $setting->set("anon", false);
+                $settings->write($setting);
+            } //otherwise set it true and write it to the database
+            else {
+                $setting->set("anon", true);
+                $settings->write($setting);
+            }
         }
 
-        $id = $params[1];
-        $reviewAssignments = new ReviewAssignments($site->db);
-        $reviewAssign = $reviewAssignments->get($id);
-
-        // Get the assignment
-        $section = $site->course->get_section_for($user);
-        $assignment = $section->get_assignment($reviewAssign['assigntag']);
-        if($assignment === null || $assignment->reviewing === null) {
-            throw new APIException("Review assignment does not exist");
-        }
-
-		$members = new Members($site->db);
-		$reviewee = $members->getAsUser($reviewAssign['revieweeid']);
 
         $json = new JsonAPI();
-        $json->addData('reviewing', 0, $assignment->reviewing->reviewsData($reviewee));
+        if($setting->get("anon") === true) {
+            $json->addData('anonymous', 0, true);
+        }
+        else{
+            $json->addData('anonymous', 0, false);
+        }
         return $json;
     }
-
     /**
      * Withdraw message
      * @param Site $site
