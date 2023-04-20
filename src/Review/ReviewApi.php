@@ -729,7 +729,10 @@ class ReviewApi extends \CL\Users\Api\Resource {
             $json->addData('', 0, []);
             return $json;
         }
-        if ($reviewDB->remove($reviewId)){
+        $res = json_decode($data['metadata'],true);
+        $res['review']['status'] = 'deleted';
+        $con = json_encode($res);
+        if ($reviewDB->updateReview($reviewId,$con)){
             //Success
             $reviewing = $reviewDB->get_reviewing($data['assigntag'], $data['reviewerid'], $data['revieweeid']);
             $json->addData('reviewing', 0, $reviewing[0]);
@@ -753,16 +756,19 @@ class ReviewApi extends \CL\Users\Api\Resource {
     private function editReview(Site $site, User $user, Server $server, array $params, $time)
     {
         $reviewId = $params[1];
-        $review = $params[2];
-        $review = str_replace('%20',' ',$review);
         $reviewDB = new Reviews($site->db);
         $json = new JsonAPI();
+        $members = new Members($site->db);
+        $post = $server->post;
+        $this->ensure($post, ['text']);
+        $review = strip_tags($post['text']);
         $data = $reviewDB->getRows($reviewId);
         if (empty($data)){
             $json->addData('', 0, []);
             return $json;
         }
         $res = json_decode($data['metadata'],true);
+
         $res['review']['review'] = $review;
         $con = json_encode($res);
         if ($reviewDB->updateReview($reviewId,$con)){

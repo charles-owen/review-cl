@@ -7,9 +7,7 @@
           <div v-if="review.context === context && review.by == chat_id" @click.stop="showButton(review.id)"
                class="cl-review-present cl-chat-bubble cl-chat-outgoing">
             <p :id="'p'+review.id">{{review.review}}</p>
-            <form action="" :id="'show'+review.id"
-                  style="display: none;" method="post"
-                  @click.stop>
+            <form action="" :id="'show'+review.id" style="display: none;" method="post" @click.stop>
               <input type="hidden" name="reviewID" :value=review.id>
               <input :id="'youText'+review.id" type="text" name="review" class="edit_input" value="">
               <div class="button-container">
@@ -153,11 +151,15 @@ export default {
           });
     },
     save_edit(reviewId,review) {
-      var youText = document.getElementById("youText"+reviewId).value;
+      var youText = document.getElementById("youText"+reviewId).value.trim();
       if (youText == ""){
         youText = review;
       }
-      this.$site.api.post(`/api/review/editReview/${reviewId}/${youText}`)
+      let params = {
+        type: 'text/plain',
+        text: youText,
+      }
+      this.$site.api.post(`/api/review/editReview/${reviewId}`,params)
           .then((response) => {
             if (!response.hasError()) {
               console.log("Edit successfully");

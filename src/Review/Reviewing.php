@@ -671,11 +671,11 @@ MSG;
 	 * @param int $time Time of the review
 	 * @return array of reviews
 	 */
-    public function submit(User $reviewer, User $reviewee, $text, $submissionIds, $context, $time) {
+    public function submit(User $reviewer, User $reviewee, $text, $submissionIds, $context, $time,$status='displayed') {
         $reviews = new Reviews($this->assignment->site->db);
 	    $review = new Review();
 	    $review->set($this->assignment->tag, $reviewer->member->id,
-		    $reviewee->member->id, $text, $time, $context, $submissionIds);
+		    $reviewee->member->id, $text, $time, $context, $status, $submissionIds);
 	    $reviews->add($review);
 
         $numReviews = $reviews->get_num_reviews_by_for($reviewer->member->id, $reviewee->member->id, $this->assignment->tag);

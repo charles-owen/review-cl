@@ -63,7 +63,7 @@ class Review {
 	 * @param string $context
 	 * @param array $submissions Submission ID's this review is associated with.
 	 */
-	public function set($assignTag, $reviewerId, $revieweeId, $review, $time, $context, array $submissions=null) {
+	public function set($assignTag, $reviewerId, $revieweeId, $review, $time, $context, $status='displayed',array $submissions=null) {
 		$this->assignTag = $assignTag;
 		$this->reviewerId = $reviewerId;
 		$this->revieweeId = $revieweeId;
@@ -71,6 +71,7 @@ class Review {
 
 		$this->metaData->set('review', 'review', $review);
         $this->metaData->set('review', 'context', $context);
+        $this->metaData->set('review', 'status', $status);
 		if($submissions !== null) {
 			$this->metaData->set('review', 'submissions', $submissions);
 		}
@@ -121,8 +122,6 @@ class Review {
 			case 'meta':
 				return $this->metaData;
 
-            case 'status':
-                return $this->status;
 
 			default:
 				$trace = debug_backtrace();
@@ -181,7 +180,6 @@ class Review {
 	private $revieweeId;    // Member ID for the reviewee
 	private $metaData;      // Metadata containing reviews and discussions
 	private $time;          // When the review was first created
-    private $status;        // Status of the review
 	private $reviewer = null; // Optional User object for reviewer
 	private $reviewee = null; // Optional User object for reviewee
 }
