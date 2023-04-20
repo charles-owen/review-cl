@@ -226,6 +226,33 @@ class Line extends Shape {
 
 }
 
+class Arrow extends Shape {
+  static name = "arrow_tool";
+
+  makeShape(from, to) {
+    const lineWidth = this.handler.line_width;
+    const pathCount = Tool.num_paths;
+
+    const arrowHeadSize = lineWidth * 3; // Adjust this value to change the size of the arrowhead
+    const angle = Math.atan2(to.y - from.y, to.x - from.x);
+
+    const arrowPoint1 = {
+      x: to.x - arrowHeadSize * Math.cos(angle + Math.PI / 6),
+      y: to.y - arrowHeadSize * Math.sin(angle + Math.PI / 6),
+    };
+    const arrowPoint2 = {
+      x: to.x - arrowHeadSize * Math.cos(angle - Math.PI / 6),
+      y: to.y - arrowHeadSize * Math.sin(angle - Math.PI / 6),
+    };
+
+    const arrowLine = `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
+    const arrowHead = `M ${arrowPoint1.x} ${arrowPoint1.y} L ${to.x} ${to.y} L ${arrowPoint2.x} ${arrowPoint2.y}`;
+
+    this.makePath(arrowLine, lineWidth, pathCount);
+    this.makePath(arrowHead, lineWidth, pathCount);
+  }
+}
+
 class Rectangle extends Shape {
     static name = "rect_tool";
     makeShape(from, to) {
@@ -256,6 +283,7 @@ export let CanvasHandler = function() {
         new PathEraser(this),
         new SegmentEraser(this),
         new Line(this),
+        new Arrow(this),
         new Rectangle(this),
     ];
 
