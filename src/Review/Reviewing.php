@@ -438,16 +438,18 @@ HTML;
                     $reviewData['by'] = $reviewAssignID;
 
 
+                    //storing the names of reviewer/reviewee
+                    $reviewData['reviewer'] = $members->getAsUser($review['reviewer']['member']['id'])->getDisplayName();
+                    $reviewData['reviewee'] = $user->getDisplayName();
+
                     if($setting->get("anon") === true) {
-                        //if anon is true set the fields to empty so that they can be populated via reviewChat
+                        //if anon is true set the anoymous flag to true so that they can be populated via reviewChat
                         //with student A, B, etc.
-                        $reviewData['reviewer'] = '';
-                        $reviewData['reviewee'] = '';
+                        $reviewData['anonymous'] = true;
                     }
                     else {
-                        //if we want names store the names of reviewer/reviewee
-                        $reviewData['reviewer'] = $members->getAsUser($review['reviewer']['member']['id'])->getDisplayName();
-                        $reviewData['reviewee'] = $user->getDisplayName();
+                        //otherwise just make the anonymous flag false
+                        $reviewData['anonymous'] = false;
                     }
                 }
             }

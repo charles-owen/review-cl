@@ -191,7 +191,7 @@ export default {
     setName() {
       // if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
       if(this.recipient === "" && this.chat.length !== 0){
-        if(this.chat[0][this.incoming] === ""){
+        if(this.chat[0]["anonymous"] === true){
           let letter = "A"
           let result = letter.charCodeAt(0) + this.anon_index;
           this.recipient = 'Student ' + String.fromCharCode(result);
