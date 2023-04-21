@@ -80,12 +80,15 @@ class ReviewApi extends \CL\Users\Api\Resource {
             case 'remove':
                 return $this->remove($site, $server, $params, $time);
 
-            case 'reviews_chat':
-                return $this->reviews_chat($site, $user, $server, $params, $time);
+            // /api/review/anonStatus/:assigntag
+            case 'anonStatus':
+                return $this->anonStatus($site,$server, $params, $time);
 
-            // /api/review/anon_status/:assigntag
-            case 'anon_status':
-                return $this->anon_status($site,$server, $params, $time);
+            case 'removeReview':
+                return $this->removeReview($site, $user, $server, $params, $time);
+
+            case 'editReview':
+                return $this->editReview($site, $user, $server, $params, $time);
 
 
         }
@@ -665,7 +668,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
      * @return JsonAPI
      * @throws APIException
      */
-    private function anon_status($site,$server, $params, $time){
+    private function anonStatus($site,$server, $params, $time){
 
         $user = $this->isUser($site, Member::STAFF);
         //getting the settings table
@@ -702,7 +705,78 @@ class ReviewApi extends \CL\Users\Api\Resource {
             $json->addData('anonymous', 0, false);
         }
         return $json;
-
     }
+    /**
+     * Withdraw message
+     * @param Site $site
+     * @param User $user
+     * @param Server $server
+     * @param array $params
+     * @param $time
+     * @return JsonAPI
+     * @throws \CL\Tables\TableException
+     */
+    private function removeReview(Site $site, User $user, Server $server, array $params, $time)
+    {
+        $reviewId = $params[1];
+        $reviewDB = new Reviews($site->db);
+        $json = new JsonAPI();
+        $data = $reviewDB->getRows($reviewId);
+        if (empty($data)){
+            $json->addData('', 0, []);
+            return $json;
+        }
+        $res = json_decode($data['metadata'],true);
+        $res['review']['status'] = 'deleted';
+        $con = json_encode($res);
+        if ($reviewDB->updateReview($reviewId,$con)){
+            //Success
+            $reviewing = $reviewDB->get_reviewing($data['assigntag'], $data['reviewerid'], $data['revieweeid']);
+            $json->addData('reviewing', 0, $reviewing[0]);
+            return $json;
+        }else{
+            //Fail
+            $json->addData('', 0, []);
+            return $json;
+        }
+    }
+    /**
+     * Edit Message
+     * @param Site $site
+     * @param User $user
+     * @param Server $server
+     * @param array $params
+     * @param $time
+     * @return JsonAPI
+     * @throws \CL\Tables\TableException
+     */
+    private function editReview(Site $site, User $user, Server $server, array $params, $time)
+    {
+        $reviewId = $params[1];
+        $reviewDB = new Reviews($site->db);
+        $json = new JsonAPI();
+        $members = new Members($site->db);
+        $post = $server->post;
+        $this->ensure($post, ['text']);
+        $review = strip_tags($post['text']);
+        $data = $reviewDB->getRows($reviewId);
+        if (empty($data)){
+            $json->addData('', 0, []);
+            return $json;
+        }
+        $res = json_decode($data['metadata'],true);
 
+        $res['review']['review'] = $review;
+        $con = json_encode($res);
+        if ($reviewDB->updateReview($reviewId,$con)){
+            //Success
+            $reviewing = $reviewDB->get_reviewing($data['assigntag'], $data['reviewerid'], $data['revieweeid']);
+            $json->addData('reviewing', 0, $reviewing[0]);
+            return $json;
+        }else{
+            //Fail
+            $json->addData('', 0, []);
+            return $json;
+        }
+    }
 }
