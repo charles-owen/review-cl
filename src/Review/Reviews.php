@@ -195,7 +195,7 @@ SQL;
      * @param string $assignTag Assignment
      * @return array Review objects
      */
-    public function get_reviews($revieweeId, $assignTag, $status=0) {
+    public function get_reviews($revieweeId, $assignTag) {
         $members = new Members($this->config);
         $sql = $members->memberUserJoinSQL(
             "reviewerid as review_reviewerid, revieweeid as review_revieweeid, " .
@@ -203,12 +203,12 @@ SQL;
             "assigntag as review_assigntag",
             false, null, 'member_');
 
-            $sql .= <<<SQL
-                    join $this->tablename review
-                    on reviewerid=member.id
-                    where assigntag=? and revieweeid=?
-                    order by review.time desc
-                    SQL;
+        $sql .= <<<SQL
+join $this->tablename review
+on reviewerid=member.id
+where assigntag=? and revieweeid=?
+order by review.time desc
+SQL;
 
         $pdo = $this->pdo;
         try {
@@ -285,7 +285,7 @@ SQL;
      * @param string $assignTag Assignment
      * @return array of Review objects
      */
-    public function get_reviews_by($reviewerId, $assignTag, $status=0) {
+    public function get_reviews_by($reviewerId, $assignTag) {
         $members = new Members($this->config);
         $sql = $members->memberUserJoinSQL(
             "reviewerid as review_reviewerid, revieweeid as review_revieweeid, " .
@@ -293,12 +293,12 @@ SQL;
             "review.time as review_time, assigntag as review_assigntag",
             false, null, 'reviewee_');
 
-            $sql .= <<<SQL
-                    join $this->tablename review
-                    on revieweeid=member.id
-                    where assigntag=? and reviewerid=?
-                    order by review.time desc
-                    SQL;
+        $sql .= <<<SQL
+join $this->tablename review
+on revieweeid=member.id
+where assigntag=? and reviewerid=?
+order by review.time desc
+SQL;
 
         $pdo = $this->pdo;
         try {
