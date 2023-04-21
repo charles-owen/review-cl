@@ -24,6 +24,7 @@
               <div :class="{ active: customColor }" class="button hue-selector custom"><input type="color" @input="color = $event.target.value"></div>
               <div :class="{ active: tool == 'pen' }" class="button pencil" @click="tool='pen'"></div>
               <div :class="{ active: tool == 'line_tool' }" class="button linetool" @click="tool='line_tool'"></div>
+              <div :class="{ active: tool == 'arrow_tool' }" class="button arrowtool" @click="tool='arrow_tool'"></div>
               <div :class="{ active: tool == 'rect_tool' }" class="button recttool" @click="tool='rect_tool'"></div>
               <div :class="{ active: tool == 'eraser' }" class="button eraser" @click="tool='eraser'"></div>
               <div :class="{ active: tool == 'segment_eraser' }" class="button segmenteraser" @click="tool='segment_eraser'"></div>
@@ -57,6 +58,7 @@ export default {
       pencil_url: "url(" + this.$site.root + "/vendor/cl/site/img/pencil.svg)",
       eraser_url: "url(" + this.$site.root + "/vendor/cl/site/img/eraser.svg)",
       line_url: "url(" + this.$site.root + "/vendor/cl/site/img/line.svg)",
+      arrow_url: "url(" + this.$site.root + "/vendor/cl/site/img/arrow.svg)",
       rectangle_url: "url(" + this.$site.root + "/vendor/cl/site/img/rectangle.svg)",
     }
   },
@@ -161,6 +163,10 @@ export default {
 
 .linetool::before {
   content: v-bind('line_url');
+}
+
+.arrowtool::before {
+  content: v-bind('arrow_url');
 }
 
 .recttool::before {
