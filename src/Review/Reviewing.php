@@ -418,6 +418,7 @@ HTML;
 			    'review'=>$review['meta']['review']['review'],
 			    'submissions'=>$review['meta']['review']['submissions'],
                 'context'=>$review['meta']['review']['context'],
+                'status'=>$review['meta']['review']['status'],
                 'annotation'=>$review['annotation'],
 		    ];
 

@@ -2,11 +2,12 @@
   <div class="cl-reviewChat">
     <p class="incoming-id" v-show="chat.length!==0">R{{incoming.slice(1,)}}: {{recipient}}</p>
     <div class="cl-chat-div" v-show="chat.length!==0">
-      <div v-for="review in chat" class="message-div">
-        <div>
-          <div v-if="review.context === context && review.by == chat_id" @click.stop="showButton(review.id)"
+      <div v-for="review in chat">
+        <div v-if="review.status == 'displayed' || review.context == 'staff'" class="message-div">
+          <!-- Outgoing messages-->
+          <div v-if="review.context === context && review.by == chat_id && (review.status == 'displayed' || review.context == 'staff')"
                class="cl-review-present cl-chat-bubble cl-chat-outgoing">
-            <p :id="'p'+review.id">{{review.review}}</p>
+            <p :id="'p'+review.id" class="cl-chat-text">{{review.review}}</p>
             <form action="" :id="'show'+review.id" style="display: none;" method="post" @click.stop>
               <input type="hidden" name="reviewID" :value=review.id>
               <input :id="'youText'+review.id" type="text" name="review" class="edit_input" value="">
@@ -23,16 +24,18 @@
                 <img src="../../site/img/edit.png" >
               </button>
               <div class="cl-chat-time cl-chat-space">{{formatTime(review.time)}}</div>
-           </div>
-
+            </div>
           </div>
 
-          <div @click.stop v-else-if="review.annotation !== null" class="cl-review-present cl-chat-bubble cl-chat-incoming cl_chat_annotation">
-            <a href="#" @click.prevent="selected_review = review;">{{review.review}}</a><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
-
+          <!-- Incoming chats-->
+          <div @click.stop v-else-if="review.annotation !== null" class="cl-review-present cl-chat-bubble cl-chat-incoming cl_chat_annotation" v-if="review.status == 'displayed' || review.context == 'staff'">
+            <a href="#" @click.prevent="selected_review = review;">{{review.review}}</a><div class="cl-chat-time">{{formatTime(review.time)}}</div>
+          </div>
           <div @click.stop v-else="" class="cl-review-present cl-chat-bubble cl-chat-incoming">
             {{review.review}}
-            <div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
+            <div class="cl-chat-time">{{formatTime(review.time)}}</div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -59,7 +62,7 @@ import ReviewAnnotationVue from './ReviewAnnotation.vue'
 import {Chat} from './Chat.js'
 
 export default {
-  props: ['json', 'context', 'chat_id','anon_index'],
+  props: ['json', 'context', 'chat_id', 'anon_index'],
   emit: ['submit'],
   inheritAttrs: false,
   data: function () {
@@ -95,6 +98,8 @@ export default {
 
 
     this.submissions = submissions;
+
+    console.log(this.json);
 
     this.polling = new Chat(this.$site, this.chat_id, this);
 
@@ -139,6 +144,7 @@ export default {
                 context: latestMessage.meta.review.context,
               });
               this.$emit('submit', latestMessage.id);
+              this.chat[0].status = 'displayed';
             } else {
               this.$site.toast(this, response);
             }
@@ -160,15 +166,12 @@ export default {
       this.$site.api.post(`/api/review/editReview/${reviewId}`,params)
           .then((response) => {
             if (!response.hasError()) {
-              console.log("Edit successfully");
               var delID = document.getElementById('del'+reviewId);
               var editID = document.getElementById('edit'+reviewId);
-              editID.style.display='none';
-              delID.style.display='none';
               document.getElementById('show'+reviewId).style.display="none";
               document.getElementById('p'+reviewId).style.display="block";
+              this.$site.toast(this, "Edit Saved!");
             } else {
-              console.log("Edit Failure");
               this.$site.toast(this, response);
             }
           })
@@ -239,8 +242,9 @@ export default {
 <style scoped>
 .cl-chat-div{
   cursor: pointer;
-  height: 48vh;
-  min-height: 30vh;
+  display: flex;
+  max-height: 48vh;
+  min-height: 10vh;
   border: solid 1px;
   overflow-x: hidden;
   display: flex;
@@ -258,12 +262,18 @@ export default {
 }
 .cl-chat-incoming {
   float: left;
+  background-color: #eeeeee;
 }
 .cl-chat-outgoing{
   background-color: #0c5645;
   color: white;
   float: right;
   text-align: left;
+}
+
+.cl-chat-text {
+  padding: 0;
+  margin: 0;
 }
 .incoming-id{
   margin:0;

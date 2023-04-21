@@ -80,12 +80,9 @@ class ReviewApi extends \CL\Users\Api\Resource {
             case 'remove':
                 return $this->remove($site, $server, $params, $time);
 
-            case 'reviews_chat':
-                return $this->reviews_chat($site, $user, $server, $params, $time);
-
-            // /api/review/anon_status/:assigntag
-            case 'anon_status':
-                return $this->anon_status($site,$server, $params, $time);
+            // /api/review/anonStatus/:assigntag
+            case 'anonStatus':
+                return $this->anonStatus($site,$server, $params, $time);
 
             case 'removeReview':
                 return $this->removeReview($site, $user, $server, $params, $time);
@@ -671,7 +668,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
      * @return JsonAPI
      * @throws APIException
      */
-    private function anon_status($site,$server, $params, $time){
+    private function anonStatus($site,$server, $params, $time){
 
         $user = $this->isUser($site, Member::STAFF);
         //getting the settings table

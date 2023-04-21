@@ -241,29 +241,25 @@ SQL;
 
         $forData = [];
         foreach($for as $review) {
-            if ($review->meta->data['review']['status'] == 'displayed'){
-                $forData[] = [
-                    'id'=>$review->id,
-                    'time'=>$review->time,
-                    'meta'=>$review->meta->data,
-                    'reviewer'=>$review->reviewer->data(),
-                    'annotation'=>$annotations->get_annotation($review->id),
-                ];
-            }
+            $forData[] = [
+                'id'=>$review->id,
+                'time'=>$review->time,
+                'meta'=>$review->meta->data,
+                'reviewer'=>$review->reviewer->data(),
+                'annotation'=>$annotations->get_annotation($review->id),
+            ];
         }
 
 
         $byData = [];
         foreach($by as $review) {
-            if ($review->meta->data['review']['status'] == 'displayed'){
-                $byData[] = [
-                    'id'=>$review->id,
-                    'time'=>$review->time,
-                    'meta'=>$review->meta->data,
-                    'reviewee'=>$review->reviewee->data(),
-                    'annotation'=>$annotations->get_annotation($review->id),
-                ];
-            }
+            $byData[] = [
+                'id'=>$review->id,
+                'time'=>$review->time,
+                'meta'=>$review->meta->data,
+                'reviewee'=>$review->reviewee->data(),
+                'annotation'=>$annotations->get_annotation($review->id),
+            ];
         }
 
         return [

@@ -15,8 +15,8 @@
 
               <form method="post" @click.prevent="anonymousReviewing">
                 <div style=margin-left:10px>
-                  <p class="center" style = padding-top:3.5px><label for="anon_checkbox"> Anonymous Reviewing</label>
-                    <input type="checkbox" id="anon_checkbox" name="anon_checkbox" style = margin-left:3px v-model="anon">
+                  <p class="center" style = padding-top:3.5px><label for="anonCheckbox"> Anonymous Reviewing</label>
+                    <input type="checkbox" id="anonCheckbox" name="anonCheckbox" style = margin-left:3px v-model="anon">
                   </p>
                 </div>
               </form>
@@ -165,7 +165,7 @@ export default {
     this.setTitle(': ' + this.assignment.shortname + ' Reviewing');
 
     // Ask the server for the anonymous status for the assignment (if any)
-    this.$site.api.get('/api/review/anon_status/' + this.assigntag, {})
+    this.$site.api.get('/api/review/anonStatus/' + this.assigntag, {})
         .then((response) => {
           if (!response.hasError()) {
             this.updateAnon(response);
@@ -266,7 +266,7 @@ export default {
 
     setAnonymous(){
       // Ask the server to set and return the anonymous status for the review assignment
-      this.$site.api.post('/api/review/anon_status/' + this.assigntag, {})
+      this.$site.api.post('/api/review/anonStatus/' + this.assigntag, {})
           .then((response) => {
             if (!response.hasError()) {
               this.updateAnon(response);
