@@ -1,5 +1,5 @@
 <template>
-  <div class="cl-reviewChat" @click="formvisable">
+  <div class="cl-reviewChat">
     <p class="incoming-id" v-show="chat.length!==0">R{{incoming.slice(1,)}}: {{recipient}}</p>
     <div class="cl-chat-div" v-show="chat.length!==0">
       <div v-for="review in chat" class="message-div">
@@ -11,34 +11,33 @@
               <input type="hidden" name="reviewID" :value=review.id>
               <input :id="'youText'+review.id" type="text" name="review" class="edit_input" value="">
               <div class="button-container">
-                <div class="Confirm" @click.stop="save_edit(review.id,review.review)">Save</div>
-                <div class="Confirm" @click.stop="Cancel(review.id)">Cancel</div>
+                <div class="confirm" @click.stop="saveEdit(review.id,review.review)">Save</div>
+                <div class="confirm" @click.stop="cancel(review.id)">Cancel</div>
               </div>
             </form>
-
-            <br>
-
-            <div class="cl-chat-time">{{formatTime(review.time)}}</div>
-            <br>
-            <button :id="'del'+review.id" class="showDiv" title="withdrawal" @click.stop="deleteContent(review.id)">
-              <img src="../../site/img/delete.png" >
-            </button>
-            <button :id="'edit'+review.id" class="showDiv" title="Edit" @click.stop="editContent(review.id,review.review)">
-              <img src="../../site/img/edit.png" >
-            </button>
+            <div class="cl-chat-format">
+              <button :id="'del'+review.id" title="Delete" @click.stop="deleteContent(review.id)">
+                <img src="../../site/img/delete.png" >
+              </button>
+              <button :id="'edit'+review.id" title="Edit" @click.stop="editContent(review.id,review.review)">
+                <img src="../../site/img/edit.png" >
+              </button>
+              <div class="cl-chat-time cl-chat-space">{{formatTime(review.time)}}</div>
+           </div>
 
           </div>
 
           <div @click.stop v-else-if="review.annotation !== null" class="cl-review-present cl-chat-bubble cl-chat-incoming cl_chat_annotation">
-            <a href="#" @click.prevent="selected_review = review;">{{review.review}}</a><br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
+            <a href="#" @click.prevent="selected_review = review;">{{review.review}}</a><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
 
           <div @click.stop v-else="" class="cl-review-present cl-chat-bubble cl-chat-incoming">
-            {{review.review}}<br><div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
+            {{review.review}}
+            <div class="cl-chat-time">{{formatTime(review.time)}}</div></div>
         </div>
       </div>
     </div>
     <form id="form" method="post" @submit.prevent="submit"
-          v-show="context === 'reviewee' ? showForm : true"
+          v-show="!(chat.length === 0 && context === 'reviewee')"
           class="form-container" @click.stop>
 
       <textarea ref="textArea" style="border: 3px solid;
@@ -72,7 +71,6 @@ export default {
       polling: null,
       showForm: false,
       showEdit: false,
-      clickCount: 0,
     }
   },
   components: {
@@ -150,7 +148,7 @@ export default {
             this.$site.toast(this, error);
           });
     },
-    save_edit(reviewId,review) {
+    saveEdit(reviewId,review) {
       var youText = document.getElementById("youText"+reviewId).value.trim();
       if (youText == ""){
         youText = review;
@@ -178,7 +176,7 @@ export default {
             console.log(error);
           });
     },
-    Cancel(reviewId){
+    cancel(reviewId){
       document.getElementById('show'+reviewId).style.display="none";
       document.getElementById('p'+reviewId).style.display="block";
     },
@@ -201,46 +199,16 @@ export default {
         }
       }
     },
-    formvisable() {
-      if (this.clickCount === 0) {
-        this.showForm = true;
-      }
-      this.clickCount++;
-
-      if (this.clickCount >= 2) {
-        this.showForm = false;
-        this.clickCount = 0;
-      }
-    },
-    showButton(reviewId){
-      var delID = document.getElementById('del'+reviewId);
-      var editID = document.getElementById('edit'+reviewId);
-
-      if(editID.style.display=='block'){
-        editID.style.display='none'
-      }else{
-        editID.style.display='block'
-      }
-
-      if(delID.style.display=='block'){
-        delID.style.display='none'
-      }else{
-        delID.style.display='block'
-      }
-    },
     deleteContent(reviewId){
-      new this.$site.Dialog.MessageBox('Are You Sure?', 'Are you sure you want to withdraw this message?',
+      new this.$site.Dialog.MessageBox('Are You Sure?', 'Are you sure you want to delete this message?',
           this.$site.Dialog.MessageBox.OKCANCEL, () => {
             this.$site.api.post(`/api/review/removeReview/${reviewId}`)
                 .then((response) => {
                   if (!response.hasError()) {
                     var delID = document.getElementById('del'+reviewId);
                     var editID = document.getElementById('edit'+reviewId);
-                    editID.style.display='none';
-                    delID.style.display='none';
-                    this.$site.toast(this, 'The message has been withdrawn!');
+                    this.$site.toast(this, 'Message Deleted!');
                   } else {
-                    document.getElementsByClassName('showDiv').style.display = "none";
                     this.$site.toast(this, response);
                   }
                 })
@@ -269,11 +237,6 @@ export default {
 </script>
 
 <style scoped>
-.showDiv{
-  display: none;
-  float: right;
-  border-radius: 5px;
-}
 .cl-chat-div{
   cursor: pointer;
   height: 48vh;
@@ -308,9 +271,21 @@ export default {
   font-weight: bold;
   font-size: small;
 }
+
+.cl-chat-format {
+  text-align: right;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+
+}
+
+.cl-chat-space {
+  margin: 5px;
+}
+
 .cl-chat-time {
   opacity: 0.5;
-  text-align: right;
 }
 .message-div {
   padding: 5px 10px;
@@ -354,7 +329,7 @@ textarea {
   grid-gap: 5%;
 }
 
-.Confirm{
+.confirm{
   padding: 3px 4px;
   background-color: #ffffff;
   color: black;
