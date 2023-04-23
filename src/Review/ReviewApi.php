@@ -90,7 +90,9 @@ class ReviewApi extends \CL\Users\Api\Resource {
             case 'editReview':
                 return $this->editReview($site, $user, $server, $params, $time);
 
-
+            // /api/review/reviewsChat/:assigntag/:id
+            case 'reviewsChat':
+                return $this->reviewsChat($site, $user, $server, $params, $time);
         }
 
         throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
@@ -660,7 +662,7 @@ class ReviewApi extends \CL\Users\Api\Resource {
     /**
      * Set and get the anonymous flag for the assignment if post, just get if not
      *
-     * /api/review/anon_status/:assigntag/
+     * /api/review/anonStatus/:assigntag/
      * @param Site $site The Site object
      * @param Server $server The server
      * @param array $params Parameters for the route

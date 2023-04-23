@@ -1,6 +1,9 @@
 <template>
   <div class="cl-reviewChat">
-    <p class="incoming-id" v-show="chat.length!==0">R{{incoming.slice(1,)}}: {{recipient}}</p>
+    <p class="incoming-id" v-show="chat.length!==0">R{{incoming.slice(1,)}}:
+      <span v-if="chat_id !== '-1'">{{recipient}}</span>
+      <span v-else>Staff</span>
+    </p>
     <div class="cl-chat-div" v-show="chat.length!==0">
       <div v-for="review in chat">
         <div v-if="review.status == 'displayed' || review.context == 'staff'" class="message-div">
@@ -40,11 +43,10 @@
       </div>
     </div>
     <form id="form" method="post" @submit.prevent="submit"
-          v-show="!(chat.length === 0 && context === 'reviewee')"
+          v-show="!(chat.length === 0 && context === 'reviewee') && chat_id !== '-1'"
           class="form-container" @click.stop>
 
-      <textarea ref="textArea" style="border: 3px solid;
-      padding-left: 5px;"  rows=1 cols="78"></textarea>
+      <textarea ref="textArea" class="cl-chat-input" rows="1" cols="78" contenteditable="true"></textarea>
 
       <input type="submit" value="Send" class="sendbutton">
     </form>
@@ -99,19 +101,19 @@ export default {
 
     this.submissions = submissions;
 
-    console.log(this.json);
+    if(this.chat_id != '-1') {
+      this.polling = new Chat(this.$site, this.chat_id, this);
 
-    this.polling = new Chat(this.$site, this.chat_id, this);
-
-    this.polling.startPolling();
+      this.polling.startPolling();
+    }
 
     this.setName();
   },
 
-
-
   beforeDestroy() {
-    this.polling.endPolling();
+    if (this.chat_id != '-1') {
+      this.polling.endPolling();
+    }
   },
   methods: {
     submit() {
@@ -297,6 +299,12 @@ export default {
 .cl-chat-time {
   opacity: 0.5;
 }
+
+.cl-chat-input {
+  border: 3px solid;
+  padding-left: 5px;
+}
+
 .message-div {
   padding: 5px 10px;
 }

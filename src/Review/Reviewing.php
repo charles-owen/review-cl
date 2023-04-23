@@ -373,6 +373,8 @@ class Reviewing {
 		$reviewAssignments = new ReviewAssignments($this->assignment->site->db);
 		$reviewAssignIDs = $reviewAssignments->getByReviewee($user->member->id, $this->assignment->tag);
 
+        $reviewAssignIDs[] = ['-1'];
+
     	$data = [
             'ids'=>$reviewAssignIDs,
     		'assigntag'=>$this->assignment->tag,
@@ -435,9 +437,13 @@ HTML;
                     $reviewAssignments = new ReviewAssignments($this->assignment->site->db);
 
                     $reviewAssignID = $reviewAssignments->getTagByValues($user->member->id, $review['reviewer']['member']['id'], $this->assignment->tag);
-                    // TODO: change this to chat_id
-                    $reviewData['by'] = $reviewAssignID;
-
+                    if (!$reviewAssignID) {
+                        $reviewData['by'] = "-1";
+                    }
+                    else {
+                        // TODO: change this to chat_id
+                        $reviewData['by'] = $reviewAssignID;
+                    }
 
                     //storing the names of reviewer/reviewee
                     $reviewData['reviewer'] = $members->getAsUser($review['reviewer']['member']['id'])->getDisplayName();

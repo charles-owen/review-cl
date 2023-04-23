@@ -60,6 +60,7 @@ export default {
 
     this.submissions = submissions;
 
+    console.log(this.json);
   },
   methods: {
     submit(review_id) {

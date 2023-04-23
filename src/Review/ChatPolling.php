@@ -32,7 +32,6 @@ class ChatPolling
     /**
      * Get all assignment chat messages for requesting user
      *
-     * /api/review/reviews_chat/:assigntag/
      * This is used on the assignment grading page
      *
      * @param Site $site The Site object
