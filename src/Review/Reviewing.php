@@ -436,13 +436,14 @@ HTML;
 
                     $reviewAssignments = new ReviewAssignments($this->assignment->site->db);
 
-                    $reviewAssignID = $reviewAssignments->getTagByValues($user->member->id, $review['reviewer']['member']['id'], $this->assignment->tag);
-                    if (!$reviewAssignID) {
-                        $reviewData['by'] = "-1";
+                    $isStaff = $members->getAsUser($review['reviewer']['member']['id'])->atLeast("S");
+
+                    if(!$isStaff) {
+                        $reviewAssignID = $reviewAssignments->getTagByValues($user->member->id, $review['reviewer']['member']['id'], $this->assignment->tag);
+                        $reviewData['by'] = $reviewAssignID;
                     }
                     else {
-                        // TODO: change this to chat_id
-                        $reviewData['by'] = $reviewAssignID;
+                        $reviewData['by'] = "-1";
                     }
 
                     //storing the names of reviewer/reviewee

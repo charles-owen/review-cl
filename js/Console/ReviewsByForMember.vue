@@ -100,8 +100,6 @@ export default {
 
       this.forReviews = data.for;
       this.byReviews = data.by;
-
-      console.log(this.forReviews);
     },
     submit() {
       const text = this.editor.textarea.value.trim();

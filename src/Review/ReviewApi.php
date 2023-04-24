@@ -89,10 +89,6 @@ class ReviewApi extends \CL\Users\Api\Resource {
 
             case 'editReview':
                 return $this->editReview($site, $user, $server, $params, $time);
-
-            // /api/review/reviewsChat/:assigntag/:id
-            case 'reviewsChat':
-                return $this->reviewsChat($site, $user, $server, $params, $time);
         }
 
         throw new APIException("Invalid API Path", APIException::INVALID_API_PATH);
