@@ -319,18 +319,19 @@ export default {
         }
 
 
-
+        //push the reviewr into the list of reviewers and update the legth of maxReviewees
         this.reviewers[reviewer].push([reviewee, cnt]);
         if (this.reviewers[reviewer].length > this.maxReviewees) {
           this.maxReviewees = this.reviewers[reviewer].length;
         }
 
 
+        //if this is the first time we have seen this reviewee
         if (this.reviewees[reviewee] === undefined) {
           this.reviewees[reviewee] = [];
         }
 
-        //made sure maxReviewers was updating properly
+        //push the reviewee into the reviewees list and update the maxReviewers count
         this.reviewees[reviewee].push([reviewer, cnt]);
         if (this.reviewees[reviewee].length > this.maxReviewers) {
           this.maxReviewers = this.reviewees[reviewee].length;
@@ -422,6 +423,13 @@ export default {
 
 
     },
+    /**
+     * Function to find the adjusted max value to make sure gradient is update properly
+     * @param users - the users in the class
+     * @param max - the max reviewer/reviewee value
+     * @param role - the role of the user
+     * @returns {number|*} - the adusted max value
+     */
     adjustedMaxValue(users, max, role) {
       let countLessThanMax = 0;
 
@@ -437,6 +445,12 @@ export default {
         return max - 1;
       }
     },
+    /**
+     * Function that calculates the color of the gradient based on the maxReviews and the number missing
+     * @param missing - the number of reviewer/reviewees missing
+     * @param maxReviews - the number of maxReviewers/Reviewees
+     * @returns {string} - the calculated rgb value
+     */
     getBackgroundColor(missing, maxReviews) {
       if (maxReviews === 0){
         return `rgb(255, 255, 255)`;
@@ -449,6 +463,12 @@ export default {
       // Return RGB value as a string
       return `rgb(${r}, ${g}, ${b})`;
     },
+    /**
+     * Function that brings up the remove reviewer/reviewee dialog box and allows admins to proceed with the removal
+     * @param removeUser - the user that will have the pairing removed for
+     * @param type - whether or not the user is a reviewer or reviewee
+     * @param users - list of users in the class
+     */
     removeDialog(removeUser, type, users)
     {
       let assignedReviews = [];
@@ -634,6 +654,8 @@ export default {
     },
     /**
      * Dialog pop up to confirm user wants to send individual reminder.
+     * @param memberId- the member of id of who we are sending the individual notification to
+     * @param name- the name of the who we are sending the individual notification to
      */
     maybeIndividualNotification(memberId, name) {
       new this.$site.Dialog.MessageBox('Are you sure?', 'Are you sure you want to send a reminder to ' + name + '?',
@@ -643,8 +665,8 @@ export default {
     },
     /**
      * Handler for sending a reminder to a individual person
-     * @param name of person receiving reminder
-     * @param email to send reminder to
+     * @param memberId of person receiving reminder
+     *
      */
     individualNotification(memberId){
       let site = this.$site;
@@ -838,12 +860,20 @@ export default {
     },
   },
   computed: {
+    /**
+     * Function that updates the adjusted max for reviewers
+     * @returns {number|*} - the updated adjustedMax for reviewers
+     */
     adjustedMaxReviewers() {
       const adjustedMax = this.adjustedMaxValue(this.fetcher.users, this.maxReviewers, 'Reviewer');
       console.log('Adjusted Max Reviewers:', adjustedMax);
       return adjustedMax;
     },
 
+    /**
+     * Function that updates the adjusted max for reviewees
+     * @returns {number|*} - the updated max for the reviewees
+     */
     adjustedMaxReviewees() {
       const adjustedMax = this.adjustedMaxValue(this.fetcher.users, this.maxReviewees, 'Reviewee');
       console.log('Adjusted Max Reviewees:', adjustedMax);
