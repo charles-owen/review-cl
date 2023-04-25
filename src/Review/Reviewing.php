@@ -712,6 +712,12 @@ MSG;
 	    return $annotations->add($annotation);
     }
 
+    /**
+     * Notify that a student that they have a peer review available
+     * @param User $reviewee
+     * @param $review
+     * @return void
+     */
     private function notify_reviewed(User $reviewee, $review) {
         $site = $this->assignment->site;
         $coursename = $site->siteName;

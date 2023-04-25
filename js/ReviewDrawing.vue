@@ -80,6 +80,10 @@ export default {
     window.removeEventListener('scroll', this.onMutate);
   },
   methods: {
+    /**
+     * Function to submit the annotation
+     * @param review_id - the id of the review
+     */
     submit(review_id) {
       const annotation = this.annotation.innerHTML;
 
@@ -109,13 +113,25 @@ export default {
     },
   },
   watch: {
+    /**
+     * Update the color to the new color
+     * @param newVal - the new color we want to update to
+     */
     color(newVal){
       this.customColor = newVal.includes('#');
       handler.color = newVal;
     },
+    /**
+     * Update the tool selected
+     * @param newVal - the new tool we want to update to
+     */
     tool(newVal){
       handler.tool = newVal;
     },
+    /**
+     * Update the line width
+     * @param newVal- the new line width we want to update to
+     */
     widthValue(newVal){
       handler.line_width = newVal;
     }

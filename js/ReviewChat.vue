@@ -116,6 +116,9 @@ export default {
     }
   },
   methods: {
+    /**
+     * Function to submit/send the chat
+     */
     submit() {
       const text = this.$el.querySelector('textarea').value.trim();
       if (text === '') {
@@ -156,6 +159,11 @@ export default {
             this.$site.toast(this, error);
           });
     },
+    /**
+     * Function to save the edit made to a message
+     * @param reviewId - the id of the chat we are editing
+     * @param review - the edited message
+     */
     saveEdit(reviewId,review) {
       var youText = document.getElementById("youText"+reviewId).value.trim();
       if (youText == ""){
@@ -188,9 +196,18 @@ export default {
     formatTime(time) {
       return this.$site.TimeFormatter.relativeUNIX(time, null);
     },
+    /**
+     * Function to filter the chats by their associated chat ids so they are split into their respective chat windows
+     * @param review
+     * @returns {boolean}
+     */
     filterChatId(review){
       return this.chat_id == review.by;
     },
+
+    /**
+     * Set the name of the recipient of the message- if anonymous make it Student A,B,etc.
+     */
     setName() {
       // if (this.recipient === "" && this.chat.length !== 0) this.recipient = this.chat[0][this.incoming];
       if(this.recipient === "" && this.chat.length !== 0){
@@ -204,6 +221,10 @@ export default {
         }
       }
     },
+    /**
+     * Bringing up the dialog box to confirm the deletion of the message and updating its status in the back end
+     * @param reviewId - the id of the review that we are deleting
+     */
     deleteContent(reviewId){
       new this.$site.Dialog.MessageBox('Are You Sure?', 'Are you sure you want to delete this message?',
           this.$site.Dialog.MessageBox.OKCANCEL, () => {

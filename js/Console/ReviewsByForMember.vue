@@ -84,6 +84,10 @@ export default {
             this.$site.toast(this, error);
           });
     },
+    /**
+     * Take a new supplied server response.
+     * @param response Response with all reviews in it.
+     */
     take(response) {
       let data = response.getData('reviews-by-for').attributes;
       let submitData = response.getData('assignment-submissions');
@@ -101,6 +105,9 @@ export default {
       this.forReviews = data.for;
       this.byReviews = data.by;
     },
+    /**
+     * Function to submit the staff review
+     */
     submit() {
       const text = this.editor.textarea.value.trim();
       if (text === '') {
@@ -138,6 +145,11 @@ export default {
             Site.toast(this, error);
           });
     },
+    /**
+     * Function to format the time for display
+     * @param time - the time we are formatting
+     * @returns {*}- the formated time
+     */
     formatTime(time) {
       return this.$site.TimeFormatter.relativeUNIX(time, null);
     },
