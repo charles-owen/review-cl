@@ -9,16 +9,21 @@
     <h3>Reviews by this user.</h3>
     <p v-if="byReviews.length  === 0" class="center">None</p>
     <div v-for="review in byReviews" class="cl-review">
-      <h3 :class="review.reviewee.atLeast(staffRole) ? 'staff' : ''">{{formatTime(review.time)}} Review by {{review.reviewee.name}}
+      <h3 :class="review.reviewee.atLeast(staffRole) ? 'staff' : ''">{{formatTime(review.time)}}
+        <span v-if="review.meta.review.context === 'reviewee'">Chat by {{review.reviewee.name}}</span>
+        <span v-else>Review by {{user.name}} of {{review.reviewee.name}}</span>
         <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
-      <div class="cl-review-present">{{review.meta.review.review}}</div>
+      <div class="cl-review-present"><span v-if="review.meta.review.status === 'deleted'" style="font-weight: bold">Deleted: </span>{{review.meta.review.review}}</div>
     </div>
     <h3>Reviews of this user's assignment.</h3>
     <p v-if="forReviews.length  === 0" class="center">None</p>
     <div v-for="review in forReviews" class="cl-review">
       <h3 :class="review.reviewer.atLeast(staffRole) ? 'staff' : ''">{{formatTime(review.time)}}
         <span v-if="review.reviewer.atLeast(staffRole)">Staff Review</span>
-        <span v-else>Review</span> by {{review.reviewer.name}}
+        <span v-else-if="review.meta.review.context === 'reviewer'">Review</span>
+        <span v-else>Chat</span> by
+        <span v-if="review.meta.review.context === 'reviewee'"> {{user.name}} to {{review.reviewer.name}}</span>
+        <span v-else> {{review.reviewer.name}} </span>
         <span class="cl-submitted">{{showSubmissions(review)}}</span></h3>
       <div class="cl-review-present">{{review.meta.review.review}}</div>
     </div>
@@ -27,6 +32,9 @@
 </template>
 
 <script>
+
+import ReviewsVueVue from '../ReviewsVue.vue';
+
 /**
  * Present reviews by and for a member and the staff reviewing form.
  * @constructor ReviewsByForMemberVue
@@ -40,6 +48,9 @@ export default {
       staffRole: Site.Member.STAFF,
       submissions: []
     }
+  },
+  components: {
+    reviewsVue : ReviewsVueVue
   },
   watch: {
     user() {

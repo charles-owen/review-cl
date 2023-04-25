@@ -14,7 +14,7 @@ import ReviewChatVue from './ReviewChat.vue'
 
 /**
  * This is the inline vue for reviews of an assignment used by the
- * submission and page the course console grading page.
+ * submission page and the course console grading page.
  *
  * @constructor ReviewsVue
  */
@@ -29,7 +29,7 @@ export default {
     }
   },
   components: {
-    reviewChat: ReviewChatVue,
+    reviewChat: ReviewChatVue
   },
   mounted() {
     this.assignTag = this.json.assignTag;

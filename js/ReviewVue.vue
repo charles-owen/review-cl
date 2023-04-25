@@ -59,7 +59,6 @@ export default {
     }
 
     this.submissions = submissions;
-
   },
   methods: {
     submit(review_id) {

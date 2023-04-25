@@ -246,7 +246,7 @@ SQL;
                 'time'=>$review->time,
                 'meta'=>$review->meta->data,
                 'reviewer'=>$review->reviewer->data(),
-                'annotation'=>$annotations->get_annotation($review->id),
+                'annotation'=>$annotations->get_annotation($review->id)
             ];
         }
 

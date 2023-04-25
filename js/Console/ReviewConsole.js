@@ -14,6 +14,10 @@ ReviewConsole.setup = function(Console) {
         'reviewsbyfor': ReviewsByForMemberVue
     };
 
+    Console.components.addRoute(
+      {route: '/review/'}
+    )
+
     // Add the link to the tables management page
     Console.tables.add({
         title: 'Review',    // Name of the link
