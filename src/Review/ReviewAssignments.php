@@ -69,6 +69,14 @@ SQL;
 		}
 	}
 
+    /**
+     * Remove a reviewer/reviewee pairing
+     * @param $reviewerId -Member ID for the reviewer
+     * @param $revieweeId - Member ID for the reviewee
+     * @param $assignTag - Assignment tag
+     * @return bool True if successful
+     */
+
     public function removeReviewing($reviewerId, $revieweeId, $assignTag) {
         $sql = <<<SQL
 delete from $this->tablename where reviewerid=? AND revieweeid=? AND assigntag=?
