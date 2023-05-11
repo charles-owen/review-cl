@@ -50,7 +50,6 @@ class ReviewView extends View {
 
 		$members = new Members($site->db);
 		$submissions = new Submissions($site->db);
-		$reviewer = $members->getAsUser($reviewAssign['reviewerid']);
 		$reviewee = $members->getAsUser($reviewAssign['revieweeid']);
 
 		$submissionsData = [];
@@ -76,15 +75,14 @@ class ReviewView extends View {
 			$submissionsData[] = $data;
 		}
 
-		$reviews = new Reviews($site->db);
-		$reviewing = $reviews->get_reviewing($assignment->tag,
-			$reviewer->member->id, $reviewee->member->id);
-
 		$this->addJS('review');
-		$data = ['id'=>$properties['id'],
+		$data = [
+			'id'=>$properties['id'],
 			'submissions'=>$submissionsData,
-			'reviewing'=>$reviewing];
+			'reviewing'=>$assignment->reviewing->reviewsData($reviewee),
+		];
 		$this->addCLS('cl-review', json_encode($data));
+
 	}
 
 }
