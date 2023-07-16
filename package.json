@@ -12,15 +12,15 @@
   "author": "Charles B. Owen",
   "license": "MIT",
   "dependencies": {
-    "@babel/runtime": "7.20.7",
-    "@vue/compat": "^3.2.45",
+    "@babel/runtime": "7.22.6",
+    "@vue/compat": "^3.3.4",
     "console-cl": ">=0.0.1",
     "course-cl": ">=0.0.1",
     "site-cl": ">=0.0.1",
     "users-cl": ">=0.0.1",
-    "vue": "^3.2.45"
+    "vue": "^3.3.4"
   },
   "devDependencies": {
-    "documentation": "^14.0.1"
+    "documentation": "^14.0.2"
   }
 }
