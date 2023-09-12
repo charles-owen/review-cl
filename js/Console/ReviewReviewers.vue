@@ -143,6 +143,7 @@ export default {
       sortKey: SortKey.name, // set the default sort key value to be name
       SortKey: SortKey, //the SortKey dictionary
       anon: false, //Anonymous Flag
+      amv: {}     // Memoize results of the adjustedMaxValue function
     }
   },
   components: {
@@ -431,6 +432,25 @@ export default {
      * @returns {number|*} - the adusted max value
      */
     adjustedMaxValue(users, max, role) {
+      //
+      // Memoize the result of this function so it is not
+      // repeatedly computed.
+      //
+      if(this.amv[max] === undefined)
+      {
+        this.amv[max] = {}
+      }
+
+      if(this.amv[max][role] === undefined)
+      {
+        this.amv[max][role] = this.adjustedMaxValueActual(users, max, role)
+      }
+
+      return this.amv[max][role]
+
+    },
+    adjustedMaxValueActual(users, max, role) {
+
       let countLessThanMax = 0;
 
       users.forEach(user => {
@@ -845,8 +865,7 @@ export default {
 
       //run the .sort() function with the sorter lambda function on the unsorted array
       let sorted_result = unsorted_array.sort(sorter);
-      console.log(sorted_result);
-      console.log(this.maxReviewers);
+
       //return the sorted result so the table can be updated accordingly
       return sorted_result;
     },
@@ -866,7 +885,6 @@ export default {
      */
     adjustedMaxReviewers() {
       const adjustedMax = this.adjustedMaxValue(this.fetcher.users, this.maxReviewers, 'Reviewer');
-      console.log('Adjusted Max Reviewers:', adjustedMax);
       return adjustedMax;
     },
 
@@ -876,7 +894,6 @@ export default {
      */
     adjustedMaxReviewees() {
       const adjustedMax = this.adjustedMaxValue(this.fetcher.users, this.maxReviewees, 'Reviewee');
-      console.log('Adjusted Max Reviewees:', adjustedMax);
       return adjustedMax;
     },
   },
